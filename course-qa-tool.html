@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>תו-תקן | בקרת הקמת קורסים סינכרוניים</title>
+<title>בקרת QA לקורסים | דוח סטטוס סביבת עבודה</title>
 <style>
   :root{
     --ink:#1E2733;
@@ -22,12 +22,14 @@
     --err-bg:#F3DFD8;
     --na:#8B8776;
     --na-bg:#EDEAE0;
+    --info:#3B5A76;
+    --info-bg:#E3EAF1;
     --gold:#8F6A2A;
     --radius:10px;
     --shadow:0 1px 2px rgba(30,20,10,.08), 0 6px 18px rgba(30,20,10,.06);
-    --serif: "David","Frank Ruhl Libre","Times New Roman",serif;
-    --sans: "Segoe UI","Arial Hebrew","Arial",sans-serif;
-    --mono: "Consolas","Courier New",monospace;
+    --sans:"Heebo","Segoe UI","Arial Hebrew","Arial",sans-serif;
+    --serif:"Heebo","David","Frank Ruhl Libre","Times New Roman",serif;
+    --mono:"Consolas","Courier New",monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -65,7 +67,7 @@
   }
   .letterhead-title{
     font-family:var(--serif);
-    font-size:26px;
+    font-size:26px; font-weight:700;
     letter-spacing:.01em;
     display:flex; align-items:center; gap:12px;
   }
@@ -73,12 +75,11 @@
     width:38px;height:38px;border-radius:50%;
     border:2px solid #C9B77C;
     display:flex;align-items:center;justify-content:center;
-    font-family:var(--serif); font-weight:700; font-size:15px; color:#E7DAB0;
+    font-family:var(--serif); font-weight:700; font-size:14px; color:#E7DAB0;
     flex:none;
   }
   .letterhead-eyebrow{
-    font-size:12px; letter-spacing:.08em; color:#B9C3CC; margin-bottom:4px;
-    text-transform:none;
+    font-size:12px; letter-spacing:.04em; color:#B9C3CC; margin-bottom:4px;
   }
   .letterhead-trust{
     font-size:12px; color:#CBD3D9; background:rgba(255,255,255,.06);
@@ -90,7 +91,7 @@
   /* ===== App shell ===== */
   .app-shell{
     max-width:1320px; margin:0 auto;
-    display:grid; grid-template-columns:270px 1fr; gap:24px;
+    display:grid; grid-template-columns:288px 1fr; gap:24px;
     padding:26px 28px 60px;
     align-items:start;
   }
@@ -98,11 +99,11 @@
     .app-shell{grid-template-columns:1fr;}
   }
 
-  /* ===== Sidebar / folders ===== */
+  /* ===== Sidebar ===== */
   .sidebar{position:sticky; top:20px;}
   .sidebar-title{
-    font-size:11px; letter-spacing:.09em; color:var(--text-muted);
-    margin:0 4px 10px; text-transform:none; font-weight:700;
+    font-size:11px; letter-spacing:.06em; color:var(--text-muted);
+    margin:0 4px 10px; font-weight:700;
   }
   .load-error-item{
     background:var(--err-bg); border:1px solid #E0B7AC; color:#7A2E22; border-radius:8px;
@@ -123,44 +124,38 @@
   .summary-chip{display:flex; align-items:center; gap:8px;}
   .summary-chip .n{font-family:var(--mono); font-weight:700;}
 
-  .folder-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
-  .folder-item{
+  .course-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+  .course-item{
     position:relative;
     background:var(--paper-2);
     border:1px solid var(--paper-line);
     border-inline-end:5px solid var(--na);
-    border-radius:4px 12px 10px 10px;
-    padding:12px 14px 12px 34px;
+    border-radius:10px;
+    padding:12px 14px 12px 32px;
     cursor:pointer;
     box-shadow:var(--shadow);
     transition:transform .12s ease, box-shadow .12s ease;
   }
-  .folder-item::before{
-    content:"";
-    position:absolute; top:-8px; right:14px; width:46%; height:10px;
-    background:inherit; border:1px solid var(--paper-line); border-bottom:none;
-    border-radius:6px 6px 0 0;
-  }
-  .folder-item:hover{transform:translateX(-2px);}
-  .folder-item.active{
+  .course-item:hover{transform:translateX(-2px);}
+  .course-item.active{
     background:#FFFDF8; border-color:var(--paper-line-strong);
     box-shadow:0 2px 4px rgba(30,20,10,.10), 0 10px 22px rgba(30,20,10,.10);
   }
-  .folder-item.active::after{
-    content:"";
-    position:absolute; inset-inline-start:0; top:8px; bottom:8px; width:4px;
+  .course-item.active::after{
+    content:""; position:absolute; inset-inline-start:0; top:8px; bottom:8px; width:4px;
     background:var(--gold); border-radius:2px;
   }
-  .folder-item.status-error{border-inline-end-color:var(--err);}
-  .folder-item.status-warn{border-inline-end-color:var(--warn);}
-  .folder-item.status-ok{border-inline-end-color:var(--ok);}
-  .folder-name{font-weight:700; font-size:13.5px; margin-bottom:3px; word-break:break-word;}
-  .folder-meta{font-size:11.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px;}
-  .folder-remove{
+  .course-item.status-error{border-inline-end-color:var(--err);}
+  .course-item.status-warn{border-inline-end-color:var(--warn);}
+  .course-item.status-ok{border-inline-end-color:var(--ok);}
+  .course-name{font-weight:700; font-size:13.5px; margin-bottom:3px; word-break:break-word;}
+  .course-meta{font-size:11.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .course-meta .score-tag{font-family:var(--mono); font-weight:700;}
+  .course-remove{
     position:absolute; left:8px; top:10px; width:20px; height:20px; border:none; background:none;
     color:var(--text-muted); cursor:pointer; border-radius:50%; font-size:13px; line-height:1;
   }
-  .folder-remove:hover{background:var(--err-bg); color:var(--err);}
+  .course-remove:hover{background:var(--err-bg); color:var(--err);}
 
   .add-file-btn{
     width:100%; padding:10px 12px; border-radius:8px; border:1.5px dashed var(--paper-line-strong);
@@ -168,7 +163,6 @@
     display:flex; align-items:center; justify-content:center; gap:8px;
   }
   .add-file-btn:hover{border-color:var(--gold); color:var(--gold); background:rgba(143,106,42,.05);}
-
   .sidebar-note{
     margin-top:16px; font-size:11.5px; color:var(--text-muted); padding:0 4px; line-height:1.6;
   }
@@ -178,24 +172,24 @@
     background:var(--paper-2); border:1px solid var(--paper-line); border-radius:14px;
     padding:60px 40px; text-align:center; box-shadow:var(--shadow);
   }
-  .empty-state h2{font-family:var(--serif); font-size:24px; margin:0 0 10px;}
-  .empty-state p{color:var(--text-muted); max-width:520px; margin:0 auto 26px;}
+  .empty-state h2{font-family:var(--serif); font-weight:700; font-size:24px; margin:0 0 10px;}
+  .empty-state p{color:var(--text-muted); max-width:540px; margin:0 auto 26px;}
   .dropzone{
     max-width:480px; margin:0 auto 28px; border:2px dashed var(--paper-line-strong); border-radius:12px;
     padding:34px 20px; cursor:pointer; transition:.15s;
   }
   .dropzone.dragover{border-color:var(--gold); background:rgba(143,106,42,.06);}
-  .dropzone .glyph{font-size:34px; font-family:var(--serif); color:var(--gold); margin-bottom:10px;}
+  .dropzone .glyph{font-size:34px; color:var(--gold); margin-bottom:10px;}
   .dropzone strong{display:block; margin-bottom:4px;}
   .dropzone span{font-size:12.5px; color:var(--text-muted);}
   .empty-checklist{
-    text-align:right; max-width:460px; margin:0 auto; font-size:13px; color:var(--text-muted);
+    text-align:right; max-width:480px; margin:0 auto; font-size:13px; color:var(--text-muted);
     border-top:1px solid var(--paper-line); padding-top:18px; display:grid; gap:8px;
   }
   .empty-checklist li{list-style:none; display:flex; gap:8px;}
   .empty-checklist li::before{content:"—"; color:var(--gold); flex:none;}
 
-  /* ===== Main / course header ===== */
+  /* ===== Course header / summary ===== */
   .course-header{
     background:var(--paper-2); border:1px solid var(--paper-line); border-radius:14px;
     padding:22px 26px; box-shadow:var(--shadow); margin-bottom:18px;
@@ -203,7 +197,7 @@
   }
   .score-ring{
     --pct:0; --ringcolor:var(--na);
-    position:relative; width:92px; height:92px; border-radius:50%; flex:none;
+    position:relative; width:96px; height:96px; border-radius:50%; flex:none;
     background:conic-gradient(var(--ringcolor) calc(var(--pct)*3.6deg), var(--paper-line) 0deg);
   }
   .score-ring::before{
@@ -212,17 +206,32 @@
   .score-ring-hole{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
-  .score-ring-hole strong{font-family:var(--mono); font-size:20px; line-height:1;}
+  .score-ring-hole strong{font-family:var(--mono); font-size:21px; line-height:1;}
   .score-ring-hole span{font-size:9.5px; color:var(--text-muted); margin-top:2px;}
   .course-header-info{flex:1; min-width:220px;}
-  .course-eyebrow{font-size:11px; letter-spacing:.08em; color:var(--text-muted); margin-bottom:4px;}
-  .course-title{font-family:var(--serif); font-size:22px; margin:0 0 8px;}
-  .course-meta{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--text-muted);}
-  .course-meta b{color:var(--text); font-family:var(--mono); font-weight:700;}
-  .file-warning-strip{
-    margin-top:10px; font-size:12.5px; background:var(--warn-bg); color:var(--warn);
-    border:1px solid #E4C68A; border-radius:8px; padding:8px 12px;
+  .course-eyebrow{font-size:11px; letter-spacing:.04em; color:var(--text-muted); margin-bottom:4px;}
+  .course-title{font-family:var(--serif); font-weight:700; font-size:22px; margin:0 0 8px;}
+  .course-stats{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--text-muted);}
+  .course-stats b{color:var(--text); font-family:var(--mono); font-weight:700;}
+
+  .toolbar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px;
   }
+  .only-issues-toggle{
+    display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);
+    cursor:pointer; user-select:none;
+    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:999px; padding:7px 14px;
+  }
+  .only-issues-toggle input{accent-color:var(--gold); width:15px; height:15px;}
+
+  /* ===== Banners ===== */
+  .banner{
+    border-radius:10px; padding:14px 18px; margin-bottom:18px; font-size:13px; line-height:1.7;
+  }
+  .banner b{display:block; margin-bottom:4px; font-size:13.5px;}
+  .banner.archive{background:var(--info-bg); border:1px solid #B9CBDD; color:#2E4457;}
+  .banner.warn{background:var(--warn-bg); border:1px solid #E4C68A; color:#6B4A10;}
+  .banner.na{background:var(--na-bg); border:1px solid #D6D2C4; color:#5B5647;}
 
   /* ===== Sections ===== */
   .section-card{
@@ -236,11 +245,10 @@
   }
   .section-head-left{display:flex; align-items:center; gap:12px;}
   .section-number{
-    font-family:var(--serif); font-size:13px; color:var(--gold); border:1px solid var(--paper-line-strong);
+    font-family:var(--serif); font-weight:700; font-size:13px; color:var(--gold); border:1px solid var(--paper-line-strong);
     border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex:none;
   }
-  .section-title{font-family:var(--serif); font-size:17px;}
-  .section-ref{font-size:11px; color:var(--text-muted);}
+  .section-title{font-family:var(--serif); font-weight:700; font-size:17px;}
   .section-counts{display:flex; gap:6px;}
   .count-pill{
     font-size:11px; font-family:var(--mono); border-radius:999px; padding:2px 9px; font-weight:700;
@@ -263,12 +271,9 @@
   .mark-warn{background:var(--warn-bg); color:var(--warn); border-radius:6px;}
   .mark-error{background:var(--err-bg); color:var(--err);}
   .mark-na{background:var(--na-bg); color:var(--na);}
+  .mark-info{background:var(--info-bg); color:var(--info);}
   .field-texts{flex:1; min-width:0;}
   .field-label{font-weight:700; font-size:13.5px;}
-  .field-label .manual-tag{
-    font-size:10px; font-weight:700; color:var(--gold); border:1px solid #D8C388; border-radius:5px;
-    padding:1px 6px; margin-inline-start:6px;
-  }
   .field-value{
     font-size:12.5px; color:var(--text-muted); margin-top:2px; unicode-bidi:plaintext;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
@@ -281,80 +286,46 @@
     font-size:11px; transform:rotate(0deg); transition:transform .15s;
   }
   .field-row.open .field-toggle{transform:rotate(180deg);}
-
   .field-detail{
     display:none; padding:0 18px 16px 52px; font-size:13px; color:var(--text-muted);
   }
   .field-row.open .field-detail{display:block;}
-  .field-detail .why, .field-detail .where{margin-bottom:8px;}
-  .field-detail .why b, .field-detail .where b{color:var(--text); font-weight:700;}
-  .field-detail .guideref{
-    display:inline-block; font-family:var(--mono); font-size:11px; background:var(--paper);
-    border:1px solid var(--paper-line); border-radius:6px; padding:3px 9px; margin-top:2px; color:var(--text);
+  .field-detail .why, .field-detail .check{margin-bottom:8px;}
+  .field-detail .why b, .field-detail .check b{color:var(--text); font-weight:700;}
+
+  /* completion participants subsection */
+  .completion-block{padding:14px 18px;}
+  .completion-block.alert{background:var(--warn-bg);}
+  .completion-head{display:flex; align-items:center; gap:12px;}
+  .completion-head .mark{flex:none;}
+  .completion-title{font-weight:700; font-size:13.5px;}
+  .completion-sub{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
+  .completion-names{
+    margin:12px 0 4px; padding:12px 14px; background:var(--paper); border:1px dashed var(--paper-line-strong);
+    border-radius:8px; font-size:12.5px; line-height:1.9;
   }
-  .resolve-box{
-    margin-top:12px; padding:12px; background:var(--paper); border:1px dashed var(--paper-line-strong);
-    border-radius:8px;
-  }
-  .resolve-box.resolved{background:var(--ok-bg); border-style:solid; border-color:#BFDCC8;}
-  .resolve-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
-  .resolve-row input[type=text]{
-    flex:1; min-width:180px; padding:8px 10px; border-radius:6px; border:1px solid var(--paper-line-strong);
-    font-size:12.5px; background:#fff; unicode-bidi:plaintext;
-  }
+  .completion-names ul{margin:4px 0 0; padding-inline-start:20px;}
+  .completion-detail .why{margin-top:10px; font-size:13px; color:var(--text-muted);}
+  .completion-detail .why b{color:var(--text);}
+
+  /* only-issues filter: hide OK / info / na rows */
+  .only-issues .field-row.row-status-ok,
+  .only-issues .field-row.row-status-na,
+  .only-issues .field-row.row-status-info,
+  .only-issues .completion-block.row-status-ok,
+  .only-issues .completion-block.row-status-na{display:none;}
+  .only-issues .section-card.section-all-clean{display:none;}
+
+  /* ===== Actions ===== */
+  .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
   .btn{
-    border:none; border-radius:7px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer;
+    border:none; border-radius:7px; padding:9px 16px; font-size:13px; font-weight:700; cursor:pointer;
     display:inline-flex; align-items:center; gap:6px;
   }
-  .btn-resolve{background:var(--ok); color:#fff;}
-  .btn-resolve:hover{background:#255A41;}
-  .btn-undo{background:transparent; color:var(--text-muted); text-decoration:underline; padding:8px 4px;}
-  .resolved-line{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
-  .resolved-line .msg{color:var(--ok); font-weight:700; font-size:12.5px;}
-  .resolved-note{font-size:12px; color:var(--text-muted); margin-top:4px; unicode-bidi:plaintext;}
-
-  /* ===== Verdict / stamp ===== */
-  .verdict-panel{
-    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:14px;
-    padding:26px; box-shadow:var(--shadow); display:flex; align-items:center; gap:26px; flex-wrap:wrap;
-    margin-top:8px;
-  }
-  .stamp{
-    width:120px; height:120px; border-radius:50%; flex:none;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    border:3px solid var(--na); outline:1px dashed var(--na); outline-offset:-9px;
-    transform:rotate(-6deg); color:var(--na); font-family:var(--serif);
-    transition:transform .3s ease, color .3s ease, border-color .3s ease;
-  }
-  .stamp .glyph{font-size:30px; line-height:1; margin-bottom:2px;}
-  .stamp .word{font-size:12px; letter-spacing:.05em;}
-  .stamp.blocked{border-color:var(--err); outline-color:var(--err); color:var(--err);}
-  .stamp.notes{border-color:var(--warn); outline-color:var(--warn); color:var(--warn);}
-  .stamp.certified{border-color:var(--ok); outline-color:var(--ok); color:var(--ok); transform:rotate(-6deg) scale(1.03);}
-  @media (prefers-reduced-motion:reduce){.stamp{transition:none;}}
-
-  .verdict-text{flex:1; min-width:240px;}
-  .verdict-title{font-family:var(--serif); font-size:20px; margin:0 0 6px;}
-  .verdict-sub{color:var(--text-muted); font-size:13.5px; margin-bottom:14px;}
-  .verdict-issues{font-size:12.5px; color:var(--text-muted); display:flex; gap:14px; flex-wrap:wrap;}
-  .verdict-actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
   .btn-primary{background:var(--gold); color:#fff;}
   .btn-primary:hover{background:#77551F;}
   .btn-outline{background:transparent; color:var(--text); border:1px solid var(--paper-line-strong);}
   .btn-outline:hover{background:var(--paper);}
-  .preparer-field{
-    display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-muted); margin-top:12px;
-  }
-  .preparer-field input{
-    padding:7px 10px; border-radius:6px; border:1px solid var(--paper-line-strong); font-size:12.5px;
-    background:#fff;
-  }
-
-  .no-rows-callout{
-    background:var(--warn-bg); border:1px solid #E4C68A; color:#6B4A10; border-radius:10px;
-    padding:14px 18px; margin-bottom:18px; font-size:13px; line-height:1.7;
-  }
-  .no-rows-callout b{display:block; margin-bottom:4px; font-size:13.5px;}
 
   footer.trust-footer{
     text-align:center; padding:26px; font-size:11.5px; color:var(--text-muted);
@@ -363,9 +334,9 @@
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .field-toggle, .resolve-box, .btn, .verdict-actions, .preparer-field{display:none !important;}
+    .sidebar, .add-file-btn, .field-toggle, .toolbar, .actions{display:none !important;}
     .field-detail{display:block !important; padding-right:52px;}
-    .section-card, .course-header, .verdict-panel{box-shadow:none; break-inside:avoid;}
+    .section-card, .course-header, .banner{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
   }
 </style>
@@ -375,21 +346,21 @@
   <header class="letterhead">
     <div class="letterhead-row">
       <div>
-        <div class="letterhead-eyebrow">כלי עזר ליוצרי קורסים · לפי מדריך הקמת קורס סינכרוני במערכת (4 שלבים)</div>
-        <div class="letterhead-title"><span class="seal">ת״ת</span> תו־תקן — בקרת הקמת קורסים סינכרוניים</div>
+        <div class="letterhead-eyebrow">כלי בקרת איכות · מבוסס על דוח "סטטוס סביבת עבודה"</div>
+        <div class="letterhead-title"><span class="seal">QA</span> בקרת QA להקמת קורסים</div>
       </div>
-      <div class="letterhead-trust"><span class="dot"></span>כל הבדיקה מתבצעת מקומית בדפדפן — שום מידע לא נשלח החוצה</div>
+      <div class="letterhead-trust"><span class="dot"></span>כל העיבוד מתבצע מקומית בדפדפן — שום מידע לא נשלח החוצה</div>
     </div>
   </header>
 
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar-title">קבצי בדיקה</div>
+      <div class="sidebar-title">קורסים שנבדקו</div>
       <div id="loadErrorsBar"></div>
       <div id="summaryBar" class="summary-bar" style="display:none;"></div>
-      <div id="folderList" class="folder-list"></div>
-      <button class="add-file-btn" id="addFileBtn" type="button">＋ הוסף דוח סטטוס (CSV / Excel)</button>
-      <div class="sidebar-note">כל קובץ הוא ייצוא של "דוח סטטוס הרשמה לקורסים" ממופע קורס אחד — CSV או Excel (.xlsx). אפשר להעלות כמה קבצים ולעבור ביניהם.</div>
+      <div id="courseList" class="course-list"></div>
+      <button class="add-file-btn" id="addFileBtn" type="button">＋ הוסף דוח סטטוס (Excel / CSV)</button>
+      <div class="sidebar-note">כל קובץ הוא ייצוא של "דוח סטטוס סביבת עבודה". קובץ יכול להכיל קורס אחד או כמה קורסים — הכלי מפצל אותם לפי עמודת מזהה הקורס. אפשר להעלות כמה קבצים.</div>
     </aside>
 
     <main id="mainArea"></main>
@@ -397,27 +368,38 @@
 
   <input type="file" id="fileInput" accept=".csv,.xlsx,.xlsm" multiple hidden>
 
-  <footer class="trust-footer">כלי פנימי לבקרת איכות הקמת קורסים · אינו מהווה אישור רשמי של יחידת הלמידה, אלא בדיקה עצמית מסייעת לפני הפצת הקורס.</footer>
+  <footer class="trust-footer">כלי פנימי לבקרת איכות הגדרת קורסים · אינו מהווה אישור רשמי, אלא בדיקה עצמית מסייעת לפני או אחרי פרסום הקורס.</footer>
 
 <script>
 (function(){
 "use strict";
 
 /* =====================================================================
-   1. CONFIG — groups & validation rules
+   1. CONFIG — approved coordinators, categories, column groups
    ===================================================================== */
 
-var GROUPS = [
-  {id:"identity", num:"1", title:"זהות ופרטי בסיס", ref:"תבנית הקורס · שדות מותאמים אישית"},
-  {id:"schedule", num:"2", title:"תזמון והרשמה", ref:"מופע הקורס · תזמון והרשמה"},
-  {id:"lecturer", num:"3", title:"מרצה וספק", ref:"תבנית הקורס · שדות מותאמים אישית"},
-  {id:"budget",   num:"4", title:"עלות ותקציב", ref:"תבנית הקורס · שדות מותאמים אישית"},
-  {id:"grading",  num:"5", title:"ציונים והשלמה", ref:"תבנית הקורס · השלמה"},
-  {id:"capacity", num:"6", title:"קיבולת משתתפים", ref:"מופע הקורס · הרשמה"}
+var APPROVED_COORDINATORS = [
+  "גילי אסא כהן","חן סבן","חן רוקח","לי שטרן","ליטל רוחקינד","מינה סיטון",
+  "נופר שרן רייכר","עינב לואיס","קריין גוטסדינר","רוני סומך",
+  "שיר גלס טננבאום","שירה ארמה","שני קורש"
 ];
+
+var CATEGORIES = [
+  {id:"course-info", num:"1", title:"פרטי קורס"},
+  {id:"lecturers",   num:"2", title:"מרצים"},
+  {id:"budget",      num:"3", title:"תקציב"},
+  {id:"completions", num:"4", title:"השלמות"}
+];
+
+/* candidate header names for detecting the course-identifier column */
+var COURSE_ID_COLUMNS = ["שם קורס","קוד קורס","שם הקורס","קורס"];
 
 var PLACEHOLDER_JUNK = ["", "choose an item.", "choose an item", "בחר פריט", "יש לבחור", "select",
   "-", "—", "n/a", "na", "null", "undefined"];
+
+/* =====================================================================
+   2. VALUE HELPERS
+   ===================================================================== */
 
 function isEmptyVal(v){
   if (v === null || v === undefined) return true;
@@ -426,16 +408,14 @@ function isEmptyVal(v){
 }
 function toNumber(v){
   if (v === null || v === undefined) return NaN;
-  var s = String(v).trim().replace(/,/g,"").replace(/%/g,"");
+  var s = String(v).trim().replace(/,/g,"").replace(/[₪%]/g,"");
   if (s === "") return NaN;
-  var n = parseFloat(s);
-  return n;
+  return parseFloat(s);
 }
-function isTruthyFlag(v){
-  if (isEmptyVal(v)) return false;
-  var s = String(v).trim().toLowerCase();
-  var falseish = ["false","0","לא","no","-","off"];
-  return falseish.indexOf(s) === -1;
+/* strict "V" checkbox flag — case-insensitive, trimmed, exact "v" only */
+function isCheckedFlag(v){
+  if (v === null || v === undefined) return false;
+  return String(v).trim().toLowerCase() === "v";
 }
 function parseDateLoose(v){
   if (isEmptyVal(v)) return null;
@@ -448,7 +428,7 @@ function parseDateLoose(v){
     var d2 = new Date(y, +m[2]-1, +m[1]);
     return isNaN(d2.getTime())?null:d2;
   }
-  /* bare numeric value: likely an Excel serial date (native .xlsx cells store dates this way) */
+  /* bare numeric value: likely an Excel serial date */
   if (/^\d{4,6}(\.\d+)?$/.test(s)) {
     var serial = parseFloat(s);
     if (serial > 20000 && serial < 60000) {
@@ -466,6 +446,25 @@ function fmtDate(d){
   var mm = String(d.getMonth()+1).padStart(2,"0");
   return dd + "/" + mm + "/" + d.getFullYear();
 }
+/* extract an attendance percentage from strings like "39/57 (68.42%)" or "1/1 (100%)" */
+function parseAttendancePct(raw){
+  if (raw === null || raw === undefined) return null;
+  var s = String(raw).trim();
+  if (s === "") return null;
+  var m = s.match(/\((\d+(?:\.\d+)?)\s*%\)/);
+  if (m) return parseFloat(m[1]);
+  m = s.match(/^(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+  if (m){
+    var a = parseFloat(m[1]), b = parseFloat(m[2]);
+    if (b > 0) return (a/b)*100;
+    return null;
+  }
+  var n = toNumber(s);
+  if (!isNaN(n)) return n;
+  return null;
+}
+/* normalize a name for exact-match comparison: trim + collapse internal whitespace */
+function normName(s){ return String(s==null?"":s).trim().replace(/\s+/g," "); }
 
 /* column accessor: returns {exists, value, distinct, inconsistent} */
 function colOf(course, name){
@@ -481,9 +480,6 @@ function colOf(course, name){
   for (var j=0;j<vals.length;j++){ if(!seen[vals[j]]){ seen[vals[j]]=true; distinct.push(vals[j]); } }
   return {exists:true, value:distinct[0] || "", distinct:distinct, inconsistent:distinct.length>1};
 }
-
-/* checkFn(value) -> null if valid, or a short reason string if invalid.
-   Returns array of "value — reason" strings for every distinct value that fails. */
 function invalidDistinctValues(c, checkFn){
   var invalids = [];
   c.distinct.forEach(function(v){
@@ -492,330 +488,408 @@ function invalidDistinctValues(c, checkFn){
   });
   return invalids;
 }
-
 function inconsistencyNote(c){
   if (!c.inconsistent) return "";
   var shown = c.distinct.slice(0,3).join("  /  ");
   if (c.distinct.length>3) shown += "  ...";
-  return "נמצאו " + c.distinct.length + " ערכים שונים בין שורות המשתתפים בדוח: " + shown + ". ודאו שכל המשתתפים משויכים לאותו מופע קורס.";
+  return "נמצאו " + c.distinct.length + " ערכים שונים בין שורות המשתתפים בדוח: " + shown + ". ודאו שכל המשתתפים משויכים לאותו קורס.";
+}
+/* budget: does the course look like a paid course? true/false/null(unknown) */
+function costLooksPaid(course){
+  var v = colOf(course, "עלות").value;
+  if (isEmptyVal(v)) return null;
+  if (/ללא עלות|ללא תשלום|חינם|free/i.test(v)) return false;
+  if (/תשלום|בתשלום|paid/i.test(v)) return true;
+  return null;
 }
 
-/* ---- rule factory helpers ---- */
-function requiredTextRule(cfg){
+/* =====================================================================
+   3. RULE FACTORIES
+   Each rule: {id, category, label, compute(ctx) -> {status, detected, note}}
+   status: ok | warn | error | na | info
+   ===================================================================== */
+
+/* required text field — error if empty or column missing */
+function requiredField(cfg){
   return {
-    id: cfg.id, group: cfg.group, label: cfg.label, why: cfg.why, where: cfg.where, ref: cfg.ref,
-    compute: function(ctx){
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
-      if (!c.exists) return {status:"error", detected:null, note:"העמודה \u201C" + cfg.col + "\u201D לא נמצאה בקובץ שהועלה (ייתכן ומדובר בגרסת דוח שונה)."};
-      if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח — לא ניתן לאמת ערך זה אוטומטית."};
-      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"השדה ריק, או נותר בערך ברירת המחדל של המערכת."};
+      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
+      if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
+      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "השדה ריק או נותר בברירת המחדל."};
       if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
       return {status:"ok", detected:c.value, note:"נמצא ערך תקין."};
     }
   };
 }
 
+/* conditionally-required field — required only when condition(course) is true */
+function conditionalRequiredField(cfg){
+  return {
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    compute:function(ctx){
+      if (!cfg.condition(ctx.course)) return {status:"na", detected:null, note:cfg.naNote || "לא רלוונטי במקרה זה."};
+      var c = colOf(ctx.course, cfg.col);
+      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ, אך היא נדרשת במקרה זה."};
+      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "השדה ריק, אך הוא נדרש במקרה זה."};
+      if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+      return {status:"ok", detected:c.value, note:cfg.okNote || "נמצא ערך תקין."};
+    }
+  };
+}
+
+/* list-membership field — required + must match an approved list exactly */
+function listMembershipField(cfg){
+  var normalizedList = cfg.list.map(normName);
+  return {
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    compute:function(ctx){
+      var c = colOf(ctx.course, cfg.col);
+      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
+      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "לא הוגדרה רכזת אחראית."};
+      var unknown = [];
+      c.distinct.forEach(function(v){
+        if (normalizedList.indexOf(normName(v)) === -1) unknown.push(v);
+      });
+      if (unknown.length) return {status:"error", detected:c.value, note:cfg.unknownNote + " (" + unknown.join(", ") + ")."};
+      if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+      return {status:"ok", detected:c.value, note:"הרכזת מופיעה ברשימת הרכזות המאושרות."};
+    }
+  };
+}
+
+/* required date field */
+function dateRequiredField(cfg){
+  return {
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    compute:function(ctx){
+      var c = colOf(ctx.course, cfg.col);
+      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
+      if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בקורס."};
+      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "התאריך ריק."};
+      var bad = invalidDistinctValues(c, function(v){ return parseDateLoose(v) ? null : "אינו תאריך תקין"; });
+      if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים שאינם תאריך תקין: " + bad.join("; ")};
+      if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+      return {status:"ok", detected:fmtDate(parseDateLoose(c.value)), note:"תאריך תקין."};
+    }
+  };
+}
+
 /* =====================================================================
-   RULES
+   4. RULES
    ===================================================================== */
 var RULES = [];
 
-RULES.push(requiredTextRule({
-  id:"loc", group:"identity", label:"מיקום הקורס", col:"מיקום הקורס",
-  why:"מיקום הקורס קובע לאיזה מרכז למידה הקורס משויך, ומשמש לסינון ולדיווח. ללא מיקום מוגדר הלומדים עלולים לא לדעת היכן הקורס מתקיים ודוחות ריכוז לא ישקפו אותו נכון.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cמיקום הקורס\u201D.", ref:"מדריך: שלב א׳, טאב 10 (שדות מותאמים אישית), עמ׳ 14"
-}));
+/* ---- 1. פרטי קורס — required fields ---- */
+RULES.push(requiredField({id:"tags", category:"course-info", col:"תגיות", label:"תגיות",
+  why:"תגיות משמשות לסיווג הקורס ולסינון בקטלוג ובדוחות. ללא תגיות הקורס עלול לא להופיע בסינונים הרלוונטיים.",
+  check:"ודאו שהוזנו תגיות מתאימות המסווגות את הקורס."}));
 
-RULES.push(requiredTextRule({
-  id:"audience", group:"identity", label:"קהל יעד", col:"קהל יעד",
-  why:"קהל היעד מבהיר עבור מי הקורס מיועד, ומשמש בהמשך לצורכי סינון בקטלוג ובדוחות ניהוליים.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cקהל יעד\u201D.", ref:"מדריך: שלב א׳, טאב 10, עמ׳ 14"
-}));
+RULES.push(requiredField({id:"gathering-area", category:"course-info", col:"אזור התכנסות", label:"אזור התכנסות",
+  why:"אזור ההתכנסות מציין היכן מתכנסים הלומדים (פיזי או וירטואלי) ונדרש בכל סוגי הקורסים.",
+  check:"ודאו שהוזן אזור התכנסות (מיקום פיזי או קישור/פלטפורמה וירטואלית)."}));
 
-RULES.push(requiredTextRule({
-  id:"coordinator", group:"identity", label:"רכזת אחראית על הקורס", col:"רכזת אחראית על הקורס",
-  why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. ללא הגדרתה, פניות של לומדים ומנהלים לגבי הקורס לא יגיעו לגורם הנכון.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cרכזת אחראית על הקורס\u201D.", ref:"מדריך: שלב א׳, טאב 10, עמ׳ 14"
-}));
+RULES.push(requiredField({id:"audience", category:"course-info", col:"קהל", label:"קהל",
+  why:"שדה הקהל מגדיר עבור מי נפתח הקורס וקובע מי יוכל להירשם ולראות אותו.",
+  check:"ודאו שהוגדר הקהל המתאים לקורס."}));
 
+RULES.push(requiredField({id:"lbp", category:"course-info", col:"LBP", label:"LBP",
+  why:"שדה ה-LBP משמש לסיווג הקורס בדוחות ובבקרות. ללא LBP הקורס עלול לא להשתייך לקטגוריה הנכונה בדיווחים.",
+  check:"ודאו שהקורס משויך ל-LBP המתאים."}));
+
+RULES.push(requiredField({id:"target-audience", category:"course-info", col:"קהל יעד", label:"קהל יעד",
+  why:"קהל היעד מבהיר עבור מי הקורס מיועד ומשמש לסינון בקטלוג ובדוחות ניהוליים.",
+  check:"ודאו שהוגדר קהל יעד לקורס."}));
+
+RULES.push(requiredField({id:"budget-reservation", category:"course-info", col:"קורס/שריון תקציב", label:"קורס / שריון תקציב",
+  why:"שדה זה קובע האם מדובר בקורס רגיל או בשריון תקציב, ומשפיע על אופן ניהול התקציב של הקורס.",
+  check:"ודאו שהוגדר סוג הרישום התקציבי (קורס / שריון תקציב)."}));
+
+/* coordinator — required + approved list */
+RULES.push(listMembershipField({id:"coordinator", category:"course-info", col:"רכזת אחראית על הקורס", label:"רכזת אחראית על הקורס",
+  list:APPROVED_COORDINATORS,
+  why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. יש לוודא שהוגדרה רכזת, ושהיא מופיעה ברשימת הרכזות המאושרות.",
+  check:"ודאו שהוגדרה רכזת אחראית, ושהיא אחת מהרכזות המאושרות.",
+  emptyNote:"לא הוגדרה רכזת אחראית.",
+  unknownNote:"הרכזת אינה מופיעה ברשימת הרכזות המאושרות"}));
+
+/* dates */
+RULES.push(dateRequiredField({id:"start-date", category:"course-info", col:"תאריך תחילת קורס", label:"תאריך תחילת קורס",
+  why:"תאריך התחילה קובע ממתי הקורס פעיל וזמין ללומדים.",
+  check:"ודאו שהוזן תאריך תחילת קורס תקין.",
+  emptyNote:"לא הוגדר תאריך תחילת קורס."}));
+
+RULES.push(dateRequiredField({id:"end-date", category:"course-info", col:"תאריך סיום קורס", label:"תאריך סיום קורס",
+  why:"תאריך הסיום סוגר את הגישה לקורס ומגדיר עד מתי ניתן לדווח נוכחות והשלמות.",
+  check:"ודאו שהוזן תאריך סיום קורס תקין, המאוחר מתאריך ההתחלה.",
+  emptyNote:"לא הוגדר תאריך סיום קורס."}));
+
+/* date-order rule */
 RULES.push({
-  id:"env-status", group:"identity", label:"סטטוס סביבת עבודה", ref:"מדריך: שלב א׳, טאב 1 (כללי־בסיסי) וסעיף ביטול קורס",
-  why:"אם סביבת העבודה אינה פעילה/גלויה (למשל \u201Cלא נראה\u201D), הלומדים לא יוכלו לגשת לקורס או להירשם אליו — גם אם כל שאר ההגדרות תקינות.",
-  where:"תבנית הקורס ← כללי־בסיסי ← זמינות, וכן הגדרות מופע הקורס עצמו (לוודא שאינו מוגדר \u201Cלא נראה\u201D).",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "סטטוס סביבת עבודה");
-    if (!c.exists) return {status:"warn", detected:null, note:"העמודה \u201Cסטטוס סביבת עבודה\u201D לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח — לא ניתן לאמת ערך זה אוטומטית."};
-    var hiddenPattern = /לא נראה|מוסתר|לא פעיל|טיוטה|hidden|draft|inactive/i;
-    if (hiddenPattern.test(c.value)) return {status:"error", detected:c.value, note:"סביבת העבודה מוגדרת כלא פעילה/גלויה. לומדים לא יוכלו לגשת לקורס עד שתשונה הזמינות."};
-    if (isEmptyVal(c.value)) return {status:"warn", detected:c.value, note:"השדה ריק בדוח (נפוץ גם בקורסים פעילים — הדוח לא תמיד מייצא סטטוס זה). מומלץ לוודא ידנית שסביבת העבודה מוגדרת \u201Cזמין\u201D במערכת."};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"סביבת העבודה פעילה וגלויה."};
-  }
-});
-
-RULES.push({
-  id:"external-id", group:"identity", label:"מזהה חיצוני", ref:"מדריך: שלב ד׳ סעיף 1, עמ׳ 31",
-  why:"המזהה החיצוני (5 הספרות מתוך כתובת ה-URL של הקורס) משמש לבניית קישור ישיר להרשמה מתוך פריט התוכן במאגר הידע. בלעדיו הקישור בדף השער עלול לא לעבוד.",
-  where:"מבוסס על 5 הספרות המופיעות בכתובת ה-URL של תבנית הקורס בספרייה הדיגיטלית (ניהול ← תבניות קורס).",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "מזהה חיצוני");
-    if (!c.exists) return {status:"warn", detected:null, note:"העמודה \u201Cמזהה חיצוני\u201D לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח — לא ניתן לאמת ערך זה."};
-    if (isEmptyVal(c.value)) return {status:"warn", detected:c.value, note:"לא נמצא מזהה חיצוני. ודאו שקישור ההרשמה בדף השער בקטלוג פעיל."};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"נמצא מזהה חיצוני."};
-  }
-});
-
-/* ---- schedule ---- */
-RULES.push({
-  id:"start-date", group:"schedule", label:"תאריך תחילת קורס", ref:"מדריך: שלב א׳ טאב 10 + שלב ג׳ (מופע קורס), עמ׳ 14, 27",
-  why:"תאריך התחילה קובע ממתי הלומדים יכולים לגשת לתכני הקורס, ומשמש לחישוב חלון ההרשמה ולתיאום מול המפגשים.",
-  where:"מופע הקורס ← שדות מותאמים אישית ← \u201Cתאריך תחילת הקורס\u201D.",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "תאריך תחילת קורס");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"התאריך ריק."};
-    var badDates = invalidDistinctValues(c, function(v){ return parseDateLoose(v) ? null : "אינו תאריך תקין"; });
-    if (badDates.length) return {status:"error", detected:c.value, note:"נמצאו ערכים שאינם תאריך תקין: " + badDates.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"תאריך תקין."};
-  }
-});
-
-RULES.push({
-  id:"end-date", group:"schedule", label:"תאריך סיום קורס", ref:"מדריך: שלב א׳ טאב 10 + שלב ג׳ (מופע קורס), עמ׳ 14, 27",
-  why:"תאריך הסיום סוגר את הגישה לתכנים ומגדיר עד מתי ניתן לדווח נוכחות והשלמות. תאריך סיום שקודם לתאריך ההתחלה הוא שגיאת הזנה נפוצה.",
-  where:"מופע הקורס ← שדות מותאמים אישית ← \u201Cתאריך סיום הקורס\u201D.",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "תאריך סיום קורס");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"התאריך ריק."};
-    var badDates = invalidDistinctValues(c, function(v){ return parseDateLoose(v) ? null : "אינו תאריך תקין"; });
-    if (badDates.length) return {status:"error", detected:c.value, note:"נמצאו ערכים שאינם תאריך תקין: " + badDates.join("; ")};
+  id:"date-order", category:"course-info", label:"תקינות טווח התאריכים",
+  why:"תאריך התחלה המאוחר מתאריך הסיום הוא שגיאת הזנה נפוצה שמונעת פעילות תקינה של הקורס.",
+  check:"ודאו שתאריך ההתחלה מוקדם או שווה לתאריך הסיום.",
+  compute:function(ctx){
     var start = parseDateLoose(colOf(ctx.course,"תאריך תחילת קורס").value);
-    var badOrder = start ? invalidDistinctValues(c, function(v){ var dv=parseDateLoose(v); return (dv && dv<start) ? "קודם לתאריך ההתחלה (" + fmtDate(start) + ")" : null; }) : [];
-    if (badOrder.length) return {status:"error", detected:c.value, note:"תאריך סיום קודם לתאריך ההתחלה: " + badOrder.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"תאריך תקין ומאוחר או שווה לתאריך ההתחלה."};
+    var end = parseDateLoose(colOf(ctx.course,"תאריך סיום קורס").value);
+    if (!start || !end) return {status:"na", detected:null, note:"לא ניתן לבדוק — אחד התאריכים חסר או אינו תקין."};
+    if (start > end) return {status:"error", detected:fmtDate(start) + " ← " + fmtDate(end), note:"טווח תאריכים לא תקין: תאריך ההתחלה (" + fmtDate(start) + ") מאוחר מתאריך הסיום (" + fmtDate(end) + ")."};
+    return {status:"ok", detected:fmtDate(start) + " ← " + fmtDate(end), note:"טווח התאריכים תקין."};
   }
 });
 
+/* ---- 2. מרצים ---- */
 RULES.push({
-  id:"reg-open", group:"schedule", label:"פתיחת הרשמה", ref:"מדריך: שלב א׳ טאב 4 + שלב ג׳ סעיף 2, עמ׳ 7, 27",
-  why:"אם לא יוגדרו תאריכי הרשמה, ההרשמה עלולה להישאר פתוחה ללא הגבלה — עד תום תזמון הקורס בלבד, אם הוגדר. יש לוודא שתאריך פתיחת ההרשמה תואם למועד שבו הקורס משותף עם המשתמשים.",
-  where:"מופע הקורס ← הרשמה־כללי ← תאריכי רישום (וגם בשלב ג׳: \u201Cהוספת קורס — תאריכי הרשמה\u201D).",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "פתיחת הרשמה");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"לא הוגדר תאריך פתיחת הרשמה."};
-    var badDates = invalidDistinctValues(c, function(v){ return parseDateLoose(v) ? null : "אינו תאריך תקין"; });
-    if (badDates.length) return {status:"error", detected:c.value, note:"נמצאו ערכים שאינם תאריך תקין: " + badDates.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"תאריך תקין."};
-  }
-});
-
-RULES.push({
-  id:"reg-close", group:"schedule", label:"סגירת הרשמה", ref:"מדריך: שלב א׳ טאב 4 + שלב ג׳ סעיף 2, עמ׳ 7, 27",
-  why:"תאריך סגירת ההרשמה צריך להיות אחרי מועד הפתיחה, ורצוי לא מאוחר בהרבה ממועד תחילת הקורס — אחרת נרשמים עלולים להצטרף אחרי שהקורס כבר התחיל.",
-  where:"מופע הקורס ← הרשמה־כללי ← תאריכי רישום.",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "סגירת הרשמה");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"לא הוגדר תאריך סגירת הרשמה."};
-    var badDates = invalidDistinctValues(c, function(v){ return parseDateLoose(v) ? null : "אינו תאריך תקין"; });
-    if (badDates.length) return {status:"error", detected:c.value, note:"נמצאו ערכים שאינם תאריך תקין: " + badDates.join("; ")};
-    var d = parseDateLoose(c.value);
-    var open = parseDateLoose(colOf(ctx.course,"פתיחת הרשמה").value);
-    if (open && d < open) return {status:"error", detected:c.value, note:"תאריך סגירת ההרשמה קודם לתאריך הפתיחה."};
-    var start = parseDateLoose(colOf(ctx.course,"תאריך תחילת קורס").value);
-    if (start && d > start) return {status:"warn", detected:c.value, note:"ההרשמה נסגרת (" + fmtDate(d) + ") אחרי מועד תחילת הקורס (" + fmtDate(start) + "). ייתכן ומשתתפים יוכלו להירשם אחרי שהקורס כבר החל."};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"תאריך תקין, סוגר את ההרשמה עד תחילת הקורס."};
-  }
-});
-
-RULES.push({
-  id:"duration", group:"schedule", label:"משך הקורס", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
-  why:"משך הקורס (בשעות/ימים/דקות) משמש לחישוב זמן למידה ולדיווח שעות הדרכה. יום הדרכה מלא = 8 שעות, חצי יום = 4 שעות; בקורסים אסינכרוניים מקובל לציין דקות (למשל \u201Cכ-20 דקות\u201D).",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cמשך הקורס\u201D.",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "משך הקורס");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"השדה ריק."};
-    var badVals = invalidDistinctValues(c, function(v){
-      var n2 = toNumber(v);
-      if (!isNaN(n2) && n2 > 0) return null;
-      if (/\d/.test(v) && /(דק|שע|יום|ימים|min|hour|hr)/i.test(v)) return null;
-      return "אינו מספר או תיאור משך זמן ברור (למשל \u201Cכ-20 דקות\u201D)";
-    });
-    if (badVals.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + badVals.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"משך קורס תקין (" + c.value + ")."};
-  }
-});
-
-/* ---- lecturer ---- */
-RULES.push(requiredTextRule({
-  id:"lecturer-name", group:"lecturer", label:"שם המרצה", col:"מרצה",
-  why:"שם המרצה נדרש לזיהוי אחראי ההוראה ולתיאום מול הלומדים, בין אם מרצה פנימי ובין אם חיצוני.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cמרצה פנימי / מרצה חוץ\u201D ← שם המרצה.", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14"
-}));
-
-RULES.push({
-  id:"lecturer-type", group:"lecturer", label:"סוג מרצה (פנימי / חיצוני)", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
-  why:"יש לסמן בבירור אם המרצה פנימי או חיצוני לארגון — הבחירה קובעת אילו שדות נוספים (כגון ספק) נדרשים, ומשפיעה על סיווג הקורס בדוחות.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← בחרו \u201Cמרצה פנימי\u201D או \u201Cמרצה חוץ\u201D (טאב תת־תפריט נפתח רק לאחר הסימון).",
-  compute: function(ctx){
-    if (ctx.course.rows.length === 0 || (!("מרצה פנימי" in ctx.course.columnIndex) && !("מרצה פנימי ?" in ctx.course.columnIndex) && !("מרצה חיצוני ?" in ctx.course.columnIndex))) {
-      return {status:"error", detected:null, note:"לא נמצאו נתונים על סוג המרצה בדוח."};
-    }
-    var internalFlagCol = colOf(ctx.course, "מרצה פנימי ?");
-    var internalValCol = colOf(ctx.course, "מרצה פנימי");
-    var externalFlagCol = colOf(ctx.course, "מרצה חיצוני ?");
-    var internal = isTruthyFlag(internalFlagCol.value) || !isEmptyVal(internalValCol.value);
-    var external = isTruthyFlag(externalFlagCol.value);
-    if (internal && external) return {status:"warn", detected:"פנימי + חיצוני", note:"מסומנים גם \u201Cמרצה פנימי\u201D וגם \u201Cמרצה חיצוני\u201D. יש לבחור אפשרות אחת בלבד."};
-    if (!internal && !external) return {status:"error", detected:null, note:"לא סומן אם המרצה פנימי או חיצוני."};
+  id:"lecturer-type", category:"lecturers", label:"סוג מרצה (פנימי / חיצוני)",
+  why:"יש לסמן בבירור אם המרצה פנימי או חיצוני. הבחירה קובעת אילו שדות נוספים (כגון ספק) נדרשים.",
+  check:"ודאו שסומן “מרצה פנימי ?” או “מרצה חיצוני ?”.",
+  compute:function(ctx){
+    var internal = isCheckedFlag(colOf(ctx.course, "מרצה פנימי ?").value);
+    var external = isCheckedFlag(colOf(ctx.course, "מרצה חיצוני ?").value);
+    if (!internal && !external) return {status:"error", detected:null, note:"לא הוגדר סוג מרצה (לא סומן מרצה פנימי ולא מרצה חיצוני)."};
+    if (internal && external) return {status:"warn", detected:"פנימי + חיצוני", note:"סומנו גם מרצה פנימי וגם מרצה חיצוני. יש לבחור אפשרות אחת בלבד."};
     return {status:"ok", detected: internal ? "מרצה פנימי" : "מרצה חיצוני", note:"סוג המרצה מוגדר בבירור."};
   }
 });
 
+RULES.push(conditionalRequiredField({id:"external-lecturer-name", category:"lecturers", col:"מרצה", label:"שם המרצה (מרצה חיצוני)",
+  condition:function(course){ return isCheckedFlag(colOf(course,"מרצה חיצוני ?").value); },
+  why:"כאשר סומן מרצה חיצוני, יש להזין את שם המרצה לזיהוי אחראי ההוראה ולתיאום מול הלומדים.",
+  check:"ודאו שהוזן שם המרצה החיצוני בשדה “מרצה”.",
+  naNote:"לא רלוונטי — לא סומן מרצה חיצוני.",
+  emptyNote:"סומן מרצה חיצוני אך לא הוזן שם מרצה.",
+  okNote:"שם המרצה החיצוני הוזן."}));
+
+RULES.push(conditionalRequiredField({id:"internal-lecturer-name", category:"lecturers", col:"מרצה פנימי", label:"עובד (מרצה פנימי)",
+  condition:function(course){ return isCheckedFlag(colOf(course,"מרצה פנימי ?").value); },
+  why:"כאשר סומן מרצה פנימי, יש להזין את העובד המשמש כמרצה לצורכי זיהוי ותיאום.",
+  check:"ודאו שהוזן העובד בשדה “מרצה פנימי”.",
+  naNote:"לא רלוונטי — לא סומן מרצה פנימי.",
+  emptyNote:"סומן מרצה פנימי אך לא הוזן עובד.",
+  okNote:"העובד (מרצה פנימי) הוזן."}));
+
+RULES.push(conditionalRequiredField({id:"supplier", category:"lecturers", col:"ספק", label:"ספק (למרצה חיצוני)",
+  condition:function(course){ return isCheckedFlag(colOf(course,"מרצה חיצוני ?").value); },
+  why:"כאשר המרצה חיצוני, יש לתעד את שם הספק לצורכי התקשרות וחשבונאות.",
+  check:"ודאו שהוזן שם הספק עבור המרצה החיצוני.",
+  naNote:"לא רלוונטי — המרצה אינו מוגדר כחיצוני.",
+  emptyNote:"מרצה חיצוני ללא ספק — יש להזין שם ספק.",
+  okNote:"שם הספק הוזן."}));
+
+/* ---- 3. תקציב ---- */
 RULES.push({
-  id:"supplier", group:"lecturer", label:"ספק (למרצה חיצוני)", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
-  why:"כאשר המרצה חיצוני יש לתעד את שם הספק (ולעיתים מספרו) לצורכי התקשרות וחשבונאות מול הספק.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cשם הספק\u201D / \u201Cמספר הספק\u201D.",
-  compute: function(ctx){
-    var externalFlagCol = colOf(ctx.course, "מרצה חיצוני ?");
-    var external = isTruthyFlag(externalFlagCol.value);
-    if (!external) return {status:"na", detected:null, note:"לא רלוונטי — המרצה מוגדר כפנימי (או שסוג המרצה טרם נקבע)."};
-    var c = colOf(ctx.course, "ספק");
-    if (!c.exists) return {status:"error", detected:null, note:"העמודה \u201Cספק\u201D לא נמצאה בקובץ, למרות שהמרצה מוגדר כחיצוני."};
-    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"המרצה חיצוני אך לא הוזן שם ספק."};
+  id:"budget-type", category:"budget", label:"סוג התקציב",
+  why:"בקורס בתשלום יש להגדיר סוג תקציב הקובע כיצד תיזקף העלות במערכת הפיננסית.",
+  check:"ודאו שהוגדר סוג תקציב לקורס בתשלום.",
+  compute:function(ctx){
+    var paid = costLooksPaid(ctx.course);
+    var c = colOf(ctx.course, "סוג התקציב");
+    if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — סוג תקציב אינו נדרש."};
+    if (!c.exists) return {status:"warn", detected:null, note:"העמודה “סוג התקציב” לא נמצאה בקובץ."};
+    if (isEmptyVal(c.value)) return {status: paid===true?"error":"warn", detected:c.value, note:"לא הוגדר סוג תקציב."};
     if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"שם הספק תקין."};
+    return {status:"ok", detected:c.value, note:"סוג התקציב הוגדר."};
   }
 });
 
-/* ---- budget ---- */
-RULES.push(requiredTextRule({
-  id:"budget-type", group:"budget", label:"סוג התקציב", col:"סוג התקציב",
-  why:"סוג התקציב קובע כיצד עלות הקורס תיזקף במערכת הפיננסית של הארגון.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cסוג תקציב\u201D.", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14"
-}));
-
-RULES.push(requiredTextRule({
-  id:"cost-category", group:"budget", label:"עלות (סיווג)", col:"עלות",
-  why:"סיווג העלות (למשל בתשלום / ללא עלות) קובע אילו שדות עלות נוספים נדרשים, ומשפיע על תיוג הקורס בקטלוג.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cעלות\u201D.", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14"
-}));
-
-function costLooksPaid(course){
-  var v = colOf(course, "עלות").value;
-  if (isEmptyVal(v)) return null;
-  if (/ללא עלות|חינם|ללא תשלום|free/i.test(v)) return false;
-  if (/תשלום|paid/i.test(v)) return true;
-  return null;
-}
-
 RULES.push({
-  id:"cost-per-participant", group:"budget", label:"עלות למשתתף בשקלים", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
-  why:"עלות למשתתף נדרשת כדי לחשב חיוב נכון של מרכזי התמחיר בעת רישום, ולתמחור הקורס בקטלוג.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cעלות למשתתף בשקלים\u201D.",
-  compute: function(ctx){
+  id:"cost-per-participant", category:"budget", label:"עלות למשתתף בשקלים",
+  why:"עלות למשתתף נדרשת לחישוב חיוב נכון של מרכזי התמחיר בעת רישום ולתמחור הקורס.",
+  check:"ודאו שהוזנה עלות למשתתף בקורס בתשלום.",
+  compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "עלות למשתתף בשקלים");
-    if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ\u201Cללא עלות\u201D — עלות למשתתף אינה נדרשת."};
+    if (paid === false){
+      if (c.exists && !isEmptyVal(c.value)){
+        var n = toNumber(c.value);
+        if (!isNaN(n) && n > 0) return {status:"error", detected:c.value, note:"קורס מוגדר ללא עלות אך קיימים נתוני עלות למשתתף."};
+      }
+      return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — עלות למשתתף אינה נדרשת."};
+    }
     if (!c.exists) return {status:"warn", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status: paid===true?"error":"warn", detected:c.value, note:"לא הוזן סכום עלות למשתתף."};
-    var badCosts = invalidDistinctValues(c, function(v){ var n2=toNumber(v); return (!isNaN(n2) && n2>=0) ? null : "אינו מספר תקין"; });
-    if (badCosts.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + badCosts.join("; ")};
+    if (isEmptyVal(c.value)) return {status: paid===true?"error":"warn", detected:c.value, note:"לא הוגדרה עלות למשתתף."};
+    var bad = invalidDistinctValues(c, function(v){ var n2=toNumber(v); return (!isNaN(n2) && n2>=0) ? null : "אינו מספר תקין"; });
+    if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
     if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"סכום תקין."};
+    return {status:"ok", detected:c.value, note:"עלות למשתתף תקינה."};
   }
 });
 
 RULES.push({
-  id:"cost-total", group:"budget", label:"עלות קורס כוללת", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
+  id:"cost-total", category:"budget", label:"עלות קורס כוללת",
   why:"עלות הקורס הכוללת משמשת לבקרה תקציבית ולתכנון מול מרכז התמחיר האחראי.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cעלות קורס כוללת\u201D.",
-  compute: function(ctx){
+  check:"ודאו שהוזנה עלות כוללת בקורס בתשלום.",
+  compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "עלות קורס כוללת");
-    if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ\u201Cללא עלות\u201D — עלות כוללת אינה נדרשת."};
+    if (paid === false){
+      if (c.exists && !isEmptyVal(c.value)){
+        var n = toNumber(c.value);
+        if (!isNaN(n) && n > 0) return {status:"error", detected:c.value, note:"קורס מוגדר ללא עלות אך קיימים נתוני עלות כוללת."};
+      }
+      return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — עלות כוללת אינה נדרשת."};
+    }
     if (!c.exists) return {status:"warn", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status: paid===true?"error":"warn", detected:c.value, note:"לא הוזן סכום עלות כוללת."};
-    var badCosts = invalidDistinctValues(c, function(v){ var n2=toNumber(v); return (!isNaN(n2) && n2>=0) ? null : "אינו מספר תקין"; });
-    if (badCosts.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + badCosts.join("; ")};
+    if (isEmptyVal(c.value)) return {status: paid===true?"error":"warn", detected:c.value, note:"לא הוגדרה עלות קורס כוללת."};
+    var bad = invalidDistinctValues(c, function(v){ var n2=toNumber(v); return (!isNaN(n2) && n2>=0) ? null : "אינו מספר תקין"; });
+    if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
     if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"סכום תקין."};
+    return {status:"ok", detected:c.value, note:"עלות כוללת תקינה."};
   }
 });
 
 RULES.push({
-  id:"invoice-num", group:"budget", label:"מספר חשבונית", ref:"מדריך: שלב א׳ טאב 10, עמ׳ 14",
-  why:"כאשר יש עלות לקורס, מספר חשבונית מסייע למעקב חשבונאי מול הספק / מרכז העלות.",
-  where:"תבנית הקורס ← שדות מותאמים אישית ← \u201Cמספר חשבונית\u201D.",
-  compute: function(ctx){
+  id:"invoice", category:"budget", label:"מספר חשבונית",
+  why:"בקורס בתשלום שהסתיים לפני יותר מ-30 יום, חשבונית חסרה מקשה על מעקב חשבונאי מול הספק / מרכז העלות.",
+  check:"ודאו שהוזן מספר חשבונית לקורס בתשלום שהסתיים.",
+  compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "מספר חשבונית");
-    if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ\u201Cללא עלות\u201D — מספר חשבונית אינו נדרש."};
-    if (!c.exists) return {status:"warn", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (isEmptyVal(c.value)) return {status:"warn", detected:c.value, note:"לא הוזן מספר חשבונית. אם יש עלות לקורס — מומלץ להשלים."};
+    if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — מספר חשבונית אינו נדרש."};
+    if (isEmptyVal(c.value)){
+      var end = parseDateLoose(colOf(ctx.course,"תאריך סיום קורס").value);
+      if (end){
+        var daysSince = Math.floor((Date.now() - end.getTime()) / 86400000);
+        if (daysSince > 30) return {status:"error", detected:c.value, note:"חסרה חשבונית לקורס שהסתיים (עברו " + daysSince + " ימים מתאריך הסיום)."};
+      }
+      return {status:"warn", detected:c.value, note:"לא הוזן מספר חשבונית. אם יש עלות לקורס — מומלץ להשלים."};
+    }
     if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
     return {status:"ok", detected:c.value, note:"נמצא מספר חשבונית."};
   }
 });
 
-/* ---- grading ---- */
-RULES.push({
-  id:"passing-grade", group:"grading", label:"ציון עובר", ref:"מדריך: שלב א׳ טאב 9 (השלמה — תנאי השלמה), עמ׳ 12",
-  why:"אם הציון בקורס אינו מוסתר, יש להגדיר ציון עובר (מקובל 80) כדי שניתן יהיה לחשב השלמה נכונה ללומדים.",
-  where:"תבנית / מופע הקורס ← השלמה ← תנאי השלמה ← \u201Cציון עובר\u201D. ודאו גם שאם הקורס ללא ציון, מסומן \u201Cהסתר ציון\u201D בכללי־השלמה.",
-  compute: function(ctx){
-    var c = colOf(ctx.course, "ציון עובר");
-    if (!c.exists) return {status:"warn", detected:null, note:"העמודה לא נמצאה בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח."};
-    if (isEmptyVal(c.value)) return {status:"warn", detected:c.value, note:"לא הוגדר ציון עובר. ודאו שהקורס מוגדר להסתרת ציון — אחרת יש להזין ציון עובר (מומלץ 80)."};
-    var badGrades = invalidDistinctValues(c, function(v){ var n2=toNumber(v); return (!isNaN(n2) && n2>=0 && n2<=100) ? null : "אינו ציון תקין בטווח 0–100"; });
-    if (badGrades.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + badGrades.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-    return {status:"ok", detected:c.value, note:"ציון עובר תקין."};
+/* =====================================================================
+   5. SPECIAL EVALUATOR — participants with >=80% attendance not completed
+   ===================================================================== */
+function evalCompletionVsAttendance(course){
+  var attIdx = course.columnIndex["נוכחות במפגשים"];
+  var statusIdx = course.columnIndex["סטטוס השלמה"];
+  var nameIdx = course.columnIndex[course.participantNameCol];
+  if (attIdx === undefined || statusIdx === undefined){
+    return {available:false, count:0, names:[],
+      note:"העמודות “נוכחות במפגשים” ו/או “סטטוס השלמה” לא נמצאו בקובץ — לא ניתן לבצע בדיקה זו."};
   }
-});
-
-/* ---- capacity ---- */
-RULES.push({
-  id:"capacity", group:"capacity", label:"מינימום / מקסימום משתמשים", ref:"מופע הקורס · הרשמה",
-  why:"קיבולת המשתתפים (מינימום/מקסימום) קובעת מתי ההרשמה תיסגר אוטומטית, ומסייעת לתכנון לוגיסטי של המפגשים.",
-  where:"מופע הקורס ← הרשמה ← הגדרות קיבולת/הגבלת משתתפים.",
-  compute: function(ctx){
-    var min = colOf(ctx.course, "מינימום משתמשים");
-    var max = colOf(ctx.course, "מקסימום משתמשים");
-    if (!min.exists && !max.exists) return {status:"warn", detected:null, note:"עמודות הקיבולת לא נמצאו בקובץ."};
-    if (ctx.course.rows.length === 0) return {status:"warn", detected:null, note:"אין נתוני משתתפים בדוח."};
-    var minEmpty = isEmptyVal(min.value), maxEmpty = isEmptyVal(max.value);
-    if (minEmpty && maxEmpty) return {status:"warn", detected:null, note:"לא הוגדרה קיבולת מינימום/מקסימום. ייתכן שזה מכוון אם אין הגבלה על מספר הנרשמים."};
-    var detected = (min.value||"—") + " / " + (max.value||"—");
-    var minN = toNumber(min.value), maxN = toNumber(max.value);
-    if (!isNaN(minN) && !isNaN(maxN) && maxN < minN) return {status:"error", detected:detected, note:"המקסימום (" + maxN + ") קטן מהמינימום (" + minN + ")."};
-    if (min.inconsistent || max.inconsistent) return {status:"warn", detected:detected, note:"נמצאו ערכי קיבולת שונים בין שורות."};
-    return {status:"ok", detected:detected, note:"ערכי הקיבולת עקביים והגיוניים."};
+  var names = [];
+  for (var i=0;i<course.rows.length;i++){
+    var row = course.rows[i];
+    var pct = parseAttendancePct(row[attIdx]);
+    if (pct === null) continue;
+    var status = row[statusIdx];
+    var statusStr = (status===null||status===undefined) ? "" : String(status).trim();
+    if (Math.round(pct*100)/100 >= 80 && statusStr === "לא"){
+      var nm = (nameIdx !== undefined && row[nameIdx]!=null && String(row[nameIdx]).trim()!=="")
+        ? String(row[nameIdx]).trim() : ("משתתף בשורה " + (i+1));
+      names.push(nm);
+    }
   }
-});
-
+  return {available:true, count:names.length, names:names};
+}
 
 /* =====================================================================
-   2. FILE READERS — CSV and native Excel (.xlsx/.xlsm)
+   6. INFO FIELDS — display only, never alerts
+   ===================================================================== */
+var INFO_FIELDS = [
+  {id:"info-course-type", label:"סוג הקורס", col:"סוג הקורס"},
+  {id:"info-location",    label:"מיקום הקורס", col:"מיקום הקורס"},
+  {id:"info-ext-id",      label:"מזהה חיצוני", col:"מזהה חיצוני"},
+  {id:"info-ws-status",   label:"סטטוס סביבת עבודה", col:"סטטוס סביבת עבודה"},
+  {id:"info-budget35",    label:"תקציב רוחב 35%", col:"תקציב רוחב 35%", existsMode:true},
+  {id:"info-reg-open",    label:"פתיחת הרשמה", col:"פתיחת הרשמה"},
+  {id:"info-reg-close",   label:"סגירת הרשמה", col:"סגירת הרשמה"},
+  {id:"info-min-users",   label:"מינימום משתמשים", col:"מינימום משתמשים"},
+  {id:"info-max-users",   label:"מקסימום משתמשים", col:"מקסימום משתמשים"}
+];
+
+function computeInfoRows(course){
+  var rows = INFO_FIELDS.map(function(cfg){
+    var c = colOf(course, cfg.col);
+    var detected;
+    if (!c.exists){ detected = "לא קיים בקובץ"; }
+    else if (cfg.existsMode){ detected = !isEmptyVal(c.value) ? "קיים" : "לא קיים"; }
+    else if (isEmptyVal(c.value)){ detected = "—"; }
+    else {
+      detected = c.value;
+      if (c.inconsistent) detected = c.distinct.slice(0,3).join(" / ") + (c.distinct.length>3?" ...":"");
+    }
+    return {id:cfg.id, label:cfg.label, status:"info", detected:detected, note:"", info:true};
+  });
+  /* participant count as an info row */
+  rows.push({id:"info-participants", label:"מספר משתתפים בקורס", status:"info",
+    detected:String(course.rows.length), note:"", info:true});
+  return rows;
+}
+
+/* =====================================================================
+   7. VALIDATION ENGINE
+   ===================================================================== */
+
+function computeReport(course){
+  var ctx = {course:course};
+
+  var categories = CATEGORIES.map(function(cat){
+    var fields = RULES.filter(function(r){ return r.category === cat.id; }).map(function(rule){
+      var auto = rule.compute(ctx);
+      return {
+        id:rule.id, label:rule.label, why:rule.why||"", check:rule.check||"",
+        detected:auto.detected, note:auto.note, status:auto.status, info:!!rule.info
+      };
+    });
+    return {id:cat.id, num:cat.num, title:cat.title, fields:fields, completion:null, infoRows:null, err:0, warn:0};
+  });
+
+  var courseInfoCat = categories.filter(function(c){return c.id==="course-info";})[0];
+  if (courseInfoCat) courseInfoCat.infoRows = computeInfoRows(course);
+
+  var completionsCat = categories.filter(function(c){return c.id==="completions";})[0];
+  var completion = evalCompletionVsAttendance(course);
+  if (completionsCat) completionsCat.completion = completion;
+
+  /* tally scored items */
+  var totalErr=0, totalWarn=0, totalOk=0;
+  categories.forEach(function(cat){
+    cat.fields.forEach(function(f){
+      if (f.info || f.status==="na") return;
+      if (f.status==="error") totalErr++;
+      else if (f.status==="warn") totalWarn++;
+      else if (f.status==="ok") totalOk++;
+    });
+  });
+  var completionStatus = null;
+  if (completion.available){
+    completionStatus = completion.count > 0 ? "warn" : "ok";
+    if (completionStatus==="warn") totalWarn++; else totalOk++;
+  }
+
+  var denom = totalErr + totalWarn + totalOk;
+  var score = denom ? Math.round(totalOk / denom * 100) : 100;
+  var totalAlerts = totalErr + totalWarn;
+
+  /* per-category severity for pills / sidebar coloring */
+  categories.forEach(function(cat){
+    var err=0, warn=0;
+    cat.fields.forEach(function(f){
+      if (f.info || f.status==="na") return;
+      if (f.status==="error") err++; else if (f.status==="warn") warn++;
+    });
+    if (cat.id==="completions" && completionStatus==="warn") warn++;
+    cat.err = err; cat.warn = warn;
+  });
+
+  var wsStatus = colOf(course, "סטטוס סביבת עבודה").value;
+  var archived = /ארכיון|archive/i.test(String(wsStatus||""));
+  var severity = totalErr>0 ? "error" : (totalWarn>0 ? "warn" : "ok");
+
+  return {
+    categories:categories, completion:completion, completionStatus:completionStatus,
+    totalErr:totalErr, totalWarn:totalWarn, totalOk:totalOk, totalAlerts:totalAlerts,
+    score:score, severity:severity, archived:archived
+  };
+}
+
+/* =====================================================================
+   8. FILE READERS — CSV and native Excel (.xlsx/.xlsm)
    ===================================================================== */
 
 function parseCSV(text){
@@ -826,9 +900,7 @@ function parseCSV(text){
       if (c === '"'){
         if (text[i+1] === '"'){ field += '"'; i++; }
         else { inQuotes = false; }
-      } else {
-        field += c;
-      }
+      } else { field += c; }
     } else {
       if (c === '"'){ inQuotes = true; }
       else if (c === ','){ row.push(field); field = ""; }
@@ -850,8 +922,6 @@ function stripTags(str){
   return decodeHtmlEntities(String(str).replace(/<[^>]*>/g,"")).trim();
 }
 
-/* ---- minimal in-browser ZIP reader (local file headers only — sufficient for
-   xlsx files written by Excel/LibreOffice/web exports, which never stream) ---- */
 async function inflateRaw(bytes){
   if (typeof DecompressionStream === "undefined") throw new Error("DecompressionStream unsupported");
   var ds = new DecompressionStream("deflate-raw");
@@ -870,13 +940,13 @@ async function unzipAll(arrayBuffer){
   var offset = 0;
   while (offset + 4 <= bytes.length){
     var sig = dv.getUint32(offset, true);
-    if (sig !== 0x04034b50) break; /* not a local file header -> reached central directory */
+    if (sig !== 0x04034b50) break;
     var flags = dv.getUint16(offset+6, true);
     var compMethod = dv.getUint16(offset+8, true);
     var compSize = dv.getUint32(offset+18, true);
     var nameLen = dv.getUint16(offset+26, true);
     var extraLen = dv.getUint16(offset+28, true);
-    if (flags & 0x0008){ throw new Error("streamed-zip-unsupported"); } /* sizes not known upfront */
+    if (flags & 0x0008){ throw new Error("streamed-zip-unsupported"); }
     var nameStart = offset + 30;
     var name = decoder.decode(bytes.subarray(nameStart, nameStart+nameLen));
     var dataStart = nameStart + nameLen + extraLen;
@@ -884,7 +954,6 @@ async function unzipAll(arrayBuffer){
     var raw = bytes.subarray(dataStart, dataEnd);
     if (compMethod === 0) out[name] = raw;
     else if (compMethod === 8) out[name] = await inflateRaw(raw);
-    /* other methods: skip, not used by xlsx */
     offset = dataEnd;
   }
   return out;
@@ -896,14 +965,11 @@ function colLetterToIndex(letters){
   return n - 1;
 }
 
-/* Reads the first worksheet of an xlsx/xlsm ArrayBuffer into the same
-   rows[][] shape that parseCSV produces, so the rest of the pipeline is shared. */
 async function parseXLSXRows(arrayBuffer){
   var entries = await unzipAll(arrayBuffer);
   var decoder = new TextDecoder("utf-8");
   var parser = new DOMParser();
 
-  /* shared strings */
   var sharedStrings = [];
   if (entries["xl/sharedStrings.xml"]){
     var sstDoc = parser.parseFromString(decoder.decode(entries["xl/sharedStrings.xml"]), "application/xml");
@@ -911,7 +977,6 @@ async function parseXLSXRows(arrayBuffer){
     for (var i=0;i<siNodes.length;i++) sharedStrings.push(siNodes[i].textContent || "");
   }
 
-  /* find the first worksheet's real path via workbook.xml + its rels (fallback: sheet1.xml) */
   var sheetPath = null;
   if (entries["xl/workbook.xml"] && entries["xl/_rels/workbook.xml.rels"]){
     var wbDoc = parser.parseFromString(decoder.decode(entries["xl/workbook.xml"]), "application/xml");
@@ -974,8 +1039,19 @@ async function parseXLSXRows(arrayBuffer){
   return rows.filter(function(r){ return r.some(function(cell){ return String(cell).trim()!==""; }); });
 }
 
-/* ---- shared rows[][] -> course object pipeline (used by both CSV and XLSX) ---- */
-function buildCourseFromRows(fileName, rows){
+/* =====================================================================
+   9. rows[][] -> courses[] pipeline
+   ===================================================================== */
+
+function detectCourseIdColumn(columnIndex){
+  for (var i=0;i<COURSE_ID_COLUMNS.length;i++){
+    if (COURSE_ID_COLUMNS[i] in columnIndex) return COURSE_ID_COLUMNS[i];
+  }
+  return null;
+}
+
+function buildCoursesFromRows(fileName, fileId, rows){
+  /* --- Phase A: locate header row --- */
   var headerRowIndex = -1;
   for (var i=0;i<rows.length;i++){
     var joined = rows[i].map(function(x){return String(x).trim();});
@@ -983,114 +1059,115 @@ function buildCourseFromRows(fileName, rows){
       headerRowIndex = i; break;
     }
   }
-  var structureIssue = null, title = null;
+  var structureIssue = null, fileTitle = null;
   if (headerRowIndex === -1){
-    structureIssue = "לא זוהתה שורת כותרות מוכרת בקובץ. ודאו שמדובר בקובץ \u201Cדוח סטטוס הרשמה לקורסים\u201D שהורד ישירות מהמערכת.";
+    structureIssue = "לא זוהתה שורת כותרות מוכרת בקובץ. ודאו שמדובר בקובץ “דוח סטטוס סביבת עבודה” שהורד ישירות מהמערכת.";
     headerRowIndex = 0;
   }
   if (headerRowIndex > 0){
-    var titleCell = rows[0][0];
-    var t = stripTags(titleCell);
-    if (t) title = t;
+    var t = stripTags(rows[0][0]);
+    if (t) fileTitle = t;
   }
-  if (!title){
-    title = fileName.replace(/\.(csv|xlsx|xlsm)$/i,"").replace(/^S/,"").replace(/[_]+/g," ").trim() || fileName;
+  if (!fileTitle){
+    fileTitle = fileName.replace(/\.(csv|xlsx|xlsm)$/i,"").replace(/[_]+/g," ").trim() || fileName;
   }
+
   var headers = (rows[headerRowIndex]||[]).map(function(h){return String(h).trim();});
   var columnIndex = {};
-  headers.forEach(function(h,i){ if (h) columnIndex[h] = i; });
+  headers.forEach(function(h,i){ if (h && !(h in columnIndex)) columnIndex[h] = i; });
+
   var dataRows = rows.slice(headerRowIndex+1).filter(function(r){
     return r.some(function(cell){ return String(cell).trim() !== ""; });
   });
 
-  /* drop trailing "totals" rows some exports append (identified by a blank email
-     on an otherwise-populated report) so they don't get read as a real participant */
+  /* strip trailing summary/totals rows: blank email OR blank course-id */
   var summaryRowsRemoved = 0;
-  if ("אימייל" in columnIndex){
-    var emailIdx = columnIndex["אימייל"];
-    while (dataRows.length && isEmptyVal(dataRows[dataRows.length-1][emailIdx])){
+  var emailIdx = ("אימייל" in columnIndex) ? columnIndex["אימייל"] : -1;
+  var idColName = detectCourseIdColumn(columnIndex);
+  var idColIdx = idColName ? columnIndex[idColName] : -1;
+  function looksLikeSummary(row){
+    if (emailIdx >= 0 && isEmptyVal(row[emailIdx])) return true;
+    if (idColIdx >= 0 && isEmptyVal(row[idColIdx])) return true;
+    return false;
+  }
+  if (emailIdx >= 0 || idColIdx >= 0){
+    while (dataRows.length && looksLikeSummary(dataRows[dataRows.length-1])){
       dataRows.pop();
       summaryRowsRemoved++;
     }
   }
 
-  return {
-    id: "c" + Date.now() + Math.random().toString(36).slice(2,7),
-    fileName: fileName,
-    title: title,
-    headers: headers,
-    columnIndex: columnIndex,
-    rows: dataRows,
-    structureIssue: structureIssue,
-    summaryRowsRemoved: summaryRowsRemoved,
-    overrides: {},
-    preparer: ""
+  var participantNameCol = ("משתמש" in columnIndex) ? "משתמש" : (("אימייל" in columnIndex) ? "אימייל" : headers[0]);
+
+  var baseCourse = {
+    fileName:fileName, fileId:fileId, headers:headers, columnIndex:columnIndex,
+    structureIssue:structureIssue, summaryRowsRemoved:summaryRowsRemoved,
+    participantNameCol:participantNameCol
   };
+
+  /* --- Phase B: group into courses --- */
+  var courses = [];
+  if (idColName){
+    var order = [];
+    var groups = {};
+    dataRows.forEach(function(row){
+      var key = String(row[idColIdx]==null?"":row[idColIdx]).trim();
+      if (key === "") { summaryRowsRemoved++; return; }
+      if (!(key in groups)){ groups[key] = []; order.push(key); }
+      groups[key].push(row);
+    });
+    order.forEach(function(key){
+      courses.push(Object.assign({}, baseCourse, {
+        id: fileId + "::" + key,
+        title: key,
+        groupColumnName: idColName,
+        rows: groups[key],
+        summaryRowsRemoved: 0
+      }));
+    });
+    if (courses.length === 0){
+      courses.push(Object.assign({}, baseCourse, {
+        id: fileId + "::__whole_file__", title: fileTitle, groupColumnName: null, rows: dataRows,
+        summaryRowsRemoved: summaryRowsRemoved
+      }));
+    }
+  } else {
+    var note = "לא זוהתה עמודת מזהה קורס בקובץ — כל הקובץ מטופל כקורס אחד.";
+    courses.push(Object.assign({}, baseCourse, {
+      id: fileId + "::__whole_file__",
+      title: fileTitle,
+      groupColumnName: null,
+      rows: dataRows,
+      structureIssue: structureIssue ? (structureIssue + " " + note) : note
+    }));
+  }
+  return courses;
 }
 
-function buildCourseFromCSV(fileName, text){
+function buildCoursesFromCSV(fileName, fileId, text){
   if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-  return buildCourseFromRows(fileName, parseCSV(text));
+  return buildCoursesFromRows(fileName, fileId, parseCSV(text));
 }
-
-async function buildCourseFromXLSX(fileName, arrayBuffer){
+async function buildCoursesFromXLSX(fileName, fileId, arrayBuffer){
   var rows = await parseXLSXRows(arrayBuffer);
-  return buildCourseFromRows(fileName, rows);
+  return buildCoursesFromRows(fileName, fileId, rows);
 }
 
 /* =====================================================================
-   3. VALIDATION ENGINE
-   ===================================================================== */
-
-function computeReport(course){
-  var ctx = {course: course};
-  var groups = GROUPS.map(function(g){
-    var fields = RULES.filter(function(r){ return r.group === g.id; }).map(function(rule){
-      var auto = rule.compute(ctx);
-      var override = course.overrides[rule.id];
-      var result = {
-        id: rule.id, label: rule.label, why: rule.why, where: rule.where, ref: rule.ref,
-        detected: auto.detected, note: auto.note, status: auto.status,
-        manual: false, manualNote: null, originalStatus: auto.status
-      };
-      if (override && override.resolved){
-        result.manual = true;
-        result.manualNote = override.note || "";
-        result.status = (auto.status === "na") ? "na" : "ok";
-      }
-      return result;
-    });
-    var err=0, warn=0, ok=0, na=0;
-    fields.forEach(function(f){
-      if (f.status==="error") err++;
-      else if (f.status==="warn") warn++;
-      else if (f.status==="na") na++;
-      else ok++;
-    });
-    return {id:g.id, num:g.num, title:g.title, ref:g.ref, fields:fields, err:err, warn:warn, ok:ok, na:na};
-  });
-
-  var totalErr=0, totalWarn=0, totalOk=0, totalNa=0;
-  groups.forEach(function(g){ totalErr+=g.err; totalWarn+=g.warn; totalOk+=g.ok; totalNa+=g.na; });
-  var denom = totalErr+totalWarn+totalOk;
-  var pct = denom ? Math.round(totalOk/denom*100) : 100;
-  var verdict = totalErr>0 ? "blocked" : (totalWarn>0 ? "notes" : "certified");
-
-  return {groups:groups, totalErr:totalErr, totalWarn:totalWarn, totalOk:totalOk, totalNa:totalNa, pct:pct, verdict:verdict};
-}
-
-/* =====================================================================
-   4. STATE
+   10. STATE
    ===================================================================== */
 
 var courses = [];
 var activeId = null;
+var loadErrors = [];
+var onlyIssues = false;
+var fileCounter = 0;
 
 /* =====================================================================
-   5. RENDER
+   11. RENDER
    ===================================================================== */
 
-var $sidebarList = document.getElementById("folderList");
+var $courseList = document.getElementById("courseList");
 var $summaryBar = document.getElementById("summaryBar");
 var $main = document.getElementById("mainArea");
 
@@ -1106,7 +1183,7 @@ function renderLoadErrors(){
   box.innerHTML = loadErrors.map(function(e,i){
     return '<div class="load-error-item">' +
       '<button class="dismiss" data-dismiss-error="' + i + '" type="button" aria-label="סגור">✕</button>' +
-      '<b>שגיאה בקריאת \u201C' + escapeHtml(e.fileName) + '\u201D</b>' + escapeHtml(e.message) +
+      '<b>שגיאה בקריאת “' + escapeHtml(e.fileName) + '”</b>' + escapeHtml(e.message) +
     '</div>';
   }).join("");
 }
@@ -1115,129 +1192,123 @@ function renderSidebar(){
   renderLoadErrors();
   if (courses.length === 0){
     $summaryBar.style.display = "none";
-    $sidebarList.innerHTML = "";
+    $courseList.innerHTML = "";
     return;
   }
-  var certified=0, blocked=0, notes=0;
+  var clean=0, warnCourses=0, errCourses=0;
   var cards = courses.map(function(course){
     var report = computeReport(course);
-    if (report.verdict==="certified") certified++;
-    else if (report.verdict==="blocked") blocked++;
-    else notes++;
-    var statusClass = report.verdict==="certified" ? "status-ok" : (report.verdict==="blocked" ? "status-error" : "status-warn");
-    return {course:course, report:report, statusClass:statusClass};
+    if (report.severity==="ok") clean++;
+    else if (report.severity==="error") errCourses++;
+    else warnCourses++;
+    return {course:course, report:report};
   });
 
   $summaryBar.style.display = "flex";
   $summaryBar.innerHTML =
-    '<div class="summary-chip"><span class="n">' + courses.length + '</span> קבצים נטענו</div>' +
-    '<div class="summary-chip" style="color:var(--ok)"><span class="n">' + certified + '</span> מוכנים ל־תו־תקן</div>' +
-    '<div class="summary-chip" style="color:var(--warn)"><span class="n">' + notes + '</span> אושרו עם הערות</div>' +
-    '<div class="summary-chip" style="color:var(--err)"><span class="n">' + blocked + '</span> דורשים טיפול</div>';
+    '<div class="summary-chip"><span class="n">' + courses.length + '</span> קורסים נבדקו</div>' +
+    '<div class="summary-chip" style="color:var(--ok)"><span class="n">' + clean + '</span> ללא התראות</div>' +
+    '<div class="summary-chip" style="color:var(--warn)"><span class="n">' + warnCourses + '</span> עם הערות</div>' +
+    '<div class="summary-chip" style="color:var(--err)"><span class="n">' + errCourses + '</span> דורשים טיפול</div>';
 
-  $sidebarList.innerHTML = cards.map(function(c){
+  $courseList.innerHTML = cards.map(function(c){
+    var statusClass = c.report.severity==="ok" ? "status-ok" : (c.report.severity==="error" ? "status-error" : "status-warn");
     var active = c.course.id === activeId ? " active" : "";
     return (
-      '<div class="folder-item ' + c.statusClass + active + '" data-id="' + c.course.id + '">' +
-        '<button class="folder-remove" data-remove="' + c.course.id + '" title="הסר קובץ" aria-label="הסר קובץ">✕</button>' +
-        '<div class="folder-name">' + escapeHtml(c.course.title) + '</div>' +
-        '<div class="folder-meta">' + c.course.rows.length + ' משתתפים · ' + cardsPctLabel(c) + '</div>' +
+      '<div class="course-item ' + statusClass + active + '" data-id="' + escapeHtml(c.course.id) + '">' +
+        '<button class="course-remove" data-remove="' + escapeHtml(c.course.id) + '" title="הסר קורס" aria-label="הסר קורס">✕</button>' +
+        '<div class="course-name">' + escapeHtml(c.course.title) + '</div>' +
+        '<div class="course-meta"><span class="score-tag">' + c.report.score + '/100</span> · ' +
+          c.course.rows.length + ' משתתפים · ' + c.report.totalAlerts + ' התראות</div>' +
       '</div>'
     );
   }).join("");
 }
-// helper used above (kept separate for clarity)
-function cardsPctLabel(c){
-  if (c.report.verdict==="certified") return "תקין 100%";
-  return c.report.pct + "% תקין";
-}
 
-function fieldRowHTML(course, f){
-  var markGlyph = {ok:"✓", warn:"!", error:"✕", na:"–"}[f.status];
-  var markClass = "mark-" + f.status;
-  var openClass = (f.status==="error" || f.status==="warn" || f.manual) ? " open" : "";
-  var detectedText = f.detected===null || f.detected===undefined || f.detected===""
-    ? (f.status==="na" ? "—" : "לא נמצא ערך")
+var MARK_GLYPH = {ok:"✓", warn:"!", error:"✕", na:"–", info:"ℹ"};
+
+function fieldRowHTML(f){
+  var markGlyph = MARK_GLYPH[f.status] || "–";
+  var openClass = (f.status==="error" || f.status==="warn") ? " open" : "";
+  var rowStatusClass = " row-status-" + f.status;
+  var detectedText = (f.detected===null || f.detected===undefined || f.detected==="")
+    ? (f.status==="na" ? "—" : (f.status==="info" ? "—" : "לא נמצא ערך"))
     : f.detected;
   var noteClass = f.status==="error" ? "error" : (f.status==="warn" ? "warn" : "");
-
-  var resolveHtml = "";
-  if (f.status !== "na"){
-    if (f.manual){
-      resolveHtml =
-        '<div class="resolve-box resolved">' +
-          '<div class="resolved-line">' +
-            '<span class="msg">✓ סומן כטופל ידנית</span>' +
-            '<button class="btn btn-undo" data-undo="' + f.id + '" type="button">בטל סימון</button>' +
-          '</div>' +
-          (f.manualNote ? '<div class="resolved-note">' + escapeHtml(f.manualNote) + '</div>' : "") +
-        '</div>';
-    } else if (f.originalStatus !== "ok"){
-      resolveHtml =
-        '<div class="resolve-box">' +
-          '<div class="resolve-row">' +
-            '<input type="text" placeholder="הערה / מה תיקנתי (רשות)" data-note-for="' + f.id + '">' +
-            '<button class="btn btn-resolve" data-resolve="' + f.id + '" type="button">✓ סמן כטופל</button>' +
-          '</div>' +
-        '</div>';
-    }
-  }
+  var hasDetail = !!(f.why || f.check);
 
   return (
-    '<div class="field-row' + openClass + '" data-field="' + f.id + '">' +
-      '<div class="field-row-main" data-toggle="' + f.id + '">' +
-        '<span class="mark ' + markClass + '">' + markGlyph + '</span>' +
+    '<div class="field-row' + openClass + rowStatusClass + '" data-field="' + escapeHtml(f.id) + '">' +
+      '<div class="field-row-main"' + (hasDetail ? ' data-toggle="' + escapeHtml(f.id) + '"' : '') + '>' +
+        '<span class="mark mark-' + f.status + '">' + markGlyph + '</span>' +
         '<div class="field-texts">' +
-          '<div class="field-label">' + escapeHtml(f.label) + (f.manual ? '<span class="manual-tag">טופל ידנית</span>' : "") + '</div>' +
+          '<div class="field-label">' + escapeHtml(f.label) + '</div>' +
           '<div class="field-value">' + escapeHtml(detectedText) + '</div>' +
           (f.note ? '<div class="field-note ' + noteClass + '">' + escapeHtml(f.note) + '</div>' : "") +
         '</div>' +
-        '<button class="field-toggle" type="button" aria-label="פרטים">▾</button>' +
+        (hasDetail ? '<button class="field-toggle" type="button" aria-label="פרטים">▾</button>' : '') +
       '</div>' +
-      '<div class="field-detail">' +
-        '<div class="why"><b>למה זה חשוב: </b>' + escapeHtml(f.why) + '</div>' +
-        '<div class="where"><b>איפה לתקן: </b>' + escapeHtml(f.where) + '</div>' +
-        (f.ref ? '<div class="guideref">' + escapeHtml(f.ref) + '</div>' : "") +
-        resolveHtml +
-      '</div>' +
+      (hasDetail ?
+        '<div class="field-detail">' +
+          (f.why ? '<div class="why"><b>למה חשוב? </b>' + escapeHtml(f.why) + '</div>' : "") +
+          (f.check ? '<div class="check"><b>מה מומלץ לבדוק? </b>' + escapeHtml(f.check) + '</div>' : "") +
+        '</div>'
+      : "") +
     '</div>'
   );
 }
 
-function verdictHTML(course, report){
-  var cls = report.verdict==="certified" ? "certified" : (report.verdict==="blocked" ? "blocked" : "notes");
-  var glyph = report.verdict==="blocked" ? "✕" : "✓";
-  var word = report.verdict==="certified" ? "מאושר" : (report.verdict==="blocked" ? "טרם אושר" : "מאושר*");
-  var title, sub;
-  if (report.verdict==="certified"){
-    title = "הקורס עומד בתו־התקן להקמה";
-    sub = "כל השדות הנבדקים תקינים. אפשר להנפיק אישור ולהמשיך לשלב שיתוף הקורס בקטלוג.";
-  } else if (report.verdict==="blocked"){
-    title = "נדרש טיפול לפני אישור";
-    sub = "יש " + report.totalErr + " נושאים חוסמים. תקנו אותם בתבנית/במופע הקורס במערכת הלמידה, הורידו שוב את דוח הסטטוס והעלו אותו כאן לבדיקה חוזרת.";
-  } else {
-    title = "אושר עם הערות לשיפור";
-    sub = "אין נושאים חוסמים, אך יש " + report.totalWarn + " המלצות שכדאי לבדוק לפני ההפצה הרחבה.";
+function completionBlockHTML(completion){
+  if (!completion.available){
+    return '<div class="completion-block row-status-na">' +
+      '<div class="completion-head"><span class="mark mark-na">–</span>' +
+      '<div><div class="completion-title">בדיקת השלמה מול נוכחות</div>' +
+      '<div class="completion-sub">' + escapeHtml(completion.note) + '</div></div></div></div>';
   }
-  var issues = '<div class="verdict-issues">' +
-      '<span style="color:var(--err)">✕ ' + report.totalErr + ' חוסמים</span>' +
-      '<span style="color:var(--warn)">! ' + report.totalWarn + ' הערות</span>' +
-      '<span style="color:var(--ok)">✓ ' + report.totalOk + ' תקינים</span>' +
+  if (completion.count === 0){
+    return '<div class="completion-block row-status-ok">' +
+      '<div class="completion-head"><span class="mark mark-ok">✓</span>' +
+      '<div><div class="completion-title">בדיקת השלמה מול נוכחות</div>' +
+      '<div class="completion-sub">לא נמצאו משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו.</div></div></div></div>';
+  }
+  var namesList = '<div class="completion-names"><b>שמות המשתתפים:</b><ul>' +
+    completion.names.map(function(n){ return '<li>' + escapeHtml(n) + '</li>'; }).join("") +
+    '</ul></div>';
+  return '<div class="completion-block alert row-status-warn">' +
+    '<div class="completion-head"><span class="mark mark-warn">!</span>' +
+    '<div><div class="completion-title">' + completion.count + ' משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו</div>' +
+    '<div class="completion-sub">נמצאו משתתפים בעלי נוכחות מספקת שסטטוס ההשלמה שלהם עדיין “לא”.</div></div></div>' +
+    namesList +
+    '<div class="completion-detail"><div class="why"><b>למה חשוב? </b>ייתכן שנתוני ההשלמה אינם מעודכנים. כדאי לוודא שהמשתתפים שעמדו בדרישות הנוכחות אכן סומנו כמי שהשלימו את הקורס.</div></div>' +
     '</div>';
+}
+
+function sectionCardHTML(cat){
+  var pills = "";
+  if (cat.err) pills += '<span class="count-pill err">' + cat.err + ' חוסר</span>';
+  if (cat.warn) pills += '<span class="count-pill warn">' + cat.warn + ' לתשומת לב</span>';
+  if (!cat.err && !cat.warn) pills += '<span class="count-pill ok">תקין</span>';
+
+  var body = cat.fields.map(fieldRowHTML).join("");
+  if (cat.id === "completions" && cat.completion){
+    body += completionBlockHTML(cat.completion);
+  }
+  if (cat.id === "course-info" && cat.infoRows){
+    body += cat.infoRows.map(fieldRowHTML).join("");
+  }
+
+  var allClean = (!cat.err && !cat.warn) ? " section-all-clean" : "";
   return (
-    '<div class="verdict-panel">' +
-      '<div class="stamp ' + cls + '"><span class="glyph">' + glyph + '</span><span class="word">' + word + '</span></div>' +
-      '<div class="verdict-text">' +
-        '<div class="verdict-title">' + title + '</div>' +
-        '<div class="verdict-sub">' + sub + '</div>' +
-        issues +
-        '<div class="preparer-field"><label for="preparerInput">נבדק על ידי:</label> <input type="text" id="preparerInput" placeholder="שם מלא" value="' + escapeHtml(course.preparer||"") + '"> <span>תאריך: ' + fmtDate(new Date()) + '</span></div>' +
-        '<div class="verdict-actions">' +
-          '<button class="btn btn-primary" id="printBtn" type="button">🖨 הפקת דוח / אישור להדפסה</button>' +
-          '<button class="btn btn-outline" id="resetBtn" type="button">איפוס סימונים ידניים</button>' +
+    '<section class="section-card' + allClean + '" data-cat="' + cat.id + '">' +
+      '<div class="section-head">' +
+        '<div class="section-head-left">' +
+          '<span class="section-number">' + cat.num + '</span>' +
+          '<div class="section-title">' + escapeHtml(cat.title) + '</div>' +
         '</div>' +
+        '<div class="section-counts">' + pills + '</div>' +
       '</div>' +
-    '</div>'
+      '<div class="section-body">' + body + '</div>' +
+    '</section>'
   );
 }
 
@@ -1245,18 +1316,19 @@ function renderMain(){
   if (!activeId || !courses.length){
     $main.innerHTML =
       '<div class="empty-state">' +
-        '<h2>בואו נוודא שהקורס מוכן</h2>' +
-        '<p>העלו את קובץ \u201Cדוח סטטוס הרשמה לקורסים\u201D (CSV או Excel) שהורדתם ממופע הקורס, והכלי יעבור על השדות הנדרשים לפי מדריך ההקמה — יסביר מה חסר, למה זה חשוב, ואיפה לתקן.</p>' +
+        '<h2>בואו נבדוק את איכות הגדרת הקורס</h2>' +
+        '<p>העלו את קובץ “דוח סטטוס סביבת עבודה” (Excel או CSV) שהורדתם מהמערכת, והכלי ינתח את הגדרות הקורס — יזהה חוסרים, חריגות ובעיות, ויסביר לכל אחת מהן מה הבעיה, למה היא חשובה, ומה מומלץ לבדוק.</p>' +
         '<div class="dropzone" id="dropzone">' +
           '<div class="glyph">⤓</div>' +
-          '<strong>גררו לכאן קובץ CSV / Excel, או לחצו לבחירה</strong>' +
-          '<span>אפשר להעלות כמה קבצים — כל קובץ נבדק כקורס נפרד</span>' +
+          '<strong>גררו לכאן קובץ Excel / CSV, או לחצו לבחירה</strong>' +
+          '<span>קובץ יכול להכיל קורס אחד או כמה קורסים — כל קורס נבדק בנפרד</span>' +
         '</div>' +
         '<ul class="empty-checklist">' +
-          '<li>שדות חובה שנשארו ריקים או בברירת מחדל (\u201CChoose an item\u201D)</li>' +
-          '<li>תקינות ועקביות תאריכי הרשמה ותאריכי קורס</li>' +
-          '<li>התאמה לכללי מדריך ההקמה (מרצה/ספק, עלות, ציון עובר וכו\u05F3)</li>' +
-          '<li>לכל שדה חסר — הסבר למה זה חשוב, איפה למצוא ולתקן אותו, ואפשרות לסמן כטופל</li>' +
+          '<li>שדות חובה שנשארו ריקים (תגיות, קהל, LBP, רכזת אחראית ועוד)</li>' +
+          '<li>בדיקות מרצים פנימיים/חיצוניים וספקים</li>' +
+          '<li>בדיקות תקציב, עלויות וחשבוניות</li>' +
+          '<li>רכזת אחראית מתוך רשימת הרכזות המאושרות</li>' +
+          '<li>משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו</li>' +
         '</ul>' +
       '</div>';
     bindDropzone();
@@ -1266,93 +1338,76 @@ function renderMain(){
   var course = courses.filter(function(c){return c.id===activeId;})[0];
   if (!course) return;
   var report = computeReport(course);
-  var pctColor = report.verdict==="certified" ? "var(--ok)" : (report.verdict==="blocked" ? "var(--err)" : "var(--warn)");
+  var scoreColor = report.severity==="ok" ? "var(--ok)" : (report.severity==="error" ? "var(--err)" : "var(--warn)");
 
   var html = "";
+
+  if (report.archived){
+    html += '<div class="banner archive"><b>הקורס נמצא בארכיון</b>הקורס נמצא בארכיון. חלק מההתראות עשויות להיות היסטוריות בלבד.</div>';
+  }
   if (course.structureIssue){
-    html += '<div class="no-rows-callout"><b>מבנה קובץ לא מזוהה במלואו</b>' + escapeHtml(course.structureIssue) + '</div>';
+    html += '<div class="banner warn"><b>שימו לב למבנה הקובץ</b>' + escapeHtml(course.structureIssue) + '</div>';
   }
   if (course.rows.length === 0){
-    html += '<div class="no-rows-callout"><b>לא נמצאו משתתפים בדוח</b>' +
-      'לא ניתן לחלץ אוטומטית את נתוני הקורס מקובץ ללא שורות משתתפים. ' +
-      'אפשר עדיין לעבור על השדות ולסמן אותם כ\u201Cטופל ידנית\u201D כדי לבדוק את מבנה הבקרה — אך לבדיקה אמיתית יש לוודא שיש לפחות משתתף רשום אחד בקורס, ולהוריד את הדוח מחדש.</div>';
+    html += '<div class="banner warn"><b>לא נמצאו משתתפים בקורס</b>לא ניתן לחלץ אוטומטית את נתוני הקורס ללא שורות משתתפים. ודאו שיש לפחות משתתף רשום אחד, והורידו את הדוח מחדש.</div>';
   }
   if (course.summaryRowsRemoved > 0){
-    html += '<div class="no-rows-callout" style="background:var(--na-bg); border-color:#D6D2C4; color:#5B5647;"><b>שורת סיכום זוהתה והוסרה מהבדיקה</b>' +
-      'בתחתית הדוח נמצא' + (course.summaryRowsRemoved>1?'ו ' + course.summaryRowsRemoved + ' שורות':'ה שורה אחת') + ' ללא כתובת אימייל (בדרך כלל שורת \u201Cסה\u201Cכ\u201D שהמערכת מוסיפה) — היא לא נכללה בבדיקת ' + course.rows.length + ' המשתתפים.</div>';
+    html += '<div class="banner na"><b>שורת סיכום זוהתה והוסרה מהבדיקה</b>' +
+      'בתחתית הדוח נמצא' + (course.summaryRowsRemoved>1?'ו ' + course.summaryRowsRemoved + ' שורות':'ה שורה אחת') +
+      ' ללא נתוני משתתף (בדרך כלל שורת “סה“כ” שהמערכת מוסיפה) — היא לא נכללה בבדיקת ' + course.rows.length + ' המשתתפים.</div>';
   }
 
   html += '<div class="course-header">' +
-    '<div class="score-ring" style="--pct:' + report.pct + '; --ringcolor:' + pctColor + '">' +
-      '<div class="score-ring-hole"><strong>' + report.pct + '%</strong><span>תקינות</span></div>' +
+    '<div class="score-ring" style="--pct:' + report.score + '; --ringcolor:' + scoreColor + '">' +
+      '<div class="score-ring-hole"><strong>' + report.score + '</strong><span>ציון QA</span></div>' +
     '</div>' +
     '<div class="course-header-info">' +
-      '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + '</div>' +
+      '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + (course.groupColumnName ? ' · לפי “' + escapeHtml(course.groupColumnName) + '”' : '') + '</div>' +
       '<h1 class="course-title">' + escapeHtml(course.title) + '</h1>' +
-      '<div class="course-meta">' +
-        '<span>👥 <b>' + course.rows.length + '</b> משתתפים בדוח</span>' +
-        '<span>✕ <b>' + report.totalErr + '</b> חוסמים</span>' +
-        '<span>! <b>' + report.totalWarn + '</b> הערות</span>' +
+      '<div class="course-stats">' +
+        '<span>✓ <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
+        '<span>⚑ <b>' + report.totalAlerts + '</b> התראות</span>' +
+        '<span>👥 <b>' + course.rows.length + '</b> משתתפים</span>' +
       '</div>' +
     '</div>' +
   '</div>';
 
-  html += report.groups.map(function(g){
-    var pills = "";
-    if (g.err) pills += '<span class="count-pill err">' + g.err + ' חסר</span>';
-    if (g.warn) pills += '<span class="count-pill warn">' + g.warn + ' לתשומת לב</span>';
-    if (!g.err && !g.warn) pills += '<span class="count-pill ok">תקין</span>';
-    return (
-      '<section class="section-card" data-group="' + g.id + '">' +
-        '<div class="section-head">' +
-          '<div class="section-head-left">' +
-            '<span class="section-number">' + g.num + '</span>' +
-            '<div><div class="section-title">' + escapeHtml(g.title) + '</div>' +
-            '<div class="section-ref">' + escapeHtml(g.ref) + '</div></div>' +
-          '</div>' +
-          '<div class="section-counts">' + pills + '</div>' +
-        '</div>' +
-        '<div class="section-body">' + g.fields.map(function(f){ return fieldRowHTML(course, f); }).join("") + '</div>' +
-      '</section>'
-    );
-  }).join("");
+  html += '<div class="toolbar">' +
+    '<label class="only-issues-toggle"><input type="checkbox" id="onlyIssuesChk"' + (onlyIssues?' checked':'') + '> הצג רק בעיות</label>' +
+  '</div>';
 
-  html += verdictHTML(course, report);
+  html += report.categories.map(sectionCardHTML).join("");
+
+  html += '<div class="actions">' +
+    '<button class="btn btn-primary" id="printBtn" type="button">🖨 ייצוא דוח QA (הדפסה / שמירה כ-PDF)</button>' +
+  '</div>';
 
   $main.innerHTML = html;
-  bindMainEvents(course);
+  $main.classList.toggle("only-issues", onlyIssues);
+  bindMainEvents();
 }
 
 /* =====================================================================
-   6. EVENTS
+   12. EVENTS
    ===================================================================== */
 
-function selectCourse(id){
-  activeId = id;
-  renderSidebar();
-  renderMain();
-}
+function selectCourse(id){ activeId = id; renderSidebar(); renderMain(); }
 
 function removeCourse(id){
   courses = courses.filter(function(c){ return c.id !== id; });
-  if (activeId === id){
-    activeId = courses.length ? courses[0].id : null;
-  }
-  renderSidebar();
-  renderMain();
+  if (activeId === id){ activeId = courses.length ? courses[0].id : null; }
+  renderSidebar(); renderMain();
 }
-
-var loadErrors = [];
 
 function humanizeLoadError(err){
   var msg = (err && err.message) || String(err);
   if (msg.indexOf("DecompressionStream") !== -1){
-    return "הדפדפן הזה אינו תומך בפענוח קבצי Excel (.xlsx) מקומית. אפשר לפתוח את הקובץ ב-Excel/LibreOffice ולשמור אותו כ-CSV (קובץ ← שמירה בשם ← CSV UTF-8), או להשתמש בדפדפן Chrome/Edge עדכני.";
+    return "הדפדפן הזה אינו תומך בפענוח קבצי Excel (.xlsx) מקומית. אפשר לפתוח את הקובץ ולשמור כ-CSV (קובץ ← שמירה בשם ← CSV UTF-8), או להשתמש בדפדפן Chrome/Edge עדכני.";
   }
   if (msg.indexOf("streamed-zip-unsupported") !== -1 || msg.indexOf("no-worksheet-found") !== -1){
-    return "לא ניתן לקרוא את מבנה קובץ ה-Excel הזה. נסו לפתוח אותו ולשמור מחדש מ-Excel/LibreOffice, או להמיר אותו ל-CSV ולהעלות שוב.";
+    return "לא ניתן לקרוא את מבנה קובץ ה-Excel הזה. נסו לפתוח אותו ולשמור מחדש מ-Excel/LibreOffice, או להמיר ל-CSV ולהעלות שוב.";
   }
-  return "אירעה שגיאה בקריאת הקובץ. ודאו שזהו קובץ \u201Cדוח סטטוס הרשמה לקורסים\u201D תקין (CSV או Excel).";
+  return "אירעה שגיאה בקריאת הקובץ. ודאו שזהו קובץ “דוח סטטוס סביבת עבודה” תקין (Excel או CSV).";
 }
 
 function addFiles(fileList){
@@ -1360,37 +1415,34 @@ function addFiles(fileList){
   var pending = files.length;
   if (!pending) return;
   files.forEach(function(file){
+    var fileId = "f" + (++fileCounter);
     var isExcel = /\.(xlsx|xlsm)$/i.test(file.name);
     var reader = new FileReader();
     reader.onload = function(e){
+      function done(){ pending--; if (pending === 0){ renderSidebar(); renderMain(); } }
       if (isExcel){
-        buildCourseFromXLSX(file.name, e.target.result).then(function(course){
-          courses.push(course);
-          if (!activeId) activeId = course.id;
+        buildCoursesFromXLSX(file.name, fileId, e.target.result).then(function(newCourses){
+          newCourses.forEach(function(co){ courses.push(co); });
+          if (!activeId && courses.length) activeId = courses[0].id;
         }).catch(function(err){
           console.error("Failed to parse", file.name, err);
           loadErrors.push({fileName:file.name, message: humanizeLoadError(err)});
-        }).then(function(){
-          pending--;
-          if (pending === 0){ renderSidebar(); renderMain(); }
-        });
+        }).then(done);
       } else {
         try{
-          var course = buildCourseFromCSV(file.name, e.target.result);
-          courses.push(course);
-          if (!activeId) activeId = course.id;
+          var newCourses = buildCoursesFromCSV(file.name, fileId, e.target.result);
+          newCourses.forEach(function(co){ courses.push(co); });
+          if (!activeId && courses.length) activeId = courses[0].id;
         } catch(err){
           console.error("Failed to parse", file.name, err);
           loadErrors.push({fileName:file.name, message: humanizeLoadError(err)});
         }
-        pending--;
-        if (pending === 0){ renderSidebar(); renderMain(); }
+        done();
       }
     };
     reader.onerror = function(){
       loadErrors.push({fileName:file.name, message:"לא ניתן היה לקרוא את הקובץ."});
-      pending--;
-      if (pending === 0){ renderSidebar(); renderMain(); }
+      pending--; if (pending === 0){ renderSidebar(); renderMain(); }
     };
     if (isExcel) reader.readAsArrayBuffer(file);
     else reader.readAsText(file, "UTF-8");
@@ -1409,46 +1461,22 @@ function bindDropzone(){
   });
 }
 
-function bindMainEvents(course){
-  $main.querySelectorAll("[data-toggle]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var row = btn.closest(".field-row");
-      row.classList.toggle("open");
+function bindMainEvents(){
+  $main.querySelectorAll("[data-toggle]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var row = el.closest(".field-row");
+      if (row) row.classList.toggle("open");
     });
   });
-  $main.querySelectorAll("[data-resolve]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = btn.getAttribute("data-resolve");
-      var input = $main.querySelector('[data-note-for="' + id + '"]');
-      course.overrides[id] = {resolved:true, note: input ? input.value.trim() : ""};
-      renderMain();
-      renderSidebar();
+  var chk = document.getElementById("onlyIssuesChk");
+  if (chk){
+    chk.addEventListener("change", function(){
+      onlyIssues = chk.checked;
+      $main.classList.toggle("only-issues", onlyIssues);
     });
-  });
-  $main.querySelectorAll("[data-undo]").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var id = btn.getAttribute("data-undo");
-      delete course.overrides[id];
-      renderMain();
-      renderSidebar();
-    });
-  });
-  var preparerInput = document.getElementById("preparerInput");
-  if (preparerInput){
-    preparerInput.addEventListener("change", function(){ course.preparer = preparerInput.value; });
   }
   var printBtn = document.getElementById("printBtn");
   if (printBtn){ printBtn.addEventListener("click", function(){ window.print(); }); }
-  var resetBtn = document.getElementById("resetBtn");
-  if (resetBtn){
-    resetBtn.addEventListener("click", function(){
-      if (confirm("לאפס את כל הסימונים הידניים בקורס זה?")){
-        course.overrides = {};
-        renderMain();
-        renderSidebar();
-      }
-    });
-  }
 }
 
 document.getElementById("addFileBtn").addEventListener("click", function(){
@@ -1459,22 +1487,19 @@ document.getElementById("fileInput").addEventListener("change", function(e){
   e.target.value = "";
 });
 document.body.addEventListener("dragover", function(e){ e.preventDefault(); });
-document.body.addEventListener("drop", function(e){
-  if (courses.length) e.preventDefault();
-});
+document.body.addEventListener("drop", function(e){ if (courses.length) e.preventDefault(); });
 
 document.getElementById("loadErrorsBar").addEventListener("click", function(e){
   var btn = e.target.closest("[data-dismiss-error]");
   if (!btn) return;
-  var idx = parseInt(btn.getAttribute("data-dismiss-error"),10);
-  loadErrors.splice(idx,1);
+  loadErrors.splice(parseInt(btn.getAttribute("data-dismiss-error"),10),1);
   renderLoadErrors();
 });
 
-$sidebarList.addEventListener("click", function(e){
+$courseList.addEventListener("click", function(e){
   var remove = e.target.closest("[data-remove]");
   if (remove){ e.stopPropagation(); removeCourse(remove.getAttribute("data-remove")); return; }
-  var item = e.target.closest(".folder-item");
+  var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
 });
 
