@@ -355,12 +355,12 @@
 
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="sidebar-title">קורסים שנבדקו</div>
+      <div id="sidebarTitle" class="sidebar-title">קורסים שנבדקו</div>
       <div id="loadErrorsBar"></div>
       <div id="summaryBar" class="summary-bar" style="display:none;"></div>
       <div id="courseList" class="course-list"></div>
       <button class="add-file-btn" id="addFileBtn" type="button">＋ הוסף דוח סטטוס (Excel / CSV)</button>
-      <div class="sidebar-note">כל קובץ הוא ייצוא של "דוח סטטוס סביבת עבודה". קובץ יכול להכיל קורס אחד או כמה קורסים — הכלי מפצל אותם לפי עמודת מזהה הקורס. אפשר להעלות כמה קבצים.</div>
+      <div id="sidebarNote" class="sidebar-note">קובץ יכול להכיל קורס אחד או כמה קורסים — הכלי מפצל אותם לפי עמודת מזהה הקורס. אפשר להעלות כמה קבצים.</div>
     </aside>
 
     <main id="mainArea"></main>
@@ -1190,7 +1190,18 @@ function renderLoadErrors(){
 
 function renderSidebar(){
   renderLoadErrors();
-  if (courses.length === 0){
+  /* When there are no courses yet, the empty-state dropzone is the single
+     upload entry point — hide the sidebar's title, add button and note so
+     there aren't two competing upload areas on screen at once. */
+  var hasCourses = courses.length > 0;
+  var titleEl = document.getElementById("sidebarTitle");
+  var addBtnEl = document.getElementById("addFileBtn");
+  var noteEl = document.getElementById("sidebarNote");
+  if (titleEl) titleEl.style.display = hasCourses ? "" : "none";
+  if (addBtnEl) addBtnEl.style.display = hasCourses ? "" : "none";
+  if (noteEl) noteEl.style.display = hasCourses ? "" : "none";
+
+  if (!hasCourses){
     $summaryBar.style.display = "none";
     $courseList.innerHTML = "";
     return;
