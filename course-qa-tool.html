@@ -177,6 +177,25 @@
   }
   .course-remove:hover{background:var(--err-bg); color:var(--err);}
 
+  /* ===== Sidebar placeholder (before first upload) ===== */
+  .sidebar-placeholder{
+    background:var(--paper-2); border:1.5px dashed var(--paper-line-strong); border-radius:12px;
+    padding:18px 16px; text-align:center;
+  }
+  .sidebar-placeholder .sph-title{
+    font-weight:700; font-size:13.5px; color:var(--brand-blue); margin-bottom:6px;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .sidebar-placeholder .sph-title::before{content:"📄";}
+  .sidebar-placeholder .sph-text{font-size:11.5px; color:var(--text-muted); line-height:1.6;}
+  .sidebar-placeholder .sph-ghost{
+    margin-top:14px; background:var(--paper); border:1px solid var(--paper-line);
+    border-inline-end:5px solid var(--paper-line-strong); border-radius:10px;
+    padding:12px 14px; opacity:.55;
+  }
+  .sidebar-placeholder .sph-ghost-name{height:10px; width:62%; border-radius:5px; background:var(--paper-line-strong); margin-bottom:8px;}
+  .sidebar-placeholder .sph-ghost-meta{height:8px; width:88%; border-radius:5px; background:var(--paper-line);}
+
   .add-file-btn{
     width:100%; padding:10px 12px; border-radius:8px; border:1.5px dashed var(--paper-line-strong);
     background:transparent; color:var(--text-muted); cursor:pointer; font-size:13px;
@@ -1223,7 +1242,17 @@ function renderSidebar(){
 
   if (!hasCourses){
     $summaryBar.style.display = "none";
-    $courseList.innerHTML = "";
+    /* placeholder so the sidebar isn't blank before the first upload —
+       shows what will appear here (a ghost course card + hint) */
+    $courseList.innerHTML =
+      '<div class="sidebar-placeholder">' +
+        '<div class="sph-title">כאן תופיע רשימת הקורסים</div>' +
+        '<div class="sph-text">אחרי שתעלו קובץ, כל קורס יוצג כאן ככרטיס — עם ציון QA, מספר משתתפים ומספר ההתראות. אפשר יהיה לעבור בין הקורסים בלחיצה.</div>' +
+        '<div class="sph-ghost">' +
+          '<div class="sph-ghost-name"></div>' +
+          '<div class="sph-ghost-meta"></div>' +
+        '</div>' +
+      '</div>';
     return;
   }
   var clean=0, warnCourses=0, errCourses=0;
