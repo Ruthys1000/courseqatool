@@ -410,17 +410,6 @@
   .guide-btn:hover{background:var(--paper); border-color:var(--brand-sky);}
   .empty-guide-steps{font-size:12.5px; color:var(--text-muted); margin-top:8px;}
 
-  /* success state when there are no issues */
-  .all-clear{
-    display:flex; align-items:center; gap:14px; background:var(--ok-bg); border:1px solid #A9DCBE;
-    border-radius:12px; padding:18px 20px; margin-bottom:24px;
-  }
-  .all-clear-mark{
-    flex:none; width:40px; height:40px; border-radius:50%; background:var(--ok); color:#fff;
-    display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700;
-  }
-  .all-clear-title{font-weight:700; font-size:16px; color:#166B3C;}
-  .all-clear-sub{font-size:13px; color:#2E6B47; margin-top:2px;}
 
   /* ===== Collapsible panels (passed checks / course details) ===== */
   .panel{
@@ -556,7 +545,7 @@
     .app-shell{display:block; padding:0;}
     .sidebar, .add-file-btn, .actions, .panel-cta, .back-to-overview{display:none !important;}
     .panel > .panel-body{display:block !important;}
-    .action-item, .panel, .course-header, .hero, .grade-spotlight, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
+    .action-item, .panel, .course-header, .hero, .grade-spotlight, .banner, .verdict{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
     /* full-portfolio report: show only #printReport, one course per page */
     body.printing-full .letterhead, body.printing-full .app-shell, body.printing-full footer.trust-footer{display:none !important;}
@@ -1762,12 +1751,8 @@ function actionItemHTML(item, index){
 
 function actionListHTML(report){
   var items = collectActionItems(report);
-  if (!items.length){
-    return '<div class="all-clear">' +
-      '<div class="all-clear-mark">✓</div>' +
-      '<div><div class="all-clear-title">הקורס מוגדר במלואו</div>' +
-      '<div class="all-clear-sub">כל הבדיקות עברו — אין פריטים שדורשים טיפול.</div></div></div>';
-  }
+  /* no items → nothing here; the hero already conveys the all-clear ("אין מה לתקן") */
+  if (!items.length){ return ""; }
   return '<section class="action-block">' +
     '<h2 class="block-title">הצעדים להשלמת הקורס <span class="block-count">' + items.length + '</span></h2>' +
     '<div class="action-list">' +
