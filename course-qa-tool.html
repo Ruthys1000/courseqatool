@@ -121,6 +121,11 @@
 
   /* ===== Sidebar ===== */
   .sidebar{position:sticky; top:20px;}
+  /* single-column mobile: don't pin the sidebar, or it overlaps the report on scroll.
+     Must come after the sticky rule above to win at equal specificity. */
+  @media (max-width:880px){
+    .sidebar{position:static; top:auto;}
+  }
   .sidebar-title{
     font-size:11px; letter-spacing:.06em; color:var(--text-muted);
     margin:0 4px 10px; font-weight:700;
