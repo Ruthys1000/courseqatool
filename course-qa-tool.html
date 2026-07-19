@@ -74,6 +74,11 @@
   button{font-family:inherit;}
   input[type=text]{font-family:inherit;}
 
+  /* inline Lucide icons — scale to font-size, inherit color */
+  .ic{width:1em; height:1em; display:inline-block; vertical-align:-0.14em; flex:none;}
+  .panel-cta .ic{vertical-align:-0.2em; transition:transform .15s ease;}
+  .panel[open] > summary .panel-cta .ic{transform:rotate(180deg);}
+
   /* ===== Letterhead ===== */
   .letterhead{
     background:linear-gradient(180deg,var(--brand-blue) 0%, var(--brand-blue-deep) 100%);
@@ -197,7 +202,6 @@
     font-weight:700; font-size:13.5px; color:var(--brand-blue); margin-bottom:6px;
     display:flex; align-items:center; justify-content:center; gap:7px;
   }
-  .sidebar-placeholder .sph-title::before{content:"📄";}
   .sidebar-placeholder .sph-text{font-size:11.5px; color:var(--text-muted); line-height:1.6;}
   .sidebar-placeholder .sph-ghost{
     margin-top:14px; background:var(--paper); border:1px solid var(--paper-line);
@@ -428,8 +432,8 @@
     white-space:nowrap; display:inline-flex; align-items:center; gap:5px;
   }
   .panel > summary:hover .panel-cta{background:#DBE8F8;}
-  .panel-cta::after{content:"הצג פרטים ▾";}
-  .panel[open] > summary .panel-cta::after{content:"הסתר ▴";}
+  .panel-cta::after{content:"הצג פרטים";}
+  .panel[open] > summary .panel-cta::after{content:"הסתר";}
   .passed-panel > summary{color:var(--ok);}
   .panel-note{font-weight:400; color:var(--text-muted); font-size:12px;}
   .panel-body{padding:4px 18px 16px; border-top:1px solid var(--paper-line);}
@@ -612,6 +616,33 @@ var COURSE_ID_COLUMNS = ["סביבת עבודה","שם קורס","קוד קור�
 
 var PLACEHOLDER_JUNK = ["", "choose an item.", "choose an item", "בחר פריט", "יש לבחור", "select",
   "-", "—", "n/a", "na", "null", "undefined"];
+
+/* =====================================================================
+   Lucide icons (inline SVG — keeps the file self-contained, no CDN).
+   Paths are from lucide.dev (ISC/MIT). Rendered at 1em so each icon
+   scales to its container's font-size and inherits currentColor.
+   ===================================================================== */
+var LUCIDE = {
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  mapPin:'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  fileText:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  printer:'<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V2h12v7"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+  grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+  alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+  chevronDown:'<path d="m6 9 6 6 6-6"/>',
+  arrowRight:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'
+};
+function icon(name, cls){
+  return '<svg class="ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (LUCIDE[name] || '') + '</svg>';
+}
 
 /* =====================================================================
    2. VALUE HELPERS
@@ -1473,7 +1504,7 @@ function renderLoadErrors(){
   if (!box) return;
   box.innerHTML = loadErrors.map(function(e,i){
     return '<div class="load-error-item">' +
-      '<button class="dismiss" data-dismiss-error="' + i + '" type="button" aria-label="סגור">✕</button>' +
+      '<button class="dismiss" data-dismiss-error="' + i + '" type="button" aria-label="סגור">' + icon('x') + '</button>' +
       '<b>שגיאה בקריאת “' + escapeHtml(e.fileName) + '”</b>' + escapeHtml(e.message) +
     '</div>';
   }).join("");
@@ -1540,7 +1571,7 @@ function renderSidebar(){
 
   var overviewItem =
     '<div class="overview-item' + (activeId===null ? ' active' : '') + '" data-overview="1">' +
-      '<span class="ov-icon">▦</span> סקירה כללית' +
+      '<span class="ov-icon">' + icon('grid') + '</span> סקירה כללית' +
     '</div>';
   $courseList.innerHTML = overviewItem + cards.map(function(c){
     var n = c.report.totalAlerts;
@@ -1602,11 +1633,11 @@ function heroHTML(report, course, items){
   }
 
   var badge = n === 0
-    ? '<div class="hero-badge tone-clean"><strong>✓</strong><span>אין בעיות</span></div>'
+    ? '<div class="hero-badge tone-clean"><strong>' + icon('check') + '</strong><span>אין בעיות</span></div>'
     : '<div class="hero-badge tone-' + tone + '"><strong>' + n + '</strong><span>' + (n===1?"בעיה לתיקון":"בעיות לתיקון") + '</span></div>';
 
   return '<div class="hero hero-tone-' + tone + '">' +
-    '<button class="back-to-overview" type="button" data-overview="1">→ חזרה לסקירה כללית</button>' +
+    '<button class="back-to-overview" type="button" data-overview="1">' + icon('arrowRight') + ' חזרה לסקירה כללית</button>' +
     '<div class="hero-main">' +
       badge +
       '<div class="hero-text">' +
@@ -1615,9 +1646,9 @@ function heroHTML(report, course, items){
         '<div class="hero-headline">' + escapeHtml(headline) + '</div>' +
         (sub ? '<div class="hero-sub">' + escapeHtml(sub) + '</div>' : "") +
         '<div class="course-stats">' +
-          '<span>✓ <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
-          '<span>⚑ <b>' + report.totalAlerts + '</b> בעיות לתיקון</span>' +
-          '<span>👥 <b>' + course.rows.length + '</b> משתתפים</span>' +
+          '<span>' + icon('check') + ' <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
+          '<span>' + icon('flag') + ' <b>' + report.totalAlerts + '</b> בעיות לתיקון</span>' +
+          '<span>' + icon('users') + ' <b>' + course.rows.length + '</b> משתתפים</span>' +
         '</div>' +
       '</div>' +
     '</div>' +
@@ -1661,12 +1692,12 @@ function gradeSpotlightHTML(report){
       '<div class="gs-item-title">' + escapeHtml(r.title) + '</div>' +
       '<div class="gs-item-text">' + escapeHtml(r.text) + '</div>' +
       namesHTML +
-      (r.where ? '<div class="gs-where"><span class="where-pin">📍</span> <b>היכן לתקן:</b> ' + escapeHtml(r.where) + '</div>' : "") +
+      (r.where ? '<div class="gs-where"><span class="where-pin">' + icon('mapPin') + '</span> <b>היכן לתקן:</b> ' + escapeHtml(r.where) + '</div>' : "") +
     '</div>';
   }).join("");
 
   return '<section class="grade-spotlight">' +
-    '<div class="gs-head"><span class="gs-icon">🎯</span>' +
+    '<div class="gs-head"><span class="gs-icon">' + icon('target') + '</span>' +
       '<div><div class="gs-title">בדיקת תקינות הציונים</div>' +
       '<div class="gs-sub">שדות הציון הם קריטיים לחישוב ההשלמה — כדאי לטפל בהם קודם.</div></div></div>' +
     '<div class="gs-list">' + body + '</div>' +
@@ -1737,7 +1768,7 @@ function actionItemHTML(item, index){
         /* the call-to-action leads — what to do comes first and stands out */
         (item.whatFound ? '<div class="action-found action-found-lead"><span class="found-cap">מה נמצא</span>' +
           '<span class="found-text">' + escapeHtml(item.whatFound) + '</span></div>' : "") +
-        (item.where ? '<div class="action-where"><span class="where-pin">📍</span>' +
+        (item.where ? '<div class="action-where"><span class="where-pin">' + icon('mapPin') + '</span>' +
           '<span class="where-cap">היכן לתקן:</span> <span class="where-text">' + escapeHtml(item.where) + '</span></div>' : "") +
         namesHTML +
         (item.why ?
@@ -1774,14 +1805,14 @@ function passedPanelHTML(report){
   if (report.completionStatus==="ok") passed.push({label:"בדיקת השלמה מול נוכחות", detected:"תקין"});
   if (report.gradeStatus==="ok") passed.push({label:"בדיקת ציון מול השלמה", detected:"תקין"});
   if (!passed.length && !naCount) return "";
-  var summary = '✓ ' + passed.length + ' בדיקות עברו' + (naCount ? ' · ' + naCount + ' לא רלוונטיות' : '');
+  var summaryText = passed.length + ' בדיקות עברו' + (naCount ? ' · ' + naCount + ' לא רלוונטיות' : '');
   var rows = passed.map(function(p){
     var val = (p.detected===null||p.detected===undefined||p.detected==="") ? "" :
       '<span class="pass-val">' + escapeHtml(String(p.detected)) + '</span>';
-    return '<div class="pass-row"><span class="pass-mark">✓</span><span class="pass-label">' + escapeHtml(p.label) + '</span>' + val + '</div>';
+    return '<div class="pass-row"><span class="pass-mark">' + icon('check') + '</span><span class="pass-label">' + escapeHtml(p.label) + '</span>' + val + '</div>';
   }).join("");
-  return '<details class="panel passed-panel"><summary>' + escapeHtml(summary) +
-    '<span class="panel-cta"></span></summary>' +
+  return '<details class="panel passed-panel"><summary>' + icon('check') + ' ' + escapeHtml(summaryText) +
+    '<span class="panel-cta">' + icon('chevronDown') + '</span></summary>' +
     '<div class="panel-body">' + rows + '</div></details>';
 }
 
@@ -1795,7 +1826,7 @@ function detailsPanelHTML(course){
       '<div class="kv-v">' + escapeHtml(v) + '</div></div>';
   }).join("");
   return '<details class="panel details-panel"><summary>פרטי הקורס <span class="panel-note">(למידע בלבד)</span>' +
-    '<span class="panel-cta"></span></summary>' +
+    '<span class="panel-cta">' + icon('chevronDown') + '</span></summary>' +
     '<div class="panel-body kv-grid">' + cells + '</div></details>';
 }
 
@@ -1827,12 +1858,12 @@ function overviewHTML(){
   var head;
   if (needAttention === 0){
     head = '<div class="ov-hero ov-hero-tone-clean">' +
-      '<div class="ov-hero-mark">✓</div>' +
+      '<div class="ov-hero-mark">' + icon('check') + '</div>' +
       '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
       '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
   } else {
     head = '<div class="ov-hero ov-hero-tone-' + worstTone + '">' +
-      '<div class="ov-hero-mark">' + (worstTone==="high"?"⚠":"⚑") + '</div>' +
+      '<div class="ov-hero-mark">' + (worstTone==="high"?icon('alert'):icon('flag')) + '</div>' +
       '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים כוללים בעיות לתיקון</div>' +
       '<div class="ov-hero-sub">הדחוף ביותר מופיע ראשון ברשימה שמימין.</div>' +
       '</div></div>';
@@ -1847,8 +1878,8 @@ function overviewHTML(){
   '</div>';
 
   var actions = '<div class="actions ov-actions">' +
-    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">⬇ הורד סיכום מלא (הדפסה / PDF)</button>' +
-    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">📄 הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
+    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום מלא (הדפסה / PDF)</button>' +
+    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
   '</div>';
 
   return '<div class="overview">' +
@@ -1874,7 +1905,7 @@ function fullReportHTML(){
     '<h1>סיכום בקרת QA — כל הקורסים</h1>' +
     '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + courses.length + ' קורסים · הופק ' + stamp + '</div>' +
     '<div class="pr-tally">' +
-      '<span style="color:var(--tone-clean)">✓ ' + tCount.clean + ' ללא בעיות</span>' +
+      '<span style="color:var(--tone-clean)">' + icon('check') + ' ' + tCount.clean + ' ללא בעיות</span>' +
       '<span style="color:var(--tone-low)">' + tCount.low + ' עם 1–2 בעיות</span>' +
       '<span style="color:var(--tone-mid)">' + tCount.mid + ' עם 3–4 בעיות</span>' +
       '<span style="color:var(--tone-high)">' + tCount.high + ' עם 5+ בעיות</span>' +
@@ -1894,7 +1925,7 @@ function leanCourseSectionHTML(course, report){
     ? '<ol class="pr-items">' + items.map(function(it){
         return '<li class="pr-item pr-' + it.severity + '">' + escapeHtml(it.label) + '</li>';
       }).join("") + '</ol>'
-    : '<div class="pr-clean">✓ אין בעיות — הקורס תקין.</div>';
+    : '<div class="pr-clean">' + icon('check') + ' אין בעיות — הקורס תקין.</div>';
   return '<section class="pr-course">' +
     '<div class="pr-course-head"><span class="pr-score">' + (items.length ? items.length + (items.length===1?" בעיה":" בעיות") : "תקין") + '</span>' +
       '<h2>' + escapeHtml(course.title) + '</h2></div>' +
@@ -1944,13 +1975,13 @@ function renderMain(){
         '<p>העלי את קובץ “דוח סטטוס סביבת עבודה” שהורדת מהמערכת, והכלי יבדוק כל קורס, ' +
         'יראה לך איפה הוא עומד, ויוביל אותך צעד־אחר־צעד: מה חסר, למה זה חשוב, ואיפה לתקן.</p>' +
         '<div class="dropzone" id="dropzone">' +
-          '<div class="glyph">⤓</div>' +
+          '<div class="glyph">' + icon('upload') + '</div>' +
           '<strong>גררי לכאן קובץ Excel / CSV, או לחצי לבחירה</strong>' +
           '<span>אפשר קובץ עם קורס אחד או כמה — כל קורס מקבל דוח נפרד</span>' +
         '</div>' +
         '<div class="empty-guide">' +
           '<span class="empty-guide-q">אין לך עדיין את הקובץ?</span>' +
-          '<a class="guide-btn" href="course_report.pdf" target="_blank" rel="noopener">📄 איך מפיקים את הדוח? (מדריך PDF)</a>' +
+          '<a class="guide-btn" href="course_report.pdf" target="_blank" rel="noopener">' + icon('fileText') + ' איך מפיקים את הדוח? (מדריך PDF)</a>' +
         '</div>' +
         '<div class="empty-guide-steps">הפיקי את הדוח במערכת, שמרי אותו כ־CSV, והעלי לכאן.</div>' +
         '<div class="empty-how">' +
@@ -1962,7 +1993,7 @@ function renderMain(){
             '<li><b>סיכום להורדה</b> — ייצוא ל-PDF או העתקת רשימת המשימות</li>' +
           '</ul>' +
         '</div>' +
-        '<div class="empty-privacy">🔒 הכול נשאר במחשב שלך — הקובץ נבדק בדפדפן בלבד ולא נשלח לשום מקום.</div>' +
+        '<div class="empty-privacy">' + icon('lock') + ' הכול נשאר במחשב שלך — הקובץ נבדק בדפדפן בלבד ולא נשלח לשום מקום.</div>' +
       '</div>';
     bindDropzone();
     return;
@@ -2003,7 +2034,7 @@ function renderMain(){
   html += detailsPanelHTML(course);
 
   html += '<div class="actions">' +
-    '<button class="btn btn-primary" id="printBtn" type="button">🖨 ייצוא דוח QA (הדפסה / שמירה כ-PDF)</button>' +
+    '<button class="btn btn-primary" id="printBtn" type="button">' + icon('printer') + 'ייצוא דוח QA (הדפסה / שמירה כ-PDF)</button>' +
   '</div>';
 
   $main.innerHTML = html;
