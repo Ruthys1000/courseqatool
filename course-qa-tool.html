@@ -329,6 +329,89 @@
   .action-do{font-size:13px; color:var(--text); margin-top:10px; line-height:1.6;}
   .action-do .do-cap{font-weight:700; color:var(--ok);}
 
+  /* ===== Narrative hero (situation → meaning → call to action) ===== */
+  .hero{
+    background:var(--paper-2); border:1px solid var(--paper-line); border-top:4px solid var(--na);
+    border-radius:16px; padding:20px 26px 24px; box-shadow:var(--shadow); margin-bottom:18px;
+  }
+  .hero-error{border-top-color:var(--err);}
+  .hero-warn{border-top-color:var(--warn);}
+  .hero-ok{border-top-color:var(--ok);}
+  .hero-main{display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-top:8px;}
+  .hero-text{flex:1; min-width:250px;}
+  .hero-headline{font-family:var(--serif); font-weight:800; font-size:23px; line-height:1.3; margin:6px 0 5px;}
+  .hero-error .hero-headline{color:#8A2A2A;}
+  .hero-warn .hero-headline{color:#6B4A10;}
+  .hero-ok .hero-headline{color:#166B3C;}
+  .hero-sub{font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:12px; max-width:640px;}
+  .hero .course-stats{margin-bottom:4px;}
+  .cta-primary{
+    margin-top:8px; display:inline-flex; align-items:center; gap:8px;
+    background:var(--brand-blue); color:#fff; border:none; border-radius:999px;
+    padding:11px 22px; font-family:var(--sans); font-weight:700; font-size:14.5px; cursor:pointer;
+    box-shadow:0 2px 8px rgba(30,78,156,.28); transition:background .15s, transform .05s;
+  }
+  .cta-primary:hover{background:var(--brand-blue-deep);}
+  .cta-primary:active{transform:translateY(1px);}
+  .cta-arrow{font-size:17px; line-height:1;}
+  .ov-hero-body{flex:1; min-width:220px;}
+  .ov-hero .cta-primary{margin-top:12px;}
+
+  /* ===== Grade-integrity spotlight (pulled to the top of the story) ===== */
+  .grade-spotlight{
+    background:#FFFDF5; border:1px solid #E9D08F; border-radius:14px;
+    padding:18px 20px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+  .gs-head{display:flex; align-items:flex-start; gap:12px; margin-bottom:12px;}
+  .gs-icon{font-size:22px; flex:none; line-height:1.2;}
+  .gs-title{font-family:var(--serif); font-weight:700; font-size:17px;}
+  .gs-sub{font-size:12.5px; color:var(--text-muted); margin-top:2px; line-height:1.5;}
+  .gs-list{display:flex; flex-direction:column; gap:10px;}
+  .gs-item{
+    background:var(--paper-2); border:1px solid var(--paper-line);
+    border-inline-start:4px solid var(--warn); border-radius:10px; padding:12px 14px;
+  }
+  .gs-item.gs-error{border-inline-start-color:var(--err);}
+  .gs-item-title{font-weight:700; font-size:14px; line-height:1.4;}
+  .gs-item-text{font-size:12.5px; color:var(--text-muted); margin-top:4px; line-height:1.6;}
+  .gs-names{font-size:12px; margin-top:6px; line-height:1.7; color:#5B5647;}
+  .gs-where{font-size:12px; margin-top:6px; color:var(--info);}
+
+  /* ===== Action-first affordances ===== */
+  .block-sub{font-size:13px; color:var(--text-muted); margin:-6px 0 14px;}
+  .action-do-lead{
+    margin-top:8px; background:var(--ok-bg); border:1px solid #A9DCBE; border-radius:8px;
+    padding:9px 12px; display:flex; gap:8px; align-items:baseline;
+  }
+  .action-do-lead .do-cap{font-weight:800; color:#166B3C; flex:none; font-size:12px;}
+  .action-do-lead .do-text{font-size:13.5px; color:var(--text); line-height:1.6;}
+  .action-where{
+    font-size:12.5px; color:var(--info); margin-top:8px; line-height:1.6;
+    display:flex; gap:6px; align-items:baseline; flex-wrap:wrap;
+  }
+  .action-where .where-pin{flex:none;}
+  .action-where .where-cap{font-weight:700;}
+  .action-where .where-text{color:#2E4457;}
+  .action-what .what-cap{font-weight:700; color:var(--text);}
+  .action-why .why-cap{display:inline; text-transform:none; letter-spacing:0; margin-inline-end:4px;}
+  @keyframes actionFlash{
+    0%{box-shadow:0 0 0 0 rgba(246,194,27,0);}
+    15%{box-shadow:0 0 0 4px rgba(246,194,27,.6);}
+    100%{box-shadow:0 0 0 0 rgba(246,194,27,0);}
+  }
+  .action-flash{animation:actionFlash 1.7s ease-out;}
+
+  /* ===== Opening screen polish ===== */
+  .empty-eyebrow{
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--brand-blue);
+    font-weight:700; margin-bottom:8px;
+  }
+  .empty-how{max-width:560px; margin:26px auto 0; text-align:right;}
+  .empty-how-title{font-weight:700; font-size:14px; margin-bottom:10px;}
+  .empty-how .empty-checklist{margin-top:0;}
+  .empty-how .empty-checklist li{margin-bottom:8px; font-size:13.5px; line-height:1.6;}
+  .empty-privacy{font-size:12px; color:var(--text-muted); margin-top:22px;}
+
   /* success state when there are no issues */
   .all-clear{
     display:flex; align-items:center; gap:14px; background:var(--ok-bg); border:1px solid #A9DCBE;
@@ -484,9 +567,9 @@
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .actions, .why-edit, .panel-cta{display:none !important;}
+    .sidebar, .add-file-btn, .actions, .panel-cta, .cta-primary, .back-to-overview{display:none !important;}
     .panel > .panel-body{display:block !important;}
-    .action-item, .panel, .course-header, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
+    .action-item, .panel, .course-header, .hero, .grade-spotlight, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
     /* full-portfolio report: show only #printReport, one course per page */
     body.printing-full .letterhead, body.printing-full .app-shell, body.printing-full footer.trust-footer{display:none !important;}
@@ -668,7 +751,7 @@ function costLooksPaid(course){
 /* required text field — error if empty or column missing */
 function requiredField(cfg){
   return {
-    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
     compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
@@ -683,7 +766,7 @@ function requiredField(cfg){
 /* conditionally-required field — required only when condition(course) is true */
 function conditionalRequiredField(cfg){
   return {
-    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
     compute:function(ctx){
       if (!cfg.condition(ctx.course)) return {status:"na", detected:null, note:cfg.naNote || "לא רלוונטי במקרה זה."};
       var c = colOf(ctx.course, cfg.col);
@@ -699,7 +782,7 @@ function conditionalRequiredField(cfg){
 function listMembershipField(cfg){
   var normalizedList = cfg.list.map(normName);
   return {
-    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
     compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
@@ -718,7 +801,7 @@ function listMembershipField(cfg){
 /* required date field */
 function dateRequiredField(cfg){
   return {
-    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check,
+    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
     compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
@@ -740,15 +823,18 @@ var RULES = [];
 /* ---- 1. פרטי קורס — required fields ---- */
 RULES.push(requiredField({id:"lbp", category:"course-info", col:"LBP", label:"LBP",
   why:"שדה ה-LBP משמש לסיווג הקורס בדוחות ובבקרות. ללא LBP הקורס עלול לא להשתייך לקטגוריה הנכונה בדיווחים.",
-  check:"ודאו שהקורס משויך ל-LBP המתאים."}));
+  check:"ודאו שהקורס משויך ל-LBP המתאים.",
+  where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 RULES.push(requiredField({id:"target-audience", category:"course-info", col:"קהל יעד", label:"קהל יעד",
   why:"קהל היעד מבהיר עבור מי הקורס מיועד ומשמש לסינון בקטלוג ובדוחות ניהוליים.",
-  check:"ודאו שהוגדר קהל יעד לקורס."}));
+  check:"ודאו שהוגדר קהל יעד לקורס.",
+  where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 RULES.push(requiredField({id:"budget-reservation", category:"course-info", col:"קורס/שריון תקציב", label:"קורס / שריון תקציב",
   why:"שדה זה קובע האם מדובר בקורס רגיל או בשריון תקציב, ומשפיע על אופן ניהול התקציב של הקורס.",
-  check:"ודאו שהוגדר סוג הרישום התקציבי (קורס / שריון תקציב)."}));
+  check:"ודאו שהוגדר סוג הרישום התקציבי (קורס / שריון תקציב).",
+  where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 /* coordinator — required + approved list */
 RULES.push(listMembershipField({id:"coordinator", category:"course-info", col:"רכזת אחראית על הקורס", label:"רכזת אחראית על הקורס",
@@ -756,24 +842,28 @@ RULES.push(listMembershipField({id:"coordinator", category:"course-info", col:"�
   why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. יש לוודא שהוגדרה רכזת, ושהיא מופיעה ברשימת הרכזות המאושרות.",
   check:"ודאו שהוגדרה רכזת אחראית, ושהיא אחת מהרכזות המאושרות.",
   emptyNote:"לא הוגדרה רכזת אחראית.",
-  unknownNote:"הרכזת אינה מופיעה ברשימת הרכזות המאושרות"}));
+  unknownNote:"הרכזת אינה מופיעה ברשימת הרכזות המאושרות",
+  where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 /* dates */
 RULES.push(dateRequiredField({id:"start-date", category:"course-info", col:"תאריך תחילת קורס", label:"תאריך תחילת קורס",
   why:"תאריך התחילה קובע ממתי הקורס פעיל וזמין ללומדים.",
   check:"ודאו שהוזן תאריך תחילת קורס תקין.",
-  emptyNote:"לא הוגדר תאריך תחילת קורס."}));
+  emptyNote:"לא הוגדר תאריך תחילת קורס.",
+  where:"שדות מותאמים אישית (ובמופע: לשונית תזמון)"}));
 
 RULES.push(dateRequiredField({id:"end-date", category:"course-info", col:"תאריך סיום קורס", label:"תאריך סיום קורס",
   why:"תאריך הסיום סוגר את הגישה לקורס ומגדיר עד מתי ניתן לדווח נוכחות והשלמות.",
   check:"ודאו שהוזן תאריך סיום קורס תקין, המאוחר מתאריך ההתחלה.",
-  emptyNote:"לא הוגדר תאריך סיום קורס."}));
+  emptyNote:"לא הוגדר תאריך סיום קורס.",
+  where:"שדות מותאמים אישית (ובמופע: לשונית תזמון)"}));
 
 /* date-order rule */
 RULES.push({
   id:"date-order", category:"course-info", label:"תקינות טווח התאריכים",
   why:"תאריך התחלה המאוחר מתאריך הסיום הוא שגיאת הזנה נפוצה שמונעת פעילות תקינה של הקורס.",
   check:"ודאו שתאריך ההתחלה מוקדם או שווה לתאריך הסיום.",
+  where:"שדות מותאמים אישית (ובמופע: לשונית תזמון)",
   compute:function(ctx){
     var start = parseDateLoose(colOf(ctx.course,"תאריך תחילת קורס").value);
     var end = parseDateLoose(colOf(ctx.course,"תאריך סיום קורס").value);
@@ -788,6 +878,7 @@ RULES.push({
   id:"lecturer-type", category:"lecturers", label:"סוג מרצה (פנימי / חיצוני)",
   why:"יש לסמן בבירור אם המרצה פנימי או חיצוני. הבחירה קובעת אילו שדות נוספים (כגון ספק) נדרשים.",
   check:"ודאו שסומן “מרצה פנימי ?” או “מרצה חיצוני ?”.",
+  where:"שדות מותאמים אישית ← בחירת מרצה פנים/חוץ",
   compute:function(ctx){
     var internal = isCheckedFlag(colOf(ctx.course, "מרצה פנימי ?").value);
     var external = isCheckedFlag(colOf(ctx.course, "מרצה חיצוני ?").value);
@@ -803,7 +894,8 @@ RULES.push(conditionalRequiredField({id:"external-lecturer-name", category:"lect
   check:"ודאו שהוזן שם המרצה החיצוני בשדה “מרצה”.",
   naNote:"לא רלוונטי — לא סומן מרצה חיצוני.",
   emptyNote:"סומן מרצה חיצוני אך לא הוזן שם מרצה.",
-  okNote:"שם המרצה החיצוני הוזן."}));
+  okNote:"שם המרצה החיצוני הוזן.",
+  where:"שדות מותאמים אישית ← בחירת מרצה חוץ ← שם המרצה"}));
 
 RULES.push(conditionalRequiredField({id:"internal-lecturer-name", category:"lecturers", col:"מרצה פנימי", label:"עובד (מרצה פנימי)",
   condition:function(course){ return isCheckedFlag(colOf(course,"מרצה פנימי ?").value); },
@@ -811,7 +903,8 @@ RULES.push(conditionalRequiredField({id:"internal-lecturer-name", category:"lect
   check:"ודאו שהוזן העובד בשדה “מרצה פנימי”.",
   naNote:"לא רלוונטי — לא סומן מרצה פנימי.",
   emptyNote:"סומן מרצה פנימי אך לא הוזן עובד.",
-  okNote:"העובד (מרצה פנימי) הוזן."}));
+  okNote:"העובד (מרצה פנימי) הוזן.",
+  where:"שדות מותאמים אישית ← בחירת מרצה פנימי ← שם המרצה"}));
 
 RULES.push(conditionalRequiredField({id:"supplier", category:"lecturers", col:"ספק", label:"ספק (למרצה חיצוני)",
   condition:function(course){ return isCheckedFlag(colOf(course,"מרצה חיצוני ?").value); },
@@ -819,13 +912,15 @@ RULES.push(conditionalRequiredField({id:"supplier", category:"lecturers", col:"�
   check:"ודאו שהוזן שם הספק עבור המרצה החיצוני.",
   naNote:"לא רלוונטי — המרצה אינו מוגדר כחיצוני.",
   emptyNote:"מרצה חיצוני ללא ספק — יש להזין שם ספק.",
-  okNote:"שם הספק הוזן."}));
+  okNote:"שם הספק הוזן.",
+  where:"שדות מותאמים אישית (אזור התקציב / מרצה חוץ)"}));
 
 /* ---- 3. תקציב ---- */
 RULES.push({
   id:"budget-type", category:"budget", label:"סוג התקציב",
   why:"בקורס בתשלום יש להגדיר סוג תקציב הקובע כיצד תיזקף העלות במערכת הפיננסית.",
   check:"ודאו שהוגדר סוג תקציב לקורס בתשלום.",
+  where:"שדות מותאמים אישית (אזור התקציב)",
   compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "סוג התקציב");
@@ -841,6 +936,7 @@ RULES.push({
   id:"cost-per-participant", category:"budget", label:"עלות למשתתף בשקלים",
   why:"עלות למשתתף נדרשת לחישוב חיוב נכון של מרכזי התמחיר בעת רישום ולתמחור הקורס.",
   check:"ודאו שהוזנה עלות למשתתף בקורס בתשלום.",
+  where:"שדות מותאמים אישית (אזור התקציב)",
   compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "עלות למשתתף בשקלים");
@@ -864,6 +960,7 @@ RULES.push({
   id:"cost-total", category:"budget", label:"עלות קורס כוללת",
   why:"עלות הקורס הכוללת משמשת לבקרה תקציבית ולתכנון מול מרכז התמחיר האחראי.",
   check:"ודאו שהוזנה עלות כוללת בקורס בתשלום.",
+  where:"שדות מותאמים אישית (אזור התקציב)",
   compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "עלות קורס כוללת");
@@ -887,6 +984,7 @@ RULES.push({
   id:"invoice", category:"budget", label:"מספר חשבונית",
   why:"בקורס בתשלום שהסתיים לפני יותר מ-30 יום, חשבונית חסרה מקשה על מעקב חשבונאי מול הספק / מרכז העלות.",
   check:"ודאו שהוזן מספר חשבונית לקורס בתשלום שהסתיים.",
+  where:"שדות מותאמים אישית (אזור התקציב)",
   compute:function(ctx){
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "מספר חשבונית");
@@ -909,6 +1007,7 @@ RULES.push({
   id:"passing-grade", category:"completions", label:"ציון עובר",
   why:"אם הקורס מציג ציון, יש להגדיר “ציון עובר” (מקובל 80) כדי שחישוב ההשלמה יהיה נכון. ציון עובר של 0 משמעו שכל לומד “עובר” אוטומטית — גם ללא ציון אמיתי.",
   check:"ודאו שהוגדר ציון עובר מתאים (למשל 80) בתנאי ההשלמה; אם הקורס ללא ציון — ודאו שמסומן “הסתר ציון”.",
+  where:"הגדרות השלמה ← תנאי השלמה (ציון עובר / הסתר ציון)",
   compute:function(ctx){
     var course = ctx.course;
     var c = colOf(course, "ציון עובר");
@@ -1040,7 +1139,7 @@ function computeReport(course){
     var fields = RULES.filter(function(r){ return r.category === cat.id; }).map(function(rule){
       var auto = rule.compute(ctx);
       return {
-        id:rule.id, label:rule.label, why:rule.why||"", check:rule.check||"",
+        id:rule.id, label:rule.label, why:rule.why||"", check:rule.check||"", where:rule.where||"",
         detected:auto.detected, note:auto.note, status:auto.status, info:!!rule.info
       };
     });
@@ -1465,22 +1564,122 @@ function renderSidebar(){
   }).join("");
 }
 
-/* ---- verdict: the one-line "where does this course stand" opener ---- */
-function verdictHTML(report){
-  var cls, text;
-  if (report.totalErr > 0){
-    cls = "error";
-    text = "הקורס דורש טיפול — " + report.totalErr + " " + (report.totalErr===1?"חוסר":"חוסרים") +
-      (report.totalWarn>0 ? " ו-" + report.totalWarn + " " + (report.totalWarn===1?"פריט":"פריטים") + " לתשומת לב" : "") +
-      " לפני שהקורס מוכן.";
-  } else if (report.totalWarn > 0){
-    cls = "warn";
-    text = "הקורס כמעט מוכן — " + (report.totalWarn===1 ? "נותר פריט אחד" : "נותרו " + report.totalWarn + " פריטים") + " לתשומת לב.";
-  } else {
-    cls = "ok";
-    text = "הקורס מוגדר במלואו — כל הבדיקות עברו. אין מה לתקן.";
+/* ---- course phase (display-only): has the course already run / been distributed?
+   Purely presentational — never affects statuses, score, or which checks run.
+   Signal per the guide's own logic: once there are grades it clearly went live. ---- */
+function coursePhase(course){
+  var gi = course.columnIndex["ציון"];
+  var ai = course.columnIndex["נוכחות במפגשים"];
+  var si = course.columnIndex["סטטוס השלמה"];
+  for (var i=0;i<course.rows.length;i++){
+    var row = course.rows[i];
+    if (gi !== undefined){ var g = toNumber(row[gi]); if (!isNaN(g)) return "ran"; }
+    if (ai !== undefined && parseAttendancePct(row[ai]) !== null) return "ran";
+    if (si !== undefined){ var s = row[si]; if (s != null && String(s).trim() === "כן") return "ran"; }
   }
-  return '<div class="verdict verdict-' + cls + '">' + escapeHtml(text) + '</div>';
+  var end = parseDateLoose(colOf(course, "תאריך סיום קורס").value);
+  if (end && end.getTime() < Date.now()) return "ran";
+  var ws = colOf(course, "סטטוס סביבת עבודה").value;
+  if (/ארכיון|archive/i.test(String(ws || ""))) return "ran";
+  return "prelaunch";
+}
+
+/* ---- narrative hero: situation → what it means → one clear call to action ---- */
+function heroHTML(report, course, items){
+  var phase = coursePhase(course);
+  var sev = report.severity;
+  var scoreColor = sev==="ok" ? "var(--ok)" : (sev==="error" ? "var(--err)" : "var(--warn)");
+  var n = items.length;
+  var headline, sub, ctaHTML = "";
+
+  if (sev === "ok"){
+    if (phase === "ran"){
+      headline = "הקורס תקין — אין מה לתקן";
+      sub = "כל הבדיקות עברו. הקורס כבר רץ ואין פערים שדורשים טיפול.";
+    } else {
+      headline = "הקורס מוכן להפצה";
+      sub = "כל הבדיקות עברו — אפשר לפרסם אותו בקטלוג הקורסים.";
+    }
+  } else {
+    if (phase === "ran"){
+      headline = "הקורס כבר רץ — נותרו " + n + " " + (n===1 ? "דבר לתיקון" : "דברים לתיקון והשלמה");
+    } else {
+      headline = "הקורס כמעט מוכן להפצה — נותרו " + n + " " + (n===1 ? "צעד" : "צעדים");
+    }
+    var first = items[0];
+    sub = "הכי דחוף עכשיו: " + (first ? first.label : "") + ". עברו על הצעדים לפי הסדר — כל אחד עם הסבר קצר ואיפה לתקן.";
+    ctaHTML = '<button class="cta-primary" type="button" data-cta-first>התחילי מהצעד הראשון <span class="cta-arrow">←</span></button>';
+  }
+
+  return '<div class="hero hero-' + sev + '">' +
+    '<button class="back-to-overview" type="button" data-overview="1">→ חזרה לסקירה כללית</button>' +
+    '<div class="hero-main">' +
+      '<div class="score-ring" style="--pct:' + report.score + '; --ringcolor:' + scoreColor + '">' +
+        '<div class="score-ring-hole"><strong>' + report.score + '</strong><span>ציון QA</span></div>' +
+      '</div>' +
+      '<div class="hero-text">' +
+        '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + (course.groupColumnName ? ' · לפי “' + escapeHtml(course.groupColumnName) + '”' : '') + '</div>' +
+        '<h1 class="course-title">' + escapeHtml(course.title) + '</h1>' +
+        '<div class="hero-headline">' + escapeHtml(headline) + '</div>' +
+        '<div class="hero-sub">' + escapeHtml(sub) + '</div>' +
+        '<div class="course-stats">' +
+          '<span>✓ <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
+          '<span>⚑ <b>' + report.totalAlerts + '</b> התראות</span>' +
+          '<span>👥 <b>' + course.rows.length + '</b> משתתפים</span>' +
+        '</div>' +
+        ctaHTML +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+/* ---- grade-integrity spotlight: pulls the grade issues to the top of the story.
+   Display-only — reads the already-computed result; never re-classifies severity. ---- */
+function gradeSpotlightHTML(report){
+  var rows = [];
+  var pg = null;
+  report.categories.forEach(function(cat){
+    cat.fields.forEach(function(f){ if (f.id === "passing-grade") pg = f; });
+  });
+  if (pg && (pg.status === "warn" || pg.status === "error")){
+    rows.push({sev:pg.status, title:"ציון עובר לא תקין", text:pg.note, where:pg.where, names:null});
+  }
+  if (report.gradeStatus === "warn" && report.gradeCompletion && report.gradeCompletion.count > 0){
+    var gc = report.gradeCompletion;
+    rows.push({sev:"warn",
+      title: gc.count + " משתתפים עם ציון " + gc.threshold + " ומעלה שלא סומנו כהושלמו",
+      text:"ציונם עובר את סף המעבר אך סטטוס ההשלמה עדיין “לא” — לרוב נתוני השלמה לא מעודכנים או ציון עובר שגוי.",
+      where:"מופע הקורס ← דוח השלמות · והגדרות השלמה ← תנאי השלמה", names: gc.names.slice()});
+  }
+  if (report.completionStatus === "warn" && report.completion && report.completion.count > 0){
+    var cc = report.completion;
+    rows.push({sev:"warn",
+      title: cc.count + " משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו",
+      text:"עמדו בדרישת הנוכחות אך סטטוס ההשלמה שלהם עדיין “לא”. כדאי לעדכן את סטטוס ההשלמה.",
+      where:"מופע הקורס ← רישום נוכחות ודוח השלמות", names: cc.names.slice()});
+  }
+  if (!rows.length) return "";
+
+  var body = rows.map(function(r){
+    var namesHTML = "";
+    if (r.names && r.names.length){
+      namesHTML = '<div class="gs-names"><b>שמות המשתתפים:</b> ' +
+        r.names.map(function(n){ return escapeHtml(n); }).join(" · ") + '</div>';
+    }
+    return '<div class="gs-item gs-' + r.sev + '">' +
+      '<div class="gs-item-title">' + escapeHtml(r.title) + '</div>' +
+      '<div class="gs-item-text">' + escapeHtml(r.text) + '</div>' +
+      namesHTML +
+      (r.where ? '<div class="gs-where"><span class="where-pin">📍</span> <b>היכן לתקן:</b> ' + escapeHtml(r.where) + '</div>' : "") +
+    '</div>';
+  }).join("");
+
+  return '<section class="grade-spotlight">' +
+    '<div class="gs-head"><span class="gs-icon">🎯</span>' +
+      '<div><div class="gs-title">בדיקת תקינות הציונים</div>' +
+      '<div class="gs-sub">שדות הציון הם קריטיים לחישוב ההשלמה — כדאי לטפל בהם קודם.</div></div></div>' +
+    '<div class="gs-list">' + body + '</div>' +
+  '</section>';
 }
 
 /* ---- flatten failing checks into one prioritized action list (errors first) ---- */
@@ -1493,7 +1692,7 @@ function collectActionItems(report){
         items.push({
           severity:f.status, categoryTitle:cat.title, label:f.label,
           whatFound: f.note || (f.detected ? String(f.detected) : "לא הוזן ערך"),
-          why:f.why || "", check:f.check || "", names:null
+          why:f.why || "", check:f.check || "", where:f.where || "", names:null
         });
       }
     });
@@ -1505,6 +1704,7 @@ function collectActionItems(report){
       whatFound:"נמצאו משתתפים בעלי נוכחות מספקת שסטטוס ההשלמה שלהם עדיין “לא”.",
       why:"ייתכן שנתוני ההשלמה אינם מעודכנים. כדאי לוודא שהמשתתפים שעמדו בדרישות הנוכחות אכן סומנו כמי שהשלימו את הקורס.",
       check:"עברו על שמות המשתתפים, וודאו/עדכנו את סטטוס ההשלמה שלהם במערכת.",
+      where:"מופע הקורס ← רישום נוכחות ודוח השלמות",
       names: report.completion.names.slice()
     });
   }
@@ -1516,6 +1716,7 @@ function collectActionItems(report){
       whatFound:"נמצאו משתתפים שציונם עובר את סף המעבר (" + thr + ") אך סטטוס ההשלמה שלהם עדיין “לא”.",
       why:"לומד שציונו מעל סף המעבר אמור להיחשב כמי שעבר/השלים. פער כזה מעיד לרוב על נתוני השלמה לא מעודכנים או על סף מעבר שגוי (למשל ציון עובר שהוגדר 0).",
       check:"עברו על שמות המשתתפים, וודאו את סטטוס ההשלמה שלהם ואת הגדרת “ציון עובר” בתנאי ההשלמה.",
+      where:"מופע הקורס ← דוח השלמות · והגדרות השלמה ← תנאי השלמה",
       names: report.gradeCompletion.names.slice()
     });
   }
@@ -1534,7 +1735,7 @@ function actionItemHTML(item, index){
       item.names.map(function(n){ return '<li>' + escapeHtml(n) + '</li>'; }).join("") + '</ul></div>';
   }
   return (
-    '<div class="action-item sev-' + sevClass + '">' +
+    '<div class="action-item sev-' + sevClass + '" id="action-' + index + '">' +
       '<div class="action-index">' + index + '</div>' +
       '<div class="action-body">' +
         '<div class="action-head">' +
@@ -1542,16 +1743,17 @@ function actionItemHTML(item, index){
           '<span class="cat-tag">' + escapeHtml(item.categoryTitle) + '</span>' +
         '</div>' +
         '<div class="action-label">' + escapeHtml(item.label) + '</div>' +
-        '<div class="action-what">' + escapeHtml(item.whatFound) + '</div>' +
+        /* the call-to-action leads — what to do comes first and stands out */
+        (item.check ? '<div class="action-do action-do-lead"><span class="do-cap">מה לעשות</span>' +
+          '<span class="do-text">' + escapeHtml(item.check) + '</span></div>' : "") +
+        (item.where ? '<div class="action-where"><span class="where-pin">📍</span>' +
+          '<span class="where-cap">היכן לתקן:</span> <span class="where-text">' + escapeHtml(item.where) + '</span></div>' : "") +
+        '<div class="action-what"><span class="what-cap">מה נמצא:</span> ' + escapeHtml(item.whatFound) + '</div>' +
         namesHTML +
         (item.why ?
-          '<div class="action-why">' +
-            '<div class="why-head"><span class="why-cap">למה זה חשוב</span>' +
-              '<button class="why-edit" type="button" disabled title="עריכת הנימוק תתאפשר בקרוב">✎ עריכה (בקרוב)</button>' +
-            '</div>' +
-            '<div class="why-text">' + escapeHtml(item.why) + '</div>' +
+          '<div class="action-why"><span class="why-cap">למה זה חשוב:</span> ' +
+            '<span class="why-text">' + escapeHtml(item.why) + '</span>' +
           '</div>' : "") +
-        (item.check ? '<div class="action-do"><span class="do-cap">מה לעשות:</span> ' + escapeHtml(item.check) + '</div>' : "") +
       '</div>' +
     '</div>'
   );
@@ -1566,7 +1768,8 @@ function actionListHTML(report){
       '<div class="all-clear-sub">כל הבדיקות עברו — אין פריטים שדורשים טיפול.</div></div></div>';
   }
   return '<section class="action-block">' +
-    '<h2 class="block-title">מה צריך לתקן <span class="block-count">' + items.length + '</span></h2>' +
+    '<h2 class="block-title">הצעדים להשלמת הקורס <span class="block-count">' + items.length + '</span></h2>' +
+    '<p class="block-sub">מסודרים לפי דחיפות — התחילו מהצעד הראשון ורדו למטה.</p>' +
     '<div class="action-list">' +
       items.map(function(it,i){ return actionItemHTML(it, i+1); }).join("") +
     '</div>' +
@@ -1619,9 +1822,10 @@ function actionListText(report, course){
   items.forEach(function(it, i){
     var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
     lines.push((i+1) + ". [" + sev + " · " + it.categoryTitle + "] " + it.label);
-    if (it.whatFound) lines.push("   נמצא: " + it.whatFound);
-    if (it.why) lines.push("   למה זה חשוב: " + it.why);
     if (it.check) lines.push("   מה לעשות: " + it.check);
+    if (it.where) lines.push("   היכן לתקן: " + it.where);
+    if (it.whatFound) lines.push("   מה נמצא: " + it.whatFound);
+    if (it.why) lines.push("   למה זה חשוב: " + it.why);
     lines.push("");
   });
   return lines.join("\n");
@@ -1642,6 +1846,12 @@ function overviewHTML(){
   var needAttention = errC + warnC;
   var total = cards.length;
 
+  /* most-urgent course first (also drives the "start here" CTA) */
+  var sevRank = {error:0, warn:1, ok:2};
+  var sorted = cards.slice().sort(function(a,b){
+    return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr) || (b.report.totalAlerts-a.report.totalAlerts);
+  });
+
   /* headline */
   var head;
   if (needAttention === 0){
@@ -1650,10 +1860,13 @@ function overviewHTML(){
       '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
       '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
   } else {
+    var worst = sorted[0];
     head = '<div class="ov-hero ov-hero-' + (errC>0?"error":"warn") + '">' +
       '<div class="ov-hero-mark">' + (errC>0?"⚠":"⚑") + '</div>' +
-      '<div><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים דורשים טיפול</div>' +
-      '<div class="ov-hero-sub">התחילו מהקורסים המסומנים באדום — הם החוסרים הקריטיים ביותר.</div></div></div>';
+      '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים דורשים טיפול</div>' +
+      '<div class="ov-hero-sub">התחילו מהקורס הדחוף ביותר, והמשיכו לפי הסדר למטה.</div>' +
+      (worst ? '<button class="cta-primary" type="button" data-ov-cta="' + escapeHtml(worst.course.id) + '">התחילי מ־' + escapeHtml(worst.course.title) + ' <span class="cta-arrow">←</span></button>' : "") +
+      '</div></div>';
   }
 
   /* status chips */
@@ -1664,10 +1877,6 @@ function overviewHTML(){
   '</div>';
 
   /* worst-first course grid */
-  var sevRank = {error:0, warn:1, ok:2};
-  var sorted = cards.slice().sort(function(a,b){
-    return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr) || (b.report.totalAlerts-a.report.totalAlerts);
-  });
   var grid = '<div class="ov-grid">' + sorted.map(function(c){
     var sev = c.report.severity;
     var statusClass = sev==="ok" ? "sev-ok" : (sev==="error" ? "sev-error" : "sev-warn");
@@ -1751,9 +1960,10 @@ function fullReportHTML(){
           var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
           return '<li class="pr-item pr-' + it.severity + '">' +
             '<div class="pr-item-title"><b>' + escapeHtml(it.label) + '</b> <span class="pr-sev">' + sev + ' · ' + escapeHtml(it.categoryTitle) + '</span></div>' +
-            '<div class="pr-line">' + escapeHtml(it.whatFound) + '</div>' +
-            (it.why ? '<div class="pr-line"><b>למה זה חשוב:</b> ' + escapeHtml(it.why) + '</div>' : "") +
             (it.check ? '<div class="pr-line"><b>מה לעשות:</b> ' + escapeHtml(it.check) + '</div>' : "") +
+            (it.where ? '<div class="pr-line"><b>📍 היכן לתקן:</b> ' + escapeHtml(it.where) + '</div>' : "") +
+            '<div class="pr-line"><b>מה נמצא:</b> ' + escapeHtml(it.whatFound) + '</div>' +
+            (it.why ? '<div class="pr-line"><b>למה זה חשוב:</b> ' + escapeHtml(it.why) + '</div>' : "") +
           '</li>';
         }).join("") + '</ol>'
       : '<div class="pr-clean">✓ הקורס מוגדר במלואו — אין פריטים שדורשים טיפול.</div>';
@@ -1794,20 +2004,25 @@ function renderMain(){
   if (!courses.length){
     $main.innerHTML =
       '<div class="empty-state">' +
-        '<h2>בואו נבדוק את איכות הגדרת הקורס</h2>' +
-        '<p>העלו את קובץ “דוח סטטוס סביבת עבודה” (Excel או CSV) שהורדתם מהמערכת, והכלי ינתח את הגדרות הקורס — יזהה חוסרים, חריגות ובעיות, ויסביר לכל אחת מהן מה הבעיה, למה היא חשובה, ומה מומלץ לבדוק.</p>' +
+        '<div class="empty-eyebrow">בקרת איכות לקורסים</div>' +
+        '<h2>גלי בדיוק מה חסר בכל קורס — ואיך להשלים אותו</h2>' +
+        '<p>העלי את קובץ “דוח סטטוס סביבת עבודה” שהורדת מהמערכת, והכלי יבדוק כל קורס, ' +
+        'יראה לך איפה הוא עומד, ויוביל אותך צעד־אחר־צעד: מה חסר, למה זה חשוב, ואיפה לתקן.</p>' +
         '<div class="dropzone" id="dropzone">' +
           '<div class="glyph">⤓</div>' +
-          '<strong>גררו לכאן קובץ Excel / CSV, או לחצו לבחירה</strong>' +
-          '<span>קובץ יכול להכיל קורס אחד או כמה קורסים — כל קורס נבדק בנפרד</span>' +
+          '<strong>גררי לכאן קובץ Excel / CSV, או לחצי לבחירה</strong>' +
+          '<span>אפשר קובץ עם קורס אחד או כמה — כל קורס מקבל דוח נפרד</span>' +
         '</div>' +
-        '<ul class="empty-checklist">' +
-          '<li>שדות חובה שנשארו ריקים (LBP, קהל יעד, רכזת אחראית ועוד)</li>' +
-          '<li>בדיקות מרצים פנימיים/חיצוניים וספקים</li>' +
-          '<li>בדיקות תקציב, עלויות וחשבוניות</li>' +
-          '<li>רכזת אחראית מתוך רשימת הרכזות המאושרות</li>' +
-          '<li>משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו</li>' +
-        '</ul>' +
+        '<div class="empty-how">' +
+          '<div class="empty-how-title">מה תקבלי מכל קורס</div>' +
+          '<ul class="empty-checklist">' +
+            '<li><b>תמונת מצב מיידית</b> — ציון QA וכותרת שאומרת אם הקורס מוכן או מה חוסם</li>' +
+            '<li><b>רשימת צעדים לפי דחיפות</b> — מה לעשות בכל צעד, ואיפה לתקן במערכת</li>' +
+            '<li><b>דגש על תקינות הציונים</b> — ציון עובר, ופערים בין ציון/נוכחות להשלמה</li>' +
+            '<li><b>סיכום להורדה</b> — ייצוא ל-PDF או העתקת רשימת המשימות</li>' +
+          '</ul>' +
+        '</div>' +
+        '<div class="empty-privacy">🔒 הכול נשאר במחשב שלך — הקובץ נבדק בדפדפן בלבד ולא נשלח לשום מקום.</div>' +
       '</div>';
     bindDropzone();
     return;
@@ -1822,7 +2037,6 @@ function renderMain(){
   var course = courses.filter(function(c){return c.id===activeId;})[0];
   if (!course){ activeId = null; renderMain(); return; }
   var report = computeReport(course);
-  var scoreColor = report.severity==="ok" ? "var(--ok)" : (report.severity==="error" ? "var(--err)" : "var(--warn)");
 
   var html = "";
 
@@ -1841,23 +2055,9 @@ function renderMain(){
       ' ללא נתוני משתתף (בדרך כלל שורת “סה“כ” שהמערכת מוסיפה) — היא לא נכללה בבדיקת ' + course.rows.length + ' המשתתפים.</div>';
   }
 
-  html += '<div class="course-header">' +
-    '<div class="score-ring" style="--pct:' + report.score + '; --ringcolor:' + scoreColor + '">' +
-      '<div class="score-ring-hole"><strong>' + report.score + '</strong><span>ציון QA</span></div>' +
-    '</div>' +
-    '<div class="course-header-info">' +
-      '<button class="back-to-overview" type="button" data-overview="1">→ חזרה לסקירה כללית</button>' +
-      '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + (course.groupColumnName ? ' · לפי “' + escapeHtml(course.groupColumnName) + '”' : '') + '</div>' +
-      '<h1 class="course-title">' + escapeHtml(course.title) + '</h1>' +
-      '<div class="course-stats">' +
-        '<span>✓ <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
-        '<span>⚑ <b>' + report.totalAlerts + '</b> התראות</span>' +
-        '<span>👥 <b>' + course.rows.length + '</b> משתתפים</span>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
-
-  html += verdictHTML(report);
+  var actionItems = collectActionItems(report);
+  html += heroHTML(report, course, actionItems);
+  html += gradeSpotlightHTML(report);
   html += actionListHTML(report);
   html += passedPanelHTML(report);
   html += detailsPanelHTML(course);
@@ -1954,6 +2154,24 @@ function bindMainEvents(){
   $main.querySelectorAll(".ov-card[data-id]").forEach(function(el){
     el.addEventListener("click", function(){ selectCourse(el.getAttribute("data-id")); });
   });
+  /* overview: "start from the most urgent course" CTA */
+  var ovCta = $main.querySelector("[data-ov-cta]");
+  if (ovCta){
+    ovCta.addEventListener("click", function(){ selectCourse(ovCta.getAttribute("data-ov-cta")); });
+  }
+  /* course hero: "start from the first step" CTA — scroll to and flash step 1 */
+  var ctaFirst = $main.querySelector("[data-cta-first]");
+  if (ctaFirst){
+    ctaFirst.addEventListener("click", function(){
+      var target = document.getElementById("action-1");
+      if (!target) return;
+      target.scrollIntoView({behavior:"smooth", block:"center"});
+      target.classList.remove("action-flash");
+      /* force reflow so the animation can retrigger on repeat clicks */
+      void target.offsetWidth;
+      target.classList.add("action-flash");
+    });
+  }
   var dlPdf = document.getElementById("downloadPdfBtn");
   if (dlPdf){
     dlPdf.addEventListener("click", function(){
