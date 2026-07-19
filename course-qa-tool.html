@@ -423,6 +423,7 @@
     transition:background .15s, border-color .15s;
   }
   .guide-btn:hover{background:var(--paper); border-color:var(--brand-sky);}
+  .empty-guide-steps{font-size:12.5px; color:var(--text-muted); margin-top:8px;}
 
   /* success state when there are no issues */
   .all-clear{
@@ -2055,6 +2056,7 @@ function renderMain(){
           '<span class="empty-guide-q">אין לך עדיין את הקובץ?</span>' +
           '<button class="guide-btn" id="reportGuideBtn" type="button">📄 איך מפיקים את הדוח? (מדריך PDF)</button>' +
         '</div>' +
+        '<div class="empty-guide-steps">הפיקי את הדוח במערכת, שמרי אותו כ־CSV, והעלי לכאן.</div>' +
         '<div class="empty-how">' +
           '<div class="empty-how-title">מה תקבלי מכל קורס</div>' +
           '<ul class="empty-checklist">' +
