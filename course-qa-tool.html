@@ -436,7 +436,7 @@ var CATEGORIES = [
 ];
 
 /* candidate header names for detecting the course-identifier column */
-var COURSE_ID_COLUMNS = ["שם קורס","קוד קורס","שם הקורס","קורס"];
+var COURSE_ID_COLUMNS = ["סביבת עבודה","שם קורס","קוד קורס","שם הקורס","קורס"];
 
 var PLACEHOLDER_JUNK = ["", "choose an item.", "choose an item", "בחר פריט", "יש לבחור", "select",
   "-", "—", "n/a", "na", "null", "undefined"];
@@ -626,18 +626,6 @@ function dateRequiredField(cfg){
 var RULES = [];
 
 /* ---- 1. פרטי קורס — required fields ---- */
-RULES.push(requiredField({id:"tags", category:"course-info", col:"תגיות", label:"תגיות",
-  why:"תגיות משמשות לסיווג הקורס ולסינון בקטלוג ובדוחות. ללא תגיות הקורס עלול לא להופיע בסינונים הרלוונטיים.",
-  check:"ודאו שהוזנו תגיות מתאימות המסווגות את הקורס."}));
-
-RULES.push(requiredField({id:"gathering-area", category:"course-info", col:"אזור התכנסות", label:"אזור התכנסות",
-  why:"אזור ההתכנסות מציין היכן מתכנסים הלומדים (פיזי או וירטואלי) ונדרש בכל סוגי הקורסים.",
-  check:"ודאו שהוזן אזור התכנסות (מיקום פיזי או קישור/פלטפורמה וירטואלית)."}));
-
-RULES.push(requiredField({id:"audience", category:"course-info", col:"קהל", label:"קהל",
-  why:"שדה הקהל מגדיר עבור מי נפתח הקורס וקובע מי יוכל להירשם ולראות אותו.",
-  check:"ודאו שהוגדר הקהל המתאים לקורס."}));
-
 RULES.push(requiredField({id:"lbp", category:"course-info", col:"LBP", label:"LBP",
   why:"שדה ה-LBP משמש לסיווג הקורס בדוחות ובבקרות. ללא LBP הקורס עלול לא להשתייך לקטגוריה הנכונה בדיווחים.",
   check:"ודאו שהקורס משויך ל-LBP המתאים."}));
@@ -1391,7 +1379,7 @@ function renderMain(){
           '<span>קובץ יכול להכיל קורס אחד או כמה קורסים — כל קורס נבדק בנפרד</span>' +
         '</div>' +
         '<ul class="empty-checklist">' +
-          '<li>שדות חובה שנשארו ריקים (תגיות, קהל, LBP, רכזת אחראית ועוד)</li>' +
+          '<li>שדות חובה שנשארו ריקים (LBP, קהל יעד, רכזת אחראית ועוד)</li>' +
           '<li>בדיקות מרצים פנימיים/חיצוניים וספקים</li>' +
           '<li>בדיקות תקציב, עלויות וחשבוניות</li>' +
           '<li>רכזת אחראית מתוך רשימת הרכזות המאושרות</li>' +
