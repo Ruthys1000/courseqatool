@@ -47,7 +47,7 @@
     /* Soft graduated tone scale by issue count (0 / 1-2 / 3-4 / 5+).
        Eases in so a course with one or two issues reads light-green, not alarming. */
     --tone-clean:#1F9D57;  --tone-clean-bg:#E4F4EA;
-    --tone-low:#5DA130;    --tone-low-bg:#EEF6E1;
+    --tone-low:#7CA61C;    --tone-low-bg:#F0F5DC;
     --tone-mid:#C79114;    --tone-mid-bg:#FBF1D6;
     --tone-high:#CF5B44;   --tone-high-bg:#FBE7E0;
     --info:#2C5FA0;
@@ -512,15 +512,18 @@
   }
   .ov-hero-title{font-family:var(--serif); font-weight:700; font-size:20px; line-height:1.3;}
   .ov-hero-sub{font-size:13.5px; margin-top:3px;}
-  .ov-hero-ok{background:var(--ok-bg); border-color:#A9DCBE;}
-  .ov-hero-ok .ov-hero-mark{background:var(--ok);}
-  .ov-hero-ok .ov-hero-title{color:#166B3C;} .ov-hero-ok .ov-hero-sub{color:#2E6B47;}
-  .ov-hero-warn{background:var(--tone-mid-bg); border-color:#E4C68A;}
-  .ov-hero-warn .ov-hero-mark{background:var(--tone-mid);}
-  .ov-hero-warn .ov-hero-title{color:#6B4A10;} .ov-hero-warn .ov-hero-sub{color:#6B4A10;}
-  .ov-hero-error{background:var(--tone-high-bg); border-color:#E8C3B8;}
-  .ov-hero-error .ov-hero-mark{background:var(--tone-high);}
-  .ov-hero-error .ov-hero-title{color:#8A3A2A;} .ov-hero-error .ov-hero-sub{color:#8A3A2A;}
+  .ov-hero-tone-clean{background:var(--tone-clean-bg); border-color:#A9DCBE;}
+  .ov-hero-tone-clean .ov-hero-mark{background:var(--tone-clean);}
+  .ov-hero-tone-clean .ov-hero-title{color:#166B3C;} .ov-hero-tone-clean .ov-hero-sub{color:#2E6B47;}
+  .ov-hero-tone-low{background:var(--tone-low-bg); border-color:#CFDD9A;}
+  .ov-hero-tone-low .ov-hero-mark{background:var(--tone-low);}
+  .ov-hero-tone-low .ov-hero-title{color:#4E6B10;} .ov-hero-tone-low .ov-hero-sub{color:#4E6B10;}
+  .ov-hero-tone-mid{background:var(--tone-mid-bg); border-color:#E4C68A;}
+  .ov-hero-tone-mid .ov-hero-mark{background:var(--tone-mid);}
+  .ov-hero-tone-mid .ov-hero-title{color:#6B4A10;} .ov-hero-tone-mid .ov-hero-sub{color:#6B4A10;}
+  .ov-hero-tone-high{background:var(--tone-high-bg); border-color:#E8C3B8;}
+  .ov-hero-tone-high .ov-hero-mark{background:var(--tone-high);}
+  .ov-hero-tone-high .ov-hero-title{color:#8A3A2A;} .ov-hero-tone-high .ov-hero-sub{color:#8A3A2A;}
   .ov-chips{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
   .ov-chip{
     background:var(--paper-2); border:1px solid var(--paper-line); border-radius:999px; padding:8px 16px;
@@ -1543,21 +1546,20 @@ function renderSidebar(){
       '</div>';
     return;
   }
-  var clean=0, warnCourses=0, errCourses=0;
+  var tCount = {clean:0, low:0, mid:0, high:0};
   var cards = courses.map(function(course){
     var report = computeReport(course);
-    if (report.severity==="ok") clean++;
-    else if (report.severity==="error") errCourses++;
-    else warnCourses++;
+    tCount[toneForCount(report.totalAlerts)]++;
     return {course:course, report:report};
   });
 
   $summaryBar.style.display = "flex";
   $summaryBar.innerHTML =
     '<div class="summary-chip"><span class="n">' + courses.length + '</span> קורסים נבדקו</div>' +
-    '<div class="summary-chip" style="color:var(--tone-clean)"><span class="n">' + clean + '</span> ללא בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-mid)"><span class="n">' + warnCourses + '</span> עם הערות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-high)"><span class="n">' + errCourses + '</span> דורשים טיפול</div>';
+    '<div class="summary-chip" style="color:var(--tone-clean)"><span class="n">' + tCount.clean + '</span> ללא בעיות</div>' +
+    '<div class="summary-chip" style="color:var(--tone-low)"><span class="n">' + tCount.low + '</span> 1–2 בעיות</div>' +
+    '<div class="summary-chip" style="color:var(--tone-mid)"><span class="n">' + tCount.mid + '</span> 3–4 בעיות</div>' +
+    '<div class="summary-chip" style="color:var(--tone-high)"><span class="n">' + tCount.high + '</span> 5+ בעיות</div>';
 
   /* worst-first so the courses that need attention rise to the top —
      essential once the list holds dozens of courses */
@@ -1859,43 +1861,42 @@ function overviewHTML(){
   var cards = courses.map(function(course){
     return {course:course, report:computeReport(course)};
   });
-  var clean=0, warnC=0, errC=0;
-  cards.forEach(function(c){
-    if (c.report.severity==="ok") clean++;
-    else if (c.report.severity==="error") errC++;
-    else warnC++;
-  });
-  var needAttention = errC + warnC;
+  /* group courses on the same soft count scale as the sidebar, so the aggregate
+     never lumps a 1-2 issue course under a harsh "needs treatment" bucket */
+  var tCount = {clean:0, low:0, mid:0, high:0};
+  cards.forEach(function(c){ tCount[toneForCount(c.report.totalAlerts)]++; });
   var total = cards.length;
+  var needAttention = total - tCount.clean;
+  var worstTone = tCount.high>0 ? "high" : (tCount.mid>0 ? "mid" : (tCount.low>0 ? "low" : "clean"));
 
   /* most-urgent course first (also drives the "start here" CTA) */
-  var sevRank = {error:0, warn:1, ok:2};
   var sorted = cards.slice().sort(function(a,b){
-    return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr) || (b.report.totalAlerts-a.report.totalAlerts);
+    return (b.report.totalAlerts-a.report.totalAlerts) || (b.report.totalErr-a.report.totalErr);
   });
 
   /* headline */
   var head;
   if (needAttention === 0){
-    head = '<div class="ov-hero ov-hero-ok">' +
+    head = '<div class="ov-hero ov-hero-tone-clean">' +
       '<div class="ov-hero-mark">✓</div>' +
       '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
       '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
   } else {
     var worst = sorted[0];
-    head = '<div class="ov-hero ov-hero-' + (errC>0?"error":"warn") + '">' +
-      '<div class="ov-hero-mark">' + (errC>0?"⚠":"⚑") + '</div>' +
-      '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים דורשים טיפול</div>' +
+    head = '<div class="ov-hero ov-hero-tone-' + worstTone + '">' +
+      '<div class="ov-hero-mark">' + (worstTone==="high"?"⚠":"⚑") + '</div>' +
+      '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים כוללים בעיות לתיקון</div>' +
       '<div class="ov-hero-sub">התחילו מהקורס הדחוף ביותר, והמשיכו לפי הסדר ברשימה שמימין.</div>' +
       (worst ? '<button class="cta-primary" type="button" data-ov-cta="' + escapeHtml(worst.course.id) + '">התחילי מ־' + escapeHtml(worst.course.title) + ' <span class="cta-arrow">←</span></button>' : "") +
       '</div></div>';
   }
 
-  /* status chips */
+  /* status chips — double as a legend for the sidebar color scale */
   var chips = '<div class="ov-chips">' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-clean)">' + clean + '</span> ללא בעיות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-mid)">' + warnC + '</span> עם הערות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + errC + '</span> דורשים טיפול</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-clean)">' + tCount.clean + '</span> ללא בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-low)">' + tCount.low + '</span> 1–2 בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-mid)">' + tCount.mid + '</span> 3–4 בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + tCount.high + '</span> 5+ בעיות</div>' +
   '</div>';
 
   /* hint that steers the user to the sidebar (now the single course navigator) */
@@ -1917,22 +1918,22 @@ function overviewHTML(){
 function fullReportHTML(){
   var now = new Date();
   var stamp = fmtDate(now) + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
-  var clean=0, warnC=0, errC=0;
+  var tCount = {clean:0, low:0, mid:0, high:0};
   var reports = courses.map(function(course){
     var report = computeReport(course);
-    if (report.severity==="ok") clean++; else if (report.severity==="error") errC++; else warnC++;
+    tCount[toneForCount(report.totalAlerts)]++;
     return {course:course, report:report};
   });
-  var sevRank = {error:0, warn:1, ok:2};
-  reports.sort(function(a,b){ return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr); });
+  reports.sort(function(a,b){ return (b.report.totalAlerts-a.report.totalAlerts) || (b.report.totalErr-a.report.totalErr); });
 
   var head = '<div class="pr-head">' +
     '<h1>סיכום בקרת QA — כל הקורסים</h1>' +
     '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + courses.length + ' קורסים · הופק ' + stamp + '</div>' +
     '<div class="pr-tally">' +
-      '<span style="color:var(--ok)">✓ ' + clean + ' תקינים</span>' +
-      '<span style="color:var(--warn)">⚑ ' + warnC + ' עם הערות</span>' +
-      '<span style="color:var(--err)">⚠ ' + errC + ' דורשים טיפול</span>' +
+      '<span style="color:var(--tone-clean)">✓ ' + tCount.clean + ' ללא בעיות</span>' +
+      '<span style="color:var(--tone-low)">' + tCount.low + ' עם 1–2 בעיות</span>' +
+      '<span style="color:var(--tone-mid)">' + tCount.mid + ' עם 3–4 בעיות</span>' +
+      '<span style="color:var(--tone-high)">' + tCount.high + ' עם 5+ בעיות</span>' +
     '</div></div>';
 
   var body = reports.map(function(r){
