@@ -253,16 +253,6 @@
   .course-stats{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--text-muted);}
   .course-stats b{color:var(--text); font-family:var(--mono); font-weight:700;}
 
-  .toolbar{
-    display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px;
-  }
-  .only-issues-toggle{
-    display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--text-muted);
-    cursor:pointer; user-select:none;
-    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:999px; padding:7px 14px;
-  }
-  .only-issues-toggle input{accent-color:var(--gold); width:15px; height:15px;}
-
   /* ===== Banners ===== */
   .banner{
     border-radius:10px; padding:14px 18px; margin-bottom:18px; font-size:13px; line-height:1.7;
@@ -272,93 +262,109 @@
   .banner.warn{background:var(--warn-bg); border:1px solid #E4C68A; color:#6B4A10;}
   .banner.na{background:var(--na-bg); border:1px solid #D6D2C4; color:#5B5647;}
 
-  /* ===== Sections ===== */
-  .section-card{
-    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:14px;
-    margin-bottom:16px; overflow:hidden; box-shadow:var(--shadow);
+  /* ===== Verdict (the story opener) ===== */
+  .verdict{
+    border-radius:12px; padding:14px 18px; margin-bottom:20px; font-size:16px; font-weight:700;
+    line-height:1.5; border:1px solid transparent; display:flex; align-items:center; gap:10px;
   }
-  .section-head{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:14px 18px; background:linear-gradient(180deg,#FFFFFF,#F4F8FD);
-    border-bottom:1px solid var(--paper-line);
-  }
-  .section-head-left{display:flex; align-items:center; gap:12px;}
-  .section-number{
-    font-family:var(--serif); font-weight:800; font-size:13px; color:#fff; background:var(--brand-blue); border:none;
-    border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex:none;
-  }
-  .section-title{font-family:var(--serif); font-weight:700; font-size:17px;}
-  .section-counts{display:flex; gap:6px;}
-  .count-pill{
-    font-size:11px; font-family:var(--mono); border-radius:999px; padding:2px 9px; font-weight:700;
-  }
-  .count-pill.err{background:var(--err-bg); color:var(--err);}
-  .count-pill.warn{background:var(--warn-bg); color:var(--warn);}
-  .count-pill.ok{background:var(--ok-bg); color:var(--ok);}
+  .verdict::before{font-size:18px; flex:none;}
+  .verdict-error{background:var(--err-bg); border-color:#E3B4B4; color:#8A2A2A;}
+  .verdict-error::before{content:"⚠";}
+  .verdict-warn{background:var(--warn-bg); border-color:#E4C68A; color:#6B4A10;}
+  .verdict-warn::before{content:"⚑";}
+  .verdict-ok{background:var(--ok-bg); border-color:#A9DCBE; color:#166B3C;}
+  .verdict-ok::before{content:"✓";}
 
-  .field-row{border-bottom:1px solid var(--paper-line);}
-  .field-row:last-child{border-bottom:none;}
-  .field-row-main{
-    display:flex; align-items:center; gap:12px; padding:12px 18px; cursor:pointer;
+  /* ===== Action list — "what to fix" ===== */
+  .block-title{
+    font-family:var(--serif); font-weight:700; font-size:18px; margin:0 0 12px;
+    display:flex; align-items:center; gap:10px;
   }
-  .field-row-main:hover{background:rgba(30,78,156,.045);}
-  .mark{
-    flex:none; width:24px; height:24px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+  .block-count{
+    font-family:var(--mono); font-size:13px; font-weight:700; color:var(--text-muted);
+    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:999px;
+    min-width:24px; height:24px; padding:0 8px; display:inline-flex; align-items:center; justify-content:center;
   }
-  .mark-ok{background:var(--ok-bg); color:var(--ok);}
-  .mark-warn{background:var(--warn-bg); color:var(--warn); border-radius:6px;}
-  .mark-error{background:var(--err-bg); color:var(--err);}
-  .mark-na{background:var(--na-bg); color:var(--na);}
-  .mark-info{background:var(--info-bg); color:var(--info);}
-  .field-texts{flex:1; min-width:0;}
-  .field-label{font-weight:700; font-size:13.5px;}
-  .field-value{
-    font-size:12.5px; color:var(--text-muted); margin-top:2px; unicode-bidi:plaintext;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
+  .action-list{display:flex; flex-direction:column; gap:12px; margin-bottom:24px;}
+  .action-item{
+    display:flex; gap:14px; background:var(--paper-2); border:1px solid var(--paper-line);
+    border-inline-start:5px solid var(--na); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow);
   }
-  .field-note{font-size:12px; margin-top:2px;}
-  .field-note.warn{color:var(--warn);}
-  .field-note.error{color:var(--err);}
-  .field-toggle{
-    flex:none; border:none; background:none; cursor:pointer; color:var(--brand-blue);
-    font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:5px;
-    padding:5px 11px; border-radius:999px; white-space:nowrap; transition:background .12s;
+  .action-item.sev-error{border-inline-start-color:var(--err);}
+  .action-item.sev-warn{border-inline-start-color:var(--warn);}
+  .action-index{
+    flex:none; width:28px; height:28px; border-radius:50%; background:var(--brand-blue); color:#fff;
+    font-family:var(--mono); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;
   }
-  .field-toggle:hover{background:var(--info-bg);}
-  .field-toggle .ft-label::before{content:"הצג פרטים";}
-  .field-row.open .field-toggle .ft-label::before{content:"הסתר פרטים";}
-  .field-toggle .ft-chev{display:inline-block; font-size:10px; transition:transform .15s;}
-  .field-row.open .field-toggle .ft-chev{transform:rotate(180deg);}
-  .field-detail{
-    display:none; padding:0 18px 16px 52px; font-size:13px; color:var(--text-muted);
+  .action-body{flex:1; min-width:0;}
+  .action-head{display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+  .sev-chip{
+    font-size:11px; font-weight:700; border-radius:999px; padding:2px 10px; font-family:var(--mono);
   }
-  .field-row.open .field-detail{display:block;}
-  .field-detail .why, .field-detail .check{margin-bottom:8px;}
-  .field-detail .why b, .field-detail .check b{color:var(--text); font-weight:700;}
+  .sev-chip.sev-error{background:var(--err-bg); color:var(--err);}
+  .sev-chip.sev-warn{background:var(--warn-bg); color:var(--warn);}
+  .cat-tag{font-size:11px; color:var(--text-muted); background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:2px 10px;}
+  .action-label{font-weight:700; font-size:15px; line-height:1.4;}
+  .action-what{font-size:13px; color:var(--text-muted); margin-top:3px; unicode-bidi:plaintext;}
+  .action-names{
+    margin:10px 0 2px; padding:10px 12px; background:var(--paper); border:1px dashed var(--paper-line-strong);
+    border-radius:8px; font-size:12.5px; line-height:1.8;
+  }
+  .action-names ul{margin:4px 0 0; padding-inline-start:20px;}
+  .action-why{
+    margin-top:12px; background:var(--info-bg); border:1px solid #CADCF0; border-radius:8px; padding:10px 12px;
+  }
+  .why-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px;}
+  .why-cap{font-size:11px; font-weight:700; letter-spacing:.03em; color:var(--info); text-transform:uppercase;}
+  .why-edit{
+    border:1px solid #BcD2EC; background:#fff; color:var(--info); border-radius:999px; font-size:11px;
+    padding:3px 10px; cursor:not-allowed; opacity:.75; display:inline-flex; align-items:center; gap:4px;
+  }
+  .why-text{font-size:13px; color:#2E4457; line-height:1.6;}
+  .action-do{font-size:13px; color:var(--text); margin-top:10px; line-height:1.6;}
+  .action-do .do-cap{font-weight:700; color:var(--ok);}
 
-  /* completion participants subsection */
-  .completion-block{padding:14px 18px;}
-  .completion-block.alert{background:var(--warn-bg);}
-  .completion-head{display:flex; align-items:center; gap:12px;}
-  .completion-head .mark{flex:none;}
-  .completion-title{font-weight:700; font-size:13.5px;}
-  .completion-sub{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
-  .completion-names{
-    margin:12px 0 4px; padding:12px 14px; background:var(--paper); border:1px dashed var(--paper-line-strong);
-    border-radius:8px; font-size:12.5px; line-height:1.9;
+  /* success state when there are no issues */
+  .all-clear{
+    display:flex; align-items:center; gap:14px; background:var(--ok-bg); border:1px solid #A9DCBE;
+    border-radius:12px; padding:18px 20px; margin-bottom:24px;
   }
-  .completion-names ul{margin:4px 0 0; padding-inline-start:20px;}
-  .completion-detail .why{margin-top:10px; font-size:13px; color:var(--text-muted);}
-  .completion-detail .why b{color:var(--text);}
+  .all-clear-mark{
+    flex:none; width:40px; height:40px; border-radius:50%; background:var(--ok); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700;
+  }
+  .all-clear-title{font-weight:700; font-size:16px; color:#166B3C;}
+  .all-clear-sub{font-size:13px; color:#2E6B47; margin-top:2px;}
 
-  /* only-issues filter: hide OK / info / na rows */
-  .only-issues .field-row.row-status-ok,
-  .only-issues .field-row.row-status-na,
-  .only-issues .field-row.row-status-info,
-  .only-issues .completion-block.row-status-ok,
-  .only-issues .completion-block.row-status-na{display:none;}
-  .only-issues .section-card.section-all-clean{display:none;}
+  /* ===== Collapsible panels (passed checks / course details) ===== */
+  .panel{
+    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:12px;
+    margin-bottom:14px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .panel > summary{
+    list-style:none; cursor:pointer; padding:14px 18px; font-weight:700; font-size:14px;
+    display:flex; align-items:center; gap:8px; user-select:none;
+  }
+  .panel > summary::-webkit-details-marker{display:none;}
+  .panel > summary::after{
+    content:"▾"; margin-inline-start:auto; font-size:12px; color:var(--text-muted); transition:transform .15s;
+  }
+  .panel[open] > summary::after{transform:rotate(180deg);}
+  .passed-panel > summary{color:var(--ok);}
+  .panel-note{font-weight:400; color:var(--text-muted); font-size:12px;}
+  .panel-body{padding:4px 18px 16px; border-top:1px solid var(--paper-line);}
+  .pass-row{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--paper-line); font-size:13px;}
+  .pass-row:last-child{border-bottom:none;}
+  .pass-mark{color:var(--ok); font-weight:700; flex:none;}
+  .pass-label{font-weight:600;}
+  .pass-val{color:var(--text-muted); margin-inline-start:auto; unicode-bidi:plaintext; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:55%;}
+
+  /* compact key/value grid for course details */
+  .kv-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--paper-line); padding-top:1px;}
+  @media (max-width:620px){ .kv-grid{grid-template-columns:1fr;} }
+  .kv{background:var(--paper-2); padding:9px 4px;}
+  .kv-k{font-size:11px; color:var(--text-muted); margin-bottom:2px;}
+  .kv-v{font-size:13px; font-weight:600; unicode-bidi:plaintext; word-break:break-word;}
 
   /* ===== Actions ===== */
   .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
@@ -378,9 +384,10 @@
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .field-toggle, .toolbar, .actions{display:none !important;}
-    .field-detail{display:block !important; padding-right:52px;}
-    .section-card, .course-header, .banner{box-shadow:none; break-inside:avoid;}
+    .sidebar, .add-file-btn, .actions, .why-edit{display:none !important;}
+    .panel[open] > summary::after, .panel > summary::after{display:none;}
+    .panel > .panel-body{display:block !important;}
+    .action-item, .panel, .course-header, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
   }
 </style>
@@ -1192,7 +1199,6 @@ async function buildCoursesFromXLSX(fileName, fileId, arrayBuffer){
 var courses = [];
 var activeId = null;
 var loadErrors = [];
-var onlyIssues = false;
 var fileCounter = 0;
 
 /* =====================================================================
@@ -1278,93 +1284,152 @@ function renderSidebar(){
   }).join("");
 }
 
-var MARK_GLYPH = {ok:"✓", warn:"!", error:"✕", na:"–", info:"ℹ"};
+/* ---- verdict: the one-line "where does this course stand" opener ---- */
+function verdictHTML(report){
+  var cls, text;
+  if (report.totalErr > 0){
+    cls = "error";
+    text = "הקורס דורש טיפול — " + report.totalErr + " " + (report.totalErr===1?"חוסר":"חוסרים") +
+      (report.totalWarn>0 ? " ו-" + report.totalWarn + " " + (report.totalWarn===1?"פריט":"פריטים") + " לתשומת לב" : "") +
+      " לפני שהקורס מוכן.";
+  } else if (report.totalWarn > 0){
+    cls = "warn";
+    text = "הקורס כמעט מוכן — " + (report.totalWarn===1 ? "נותר פריט אחד" : "נותרו " + report.totalWarn + " פריטים") + " לתשומת לב.";
+  } else {
+    cls = "ok";
+    text = "הקורס מוגדר במלואו — כל הבדיקות עברו. אין מה לתקן.";
+  }
+  return '<div class="verdict verdict-' + cls + '">' + escapeHtml(text) + '</div>';
+}
 
-function fieldRowHTML(f){
-  var markGlyph = MARK_GLYPH[f.status] || "–";
-  /* accordion: rows always start closed — the short note stays visible, and
-     "למה חשוב / מה לבדוק" opens only on click (keeps the page short & scannable) */
-  var openClass = "";
-  var rowStatusClass = " row-status-" + f.status;
-  var detectedText = (f.detected===null || f.detected===undefined || f.detected==="")
-    ? (f.status==="na" ? "—" : (f.status==="info" ? "—" : "לא נמצא ערך"))
-    : f.detected;
-  var noteClass = f.status==="error" ? "error" : (f.status==="warn" ? "warn" : "");
-  var hasDetail = !!(f.why || f.check);
+/* ---- flatten failing checks into one prioritized action list (errors first) ---- */
+function collectActionItems(report){
+  var items = [];
+  report.categories.forEach(function(cat){
+    cat.fields.forEach(function(f){
+      if (f.info || f.status==="na") return;
+      if (f.status==="error" || f.status==="warn"){
+        items.push({
+          severity:f.status, categoryTitle:cat.title, label:f.label,
+          whatFound: f.note || (f.detected ? String(f.detected) : "לא הוזן ערך"),
+          why:f.why || "", check:f.check || "", names:null
+        });
+      }
+    });
+  });
+  if (report.completionStatus==="warn" && report.completion && report.completion.count > 0){
+    items.push({
+      severity:"warn", categoryTitle:"השלמות",
+      label: report.completion.count + " משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו",
+      whatFound:"נמצאו משתתפים בעלי נוכחות מספקת שסטטוס ההשלמה שלהם עדיין “לא”.",
+      why:"ייתכן שנתוני ההשלמה אינם מעודכנים. כדאי לוודא שהמשתתפים שעמדו בדרישות הנוכחות אכן סומנו כמי שהשלימו את הקורס.",
+      check:"עברו על שמות המשתתפים, וודאו/עדכנו את סטטוס ההשלמה שלהם במערכת.",
+      names: report.completion.names.slice()
+    });
+  }
+  var order = {error:0, warn:1};
+  items.forEach(function(it,i){ it._i = i; });
+  items.sort(function(a,b){ return (order[a.severity]-order[b.severity]) || (a._i-b._i); });
+  return items;
+}
 
+function actionItemHTML(item, index){
+  var sevClass = item.severity==="error" ? "error" : "warn";
+  var sevLabel = item.severity==="error" ? "חוסר" : "לתשומת לב";
+  var namesHTML = "";
+  if (item.names && item.names.length){
+    namesHTML = '<div class="action-names"><b>שמות המשתתפים:</b><ul>' +
+      item.names.map(function(n){ return '<li>' + escapeHtml(n) + '</li>'; }).join("") + '</ul></div>';
+  }
   return (
-    '<div class="field-row' + openClass + rowStatusClass + '" data-field="' + escapeHtml(f.id) + '">' +
-      '<div class="field-row-main"' + (hasDetail ? ' data-toggle="' + escapeHtml(f.id) + '"' : '') + '>' +
-        '<span class="mark mark-' + f.status + '">' + markGlyph + '</span>' +
-        '<div class="field-texts">' +
-          '<div class="field-label">' + escapeHtml(f.label) + '</div>' +
-          '<div class="field-value">' + escapeHtml(detectedText) + '</div>' +
-          (f.note ? '<div class="field-note ' + noteClass + '">' + escapeHtml(f.note) + '</div>' : "") +
+    '<div class="action-item sev-' + sevClass + '">' +
+      '<div class="action-index">' + index + '</div>' +
+      '<div class="action-body">' +
+        '<div class="action-head">' +
+          '<span class="sev-chip sev-' + sevClass + '">' + sevLabel + '</span>' +
+          '<span class="cat-tag">' + escapeHtml(item.categoryTitle) + '</span>' +
         '</div>' +
-        (hasDetail ? '<button class="field-toggle" type="button" aria-label="הצג פרטים"><span class="ft-label"></span><span class="ft-chev">▾</span></button>' : '') +
+        '<div class="action-label">' + escapeHtml(item.label) + '</div>' +
+        '<div class="action-what">' + escapeHtml(item.whatFound) + '</div>' +
+        namesHTML +
+        (item.why ?
+          '<div class="action-why">' +
+            '<div class="why-head"><span class="why-cap">למה זה חשוב</span>' +
+              '<button class="why-edit" type="button" disabled title="עריכת הנימוק תתאפשר בקרוב">✎ עריכה (בקרוב)</button>' +
+            '</div>' +
+            '<div class="why-text">' + escapeHtml(item.why) + '</div>' +
+          '</div>' : "") +
+        (item.check ? '<div class="action-do"><span class="do-cap">מה לעשות:</span> ' + escapeHtml(item.check) + '</div>' : "") +
       '</div>' +
-      (hasDetail ?
-        '<div class="field-detail">' +
-          (f.why ? '<div class="why"><b>למה חשוב? </b>' + escapeHtml(f.why) + '</div>' : "") +
-          (f.check ? '<div class="check"><b>מה מומלץ לבדוק? </b>' + escapeHtml(f.check) + '</div>' : "") +
-        '</div>'
-      : "") +
     '</div>'
   );
 }
 
-function completionBlockHTML(completion){
-  if (!completion.available){
-    return '<div class="completion-block row-status-na">' +
-      '<div class="completion-head"><span class="mark mark-na">–</span>' +
-      '<div><div class="completion-title">בדיקת השלמה מול נוכחות</div>' +
-      '<div class="completion-sub">' + escapeHtml(completion.note) + '</div></div></div></div>';
+function actionListHTML(report){
+  var items = collectActionItems(report);
+  if (!items.length){
+    return '<div class="all-clear">' +
+      '<div class="all-clear-mark">✓</div>' +
+      '<div><div class="all-clear-title">הקורס מוגדר במלואו</div>' +
+      '<div class="all-clear-sub">כל הבדיקות עברו — אין פריטים שדורשים טיפול.</div></div></div>';
   }
-  if (completion.count === 0){
-    return '<div class="completion-block row-status-ok">' +
-      '<div class="completion-head"><span class="mark mark-ok">✓</span>' +
-      '<div><div class="completion-title">בדיקת השלמה מול נוכחות</div>' +
-      '<div class="completion-sub">לא נמצאו משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו.</div></div></div></div>';
-  }
-  var namesList = '<div class="completion-names"><b>שמות המשתתפים:</b><ul>' +
-    completion.names.map(function(n){ return '<li>' + escapeHtml(n) + '</li>'; }).join("") +
-    '</ul></div>';
-  return '<div class="completion-block alert row-status-warn">' +
-    '<div class="completion-head"><span class="mark mark-warn">!</span>' +
-    '<div><div class="completion-title">' + completion.count + ' משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו</div>' +
-    '<div class="completion-sub">נמצאו משתתפים בעלי נוכחות מספקת שסטטוס ההשלמה שלהם עדיין “לא”.</div></div></div>' +
-    namesList +
-    '<div class="completion-detail"><div class="why"><b>למה חשוב? </b>ייתכן שנתוני ההשלמה אינם מעודכנים. כדאי לוודא שהמשתתפים שעמדו בדרישות הנוכחות אכן סומנו כמי שהשלימו את הקורס.</div></div>' +
-    '</div>';
+  return '<section class="action-block">' +
+    '<h2 class="block-title">מה צריך לתקן <span class="block-count">' + items.length + '</span></h2>' +
+    '<div class="action-list">' +
+      items.map(function(it,i){ return actionItemHTML(it, i+1); }).join("") +
+    '</div>' +
+  '</section>';
 }
 
-function sectionCardHTML(cat){
-  var pills = "";
-  if (cat.err) pills += '<span class="count-pill err">' + cat.err + ' חוסר</span>';
-  if (cat.warn) pills += '<span class="count-pill warn">' + cat.warn + ' לתשומת לב</span>';
-  if (!cat.err && !cat.warn) pills += '<span class="count-pill ok">תקין</span>';
+/* ---- collapsed panel: checks that passed ---- */
+function passedPanelHTML(report){
+  var passed = [], naCount = 0;
+  report.categories.forEach(function(cat){
+    cat.fields.forEach(function(f){
+      if (f.info) return;
+      if (f.status==="ok") passed.push({label:f.label, detected:f.detected});
+      else if (f.status==="na") naCount++;
+    });
+  });
+  if (report.completionStatus==="ok") passed.push({label:"בדיקת השלמה מול נוכחות", detected:"תקין"});
+  if (!passed.length && !naCount) return "";
+  var summary = '✓ ' + passed.length + ' בדיקות עברו' + (naCount ? ' · ' + naCount + ' לא רלוונטיות' : '');
+  var rows = passed.map(function(p){
+    var val = (p.detected===null||p.detected===undefined||p.detected==="") ? "" :
+      '<span class="pass-val">' + escapeHtml(String(p.detected)) + '</span>';
+    return '<div class="pass-row"><span class="pass-mark">✓</span><span class="pass-label">' + escapeHtml(p.label) + '</span>' + val + '</div>';
+  }).join("");
+  return '<details class="panel passed-panel"><summary>' + escapeHtml(summary) + '</summary>' +
+    '<div class="panel-body">' + rows + '</div></details>';
+}
 
-  var body = cat.fields.map(fieldRowHTML).join("");
-  if (cat.id === "completions" && cat.completion){
-    body += completionBlockHTML(cat.completion);
-  }
-  if (cat.id === "course-info" && cat.infoRows){
-    body += cat.infoRows.map(fieldRowHTML).join("");
-  }
+/* ---- collapsed panel: read-only course details ---- */
+function detailsPanelHTML(course){
+  var infos = computeInfoRows(course);
+  if (!infos.length) return "";
+  var cells = infos.map(function(f){
+    var v = (f.detected===null||f.detected===undefined||f.detected==="") ? "—" : String(f.detected);
+    return '<div class="kv"><div class="kv-k">' + escapeHtml(f.label) + '</div>' +
+      '<div class="kv-v">' + escapeHtml(v) + '</div></div>';
+  }).join("");
+  return '<details class="panel details-panel"><summary>פרטי הקורס <span class="panel-note">(למידע בלבד)</span></summary>' +
+    '<div class="panel-body kv-grid">' + cells + '</div></details>';
+}
 
-  var allClean = (!cat.err && !cat.warn) ? " section-all-clean" : "";
-  return (
-    '<section class="section-card' + allClean + '" data-cat="' + cat.id + '">' +
-      '<div class="section-head">' +
-        '<div class="section-head-left">' +
-          '<span class="section-number">' + cat.num + '</span>' +
-          '<div class="section-title">' + escapeHtml(cat.title) + '</div>' +
-        '</div>' +
-        '<div class="section-counts">' + pills + '</div>' +
-      '</div>' +
-      '<div class="section-body">' + body + '</div>' +
-    '</section>'
-  );
+/* ---- plain-text export of the action list (for "copy") ---- */
+function actionListText(report, course){
+  var items = collectActionItems(report);
+  var lines = ["רשימת משימות — " + course.title, "ציון QA: " + report.score + "/100", ""];
+  if (!items.length){ lines.push("הקורס מוגדר במלואו — אין פריטים שדורשים טיפול."); return lines.join("\n"); }
+  items.forEach(function(it, i){
+    var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
+    lines.push((i+1) + ". [" + sev + " · " + it.categoryTitle + "] " + it.label);
+    if (it.whatFound) lines.push("   נמצא: " + it.whatFound);
+    if (it.why) lines.push("   למה זה חשוב: " + it.why);
+    if (it.check) lines.push("   מה לעשות: " + it.check);
+    lines.push("");
+  });
+  return lines.join("\n");
 }
 
 function renderMain(){
@@ -1427,18 +1492,17 @@ function renderMain(){
     '</div>' +
   '</div>';
 
-  html += '<div class="toolbar">' +
-    '<label class="only-issues-toggle"><input type="checkbox" id="onlyIssuesChk"' + (onlyIssues?' checked':'') + '> הצג רק בעיות</label>' +
-  '</div>';
-
-  html += report.categories.map(sectionCardHTML).join("");
+  html += verdictHTML(report);
+  html += actionListHTML(report);
+  html += passedPanelHTML(report);
+  html += detailsPanelHTML(course);
 
   html += '<div class="actions">' +
     '<button class="btn btn-primary" id="printBtn" type="button">🖨 ייצוא דוח QA (הדפסה / שמירה כ-PDF)</button>' +
+    '<button class="btn btn-outline" id="copyBtn" type="button">📋 העתק רשימת משימות</button>' +
   '</div>';
 
   $main.innerHTML = html;
-  $main.classList.toggle("only-issues", onlyIssues);
   bindMainEvents();
 }
 
@@ -1517,21 +1581,33 @@ function bindDropzone(){
 }
 
 function bindMainEvents(){
-  $main.querySelectorAll("[data-toggle]").forEach(function(el){
-    el.addEventListener("click", function(){
-      var row = el.closest(".field-row");
-      if (row) row.classList.toggle("open");
-    });
-  });
-  var chk = document.getElementById("onlyIssuesChk");
-  if (chk){
-    chk.addEventListener("change", function(){
-      onlyIssues = chk.checked;
-      $main.classList.toggle("only-issues", onlyIssues);
+  var printBtn = document.getElementById("printBtn");
+  if (printBtn){
+    printBtn.addEventListener("click", function(){
+      /* expand every collapsed panel so the exported/printed report is complete */
+      $main.querySelectorAll("details.panel").forEach(function(d){ d.open = true; });
+      window.print();
     });
   }
-  var printBtn = document.getElementById("printBtn");
-  if (printBtn){ printBtn.addEventListener("click", function(){ window.print(); }); }
+  var copyBtn = document.getElementById("copyBtn");
+  if (copyBtn){
+    copyBtn.addEventListener("click", function(){
+      var course = courses.filter(function(c){return c.id===activeId;})[0];
+      if (!course) return;
+      var text = actionListText(computeReport(course), course);
+      var original = copyBtn.innerHTML;
+      function flash(msg){ copyBtn.innerHTML = msg; setTimeout(function(){ copyBtn.innerHTML = original; }, 1600); }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ flash("✓ הועתק"); }, function(){ flash("✗ ההעתקה נכשלה"); });
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); flash("✓ הועתק"); } catch(e){ flash("✗ ההעתקה נכשלה"); }
+        document.body.removeChild(ta);
+      }
+    });
+  }
 }
 
 document.getElementById("addFileBtn").addEventListener("click", function(){
