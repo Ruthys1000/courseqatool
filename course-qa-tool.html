@@ -899,8 +899,44 @@ RULES.push({
   }
 });
 
+/* ---- passing grade (ציון עובר) ---- */
+RULES.push({
+  id:"passing-grade", category:"completions", label:"ציון עובר",
+  why:"אם הקורס מציג ציון, יש להגדיר “ציון עובר” (מקובל 80) כדי שחישוב ההשלמה יהיה נכון. ציון עובר של 0 משמעו שכל לומד “עובר” אוטומטית — גם ללא ציון אמיתי.",
+  check:"ודאו שהוגדר ציון עובר מתאים (למשל 80) בתנאי ההשלמה; אם הקורס ללא ציון — ודאו שמסומן “הסתר ציון”.",
+  compute:function(ctx){
+    var course = ctx.course;
+    var c = colOf(course, "ציון עובר");
+    if (!c.exists) return {status:"warn", detected:null, note:"העמודה “ציון עובר” לא נמצאה בקובץ."};
+    /* highest actual learner grade in the course, to judge whether grades are in use */
+    var gradeIdx = course.columnIndex["ציון"];
+    var maxGrade = null;
+    if (gradeIdx !== undefined){
+      for (var i=0;i<course.rows.length;i++){
+        var g = toNumber(course.rows[i][gradeIdx]);
+        if (!isNaN(g) && (maxGrade===null || g>maxGrade)) maxGrade = g;
+      }
+    }
+    var hasRealGrades = (maxGrade !== null && maxGrade > 0);
+    var passNum = toNumber(c.value);
+    if (isEmptyVal(c.value) || passNum === 0){
+      var shown = isEmptyVal(c.value) ? "לא הוגדר" : "0";
+      if (hasRealGrades){
+        return {status:"warn", detected:(isEmptyVal(c.value)?null:c.value),
+          note:"ציון עובר " + shown + ", בעוד שקיימים בקורס ציונים (עד " + maxGrade + "). אם הקורס עם ציון — הגדירו ציון עובר (מומלץ 80); אם ללא ציון — ודאו שמסומן “הסתר ציון”."};
+      }
+      return {status:"na", detected:(isEmptyVal(c.value)?null:c.value),
+        note:"נראה שהקורס ללא ציון. ודאו שמסומן “הסתר ציון” בכללי ההשלמה."};
+    }
+    var bad = invalidDistinctValues(c, function(v){ var n=toNumber(v); return (!isNaN(n) && n>=0 && n<=100) ? null : "אינו ציון תקין בטווח 0–100"; });
+    if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
+    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+    return {status:"ok", detected:c.value, note:"ציון עובר מוגדר (" + c.value + ")."};
+  }
+});
+
 /* =====================================================================
-   5. SPECIAL EVALUATOR — participants with >=80% attendance not completed
+   5. SPECIAL EVALUATORS — attendance/grade vs completion status
    ===================================================================== */
 function evalCompletionVsAttendance(course){
   var attIdx = course.columnIndex["נוכחות במפגשים"];
@@ -924,6 +960,34 @@ function evalCompletionVsAttendance(course){
     }
   }
   return {available:true, count:names.length, names:names};
+}
+
+/* participants whose grade is at/above the passing bar but marked "not completed" */
+function evalGradeVsCompletion(course){
+  var gradeIdx = course.columnIndex["ציון"];
+  var statusIdx = course.columnIndex["סטטוס השלמה"];
+  var nameIdx = course.columnIndex[course.participantNameCol];
+  if (gradeIdx === undefined || statusIdx === undefined){
+    return {available:false, count:0, names:[], threshold:80,
+      note:"העמודות “ציון” ו/או “סטטוס השלמה” לא נמצאו בקובץ — לא ניתן לבצע בדיקה זו."};
+  }
+  /* threshold: the course's passing grade when it's a real value (>0), otherwise the conventional 80 */
+  var passNum = toNumber(colOf(course, "ציון עובר").value);
+  var threshold = (!isNaN(passNum) && passNum > 0) ? passNum : 80;
+  var names = [];
+  for (var i=0;i<course.rows.length;i++){
+    var row = course.rows[i];
+    var grade = toNumber(row[gradeIdx]);
+    if (isNaN(grade)) continue;
+    var status = row[statusIdx];
+    var statusStr = (status===null||status===undefined) ? "" : String(status).trim();
+    if (grade >= threshold && statusStr === "לא"){
+      var nm = (nameIdx !== undefined && row[nameIdx]!=null && String(row[nameIdx]).trim()!=="")
+        ? String(row[nameIdx]).trim() : ("משתתף בשורה " + (i+1));
+      names.push(nm + " (" + grade + ")");
+    }
+  }
+  return {available:true, count:names.length, names:names, threshold:threshold};
 }
 
 /* =====================================================================
@@ -984,6 +1048,7 @@ function computeReport(course){
   var completionsCat = categories.filter(function(c){return c.id==="completions";})[0];
   var completion = evalCompletionVsAttendance(course);
   if (completionsCat) completionsCat.completion = completion;
+  var gradeCompletion = evalGradeVsCompletion(course);
 
   /* tally scored items */
   var totalErr=0, totalWarn=0, totalOk=0;
@@ -1000,6 +1065,11 @@ function computeReport(course){
     completionStatus = completion.count > 0 ? "warn" : "ok";
     if (completionStatus==="warn") totalWarn++; else totalOk++;
   }
+  var gradeStatus = null;
+  if (gradeCompletion.available){
+    gradeStatus = gradeCompletion.count > 0 ? "warn" : "ok";
+    if (gradeStatus==="warn") totalWarn++; else totalOk++;
+  }
 
   var denom = totalErr + totalWarn + totalOk;
   var score = denom ? Math.round(totalOk / denom * 100) : 100;
@@ -1013,6 +1083,7 @@ function computeReport(course){
       if (f.status==="error") err++; else if (f.status==="warn") warn++;
     });
     if (cat.id==="completions" && completionStatus==="warn") warn++;
+    if (cat.id==="completions" && gradeStatus==="warn") warn++;
     cat.err = err; cat.warn = warn;
   });
 
@@ -1022,6 +1093,7 @@ function computeReport(course){
 
   return {
     categories:categories, completion:completion, completionStatus:completionStatus,
+    gradeCompletion:gradeCompletion, gradeStatus:gradeStatus,
     totalErr:totalErr, totalWarn:totalWarn, totalOk:totalOk, totalAlerts:totalAlerts,
     score:score, severity:severity, archived:archived
   };
@@ -1431,6 +1503,17 @@ function collectActionItems(report){
       names: report.completion.names.slice()
     });
   }
+  if (report.gradeStatus==="warn" && report.gradeCompletion && report.gradeCompletion.count > 0){
+    var thr = report.gradeCompletion.threshold;
+    items.push({
+      severity:"warn", categoryTitle:"השלמות",
+      label: report.gradeCompletion.count + " משתתפים עם ציון " + thr + " ומעלה שלא סומנו כהושלמו",
+      whatFound:"נמצאו משתתפים שציונם עובר את סף המעבר (" + thr + ") אך סטטוס ההשלמה שלהם עדיין “לא”.",
+      why:"לומד שציונו מעל סף המעבר אמור להיחשב כמי שעבר/השלים. פער כזה מעיד לרוב על נתוני השלמה לא מעודכנים או על סף מעבר שגוי (למשל ציון עובר שהוגדר 0).",
+      check:"עברו על שמות המשתתפים, וודאו את סטטוס ההשלמה שלהם ואת הגדרת “ציון עובר” בתנאי ההשלמה.",
+      names: report.gradeCompletion.names.slice()
+    });
+  }
   var order = {error:0, warn:1};
   items.forEach(function(it,i){ it._i = i; });
   items.sort(function(a,b){ return (order[a.severity]-order[b.severity]) || (a._i-b._i); });
@@ -1496,6 +1579,7 @@ function passedPanelHTML(report){
     });
   });
   if (report.completionStatus==="ok") passed.push({label:"בדיקת השלמה מול נוכחות", detected:"תקין"});
+  if (report.gradeStatus==="ok") passed.push({label:"בדיקת ציון מול השלמה", detected:"תקין"});
   if (!passed.length && !naCount) return "";
   var summary = '✓ ' + passed.length + ' בדיקות עברו' + (naCount ? ' · ' + naCount + ' לא רלוונטיות' : '');
   var rows = passed.map(function(p){
