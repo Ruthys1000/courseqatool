@@ -458,14 +458,35 @@
     text-align:center; padding:26px; font-size:11.5px; color:var(--text-muted);
   }
 
+  /* ===== Full-portfolio print report (hidden on screen) ===== */
+  #printReport{display:none;}
+  #printReport .pr-head{margin-bottom:18px; border-bottom:2px solid var(--brand-blue); padding-bottom:12px;}
+  #printReport .pr-head h1{font-family:var(--serif); font-size:22px; margin:0 0 4px;}
+  #printReport .pr-sub{font-size:12px; color:var(--text-muted);}
+  #printReport .pr-tally{display:flex; gap:18px; margin-top:8px; font-size:13px; font-weight:700;}
+  #printReport .pr-course{margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--paper-line);}
+  #printReport .pr-course-head{display:flex; align-items:baseline; gap:10px; margin-bottom:8px;}
+  #printReport .pr-course-head h2{font-family:var(--serif); font-size:17px; margin:0;}
+  #printReport .pr-score{font-family:var(--mono); font-weight:700; font-size:14px; color:var(--brand-blue);}
+  #printReport .pr-items{margin:0; padding-inline-start:22px;}
+  #printReport .pr-item{margin-bottom:10px; padding-inline-start:8px; border-inline-start:3px solid var(--na);}
+  #printReport .pr-item.pr-error{border-inline-start-color:var(--err);}
+  #printReport .pr-item.pr-warn{border-inline-start-color:var(--warn);}
+  #printReport .pr-sev{font-size:11px; color:var(--text-muted); font-weight:400;}
+  #printReport .pr-line{font-size:12.5px; margin-top:2px; line-height:1.55;}
+  #printReport .pr-clean{font-size:13px; color:var(--ok); font-weight:700;}
+
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .actions, .why-edit{display:none !important;}
-    .panel[open] > summary::after, .panel > summary::after{display:none;}
+    .sidebar, .add-file-btn, .actions, .why-edit, .panel-cta{display:none !important;}
     .panel > .panel-body{display:block !important;}
     .action-item, .panel, .course-header, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
+    /* full-portfolio report: show only #printReport, one course per page */
+    body.printing-full .letterhead, body.printing-full .app-shell, body.printing-full footer.trust-footer{display:none !important;}
+    body.printing-full #printReport{display:block !important;}
+    body.printing-full .pr-course{break-inside:avoid;}
   }
 </style>
 </head>
@@ -495,6 +516,8 @@
   </div>
 
   <input type="file" id="fileInput" accept=".csv,.xlsx,.xlsm" multiple hidden>
+
+  <div id="printReport" aria-hidden="true"></div>
 
   <footer class="trust-footer">כלי פנימי לבקרת איכות הגדרת קורסים · אינו מהווה אישור רשמי, אלא בדיקה עצמית מסייעת לפני או אחרי פרסום הקורס.</footer>
 
@@ -876,8 +899,44 @@ RULES.push({
   }
 });
 
+/* ---- passing grade (ציון עובר) ---- */
+RULES.push({
+  id:"passing-grade", category:"completions", label:"ציון עובר",
+  why:"אם הקורס מציג ציון, יש להגדיר “ציון עובר” (מקובל 80) כדי שחישוב ההשלמה יהיה נכון. ציון עובר של 0 משמעו שכל לומד “עובר” אוטומטית — גם ללא ציון אמיתי.",
+  check:"ודאו שהוגדר ציון עובר מתאים (למשל 80) בתנאי ההשלמה; אם הקורס ללא ציון — ודאו שמסומן “הסתר ציון”.",
+  compute:function(ctx){
+    var course = ctx.course;
+    var c = colOf(course, "ציון עובר");
+    if (!c.exists) return {status:"warn", detected:null, note:"העמודה “ציון עובר” לא נמצאה בקובץ."};
+    /* highest actual learner grade in the course, to judge whether grades are in use */
+    var gradeIdx = course.columnIndex["ציון"];
+    var maxGrade = null;
+    if (gradeIdx !== undefined){
+      for (var i=0;i<course.rows.length;i++){
+        var g = toNumber(course.rows[i][gradeIdx]);
+        if (!isNaN(g) && (maxGrade===null || g>maxGrade)) maxGrade = g;
+      }
+    }
+    var hasRealGrades = (maxGrade !== null && maxGrade > 0);
+    var passNum = toNumber(c.value);
+    if (isEmptyVal(c.value) || passNum === 0){
+      var shown = isEmptyVal(c.value) ? "לא הוגדר" : "0";
+      if (hasRealGrades){
+        return {status:"warn", detected:(isEmptyVal(c.value)?null:c.value),
+          note:"ציון עובר " + shown + ", בעוד שקיימים בקורס ציונים (עד " + maxGrade + "). אם הקורס עם ציון — הגדירו ציון עובר (מומלץ 80); אם ללא ציון — ודאו שמסומן “הסתר ציון”."};
+      }
+      return {status:"na", detected:(isEmptyVal(c.value)?null:c.value),
+        note:"נראה שהקורס ללא ציון. ודאו שמסומן “הסתר ציון” בכללי ההשלמה."};
+    }
+    var bad = invalidDistinctValues(c, function(v){ var n=toNumber(v); return (!isNaN(n) && n>=0 && n<=100) ? null : "אינו ציון תקין בטווח 0–100"; });
+    if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
+    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+    return {status:"ok", detected:c.value, note:"ציון עובר מוגדר (" + c.value + ")."};
+  }
+});
+
 /* =====================================================================
-   5. SPECIAL EVALUATOR — participants with >=80% attendance not completed
+   5. SPECIAL EVALUATORS — attendance/grade vs completion status
    ===================================================================== */
 function evalCompletionVsAttendance(course){
   var attIdx = course.columnIndex["נוכחות במפגשים"];
@@ -901,6 +960,34 @@ function evalCompletionVsAttendance(course){
     }
   }
   return {available:true, count:names.length, names:names};
+}
+
+/* participants whose grade is at/above the passing bar but marked "not completed" */
+function evalGradeVsCompletion(course){
+  var gradeIdx = course.columnIndex["ציון"];
+  var statusIdx = course.columnIndex["סטטוס השלמה"];
+  var nameIdx = course.columnIndex[course.participantNameCol];
+  if (gradeIdx === undefined || statusIdx === undefined){
+    return {available:false, count:0, names:[], threshold:80,
+      note:"העמודות “ציון” ו/או “סטטוס השלמה” לא נמצאו בקובץ — לא ניתן לבצע בדיקה זו."};
+  }
+  /* threshold: the course's passing grade when it's a real value (>0), otherwise the conventional 80 */
+  var passNum = toNumber(colOf(course, "ציון עובר").value);
+  var threshold = (!isNaN(passNum) && passNum > 0) ? passNum : 80;
+  var names = [];
+  for (var i=0;i<course.rows.length;i++){
+    var row = course.rows[i];
+    var grade = toNumber(row[gradeIdx]);
+    if (isNaN(grade)) continue;
+    var status = row[statusIdx];
+    var statusStr = (status===null||status===undefined) ? "" : String(status).trim();
+    if (grade >= threshold && statusStr === "לא"){
+      var nm = (nameIdx !== undefined && row[nameIdx]!=null && String(row[nameIdx]).trim()!=="")
+        ? String(row[nameIdx]).trim() : ("משתתף בשורה " + (i+1));
+      names.push(nm + " (" + grade + ")");
+    }
+  }
+  return {available:true, count:names.length, names:names, threshold:threshold};
 }
 
 /* =====================================================================
@@ -961,6 +1048,7 @@ function computeReport(course){
   var completionsCat = categories.filter(function(c){return c.id==="completions";})[0];
   var completion = evalCompletionVsAttendance(course);
   if (completionsCat) completionsCat.completion = completion;
+  var gradeCompletion = evalGradeVsCompletion(course);
 
   /* tally scored items */
   var totalErr=0, totalWarn=0, totalOk=0;
@@ -977,6 +1065,11 @@ function computeReport(course){
     completionStatus = completion.count > 0 ? "warn" : "ok";
     if (completionStatus==="warn") totalWarn++; else totalOk++;
   }
+  var gradeStatus = null;
+  if (gradeCompletion.available){
+    gradeStatus = gradeCompletion.count > 0 ? "warn" : "ok";
+    if (gradeStatus==="warn") totalWarn++; else totalOk++;
+  }
 
   var denom = totalErr + totalWarn + totalOk;
   var score = denom ? Math.round(totalOk / denom * 100) : 100;
@@ -990,6 +1083,7 @@ function computeReport(course){
       if (f.status==="error") err++; else if (f.status==="warn") warn++;
     });
     if (cat.id==="completions" && completionStatus==="warn") warn++;
+    if (cat.id==="completions" && gradeStatus==="warn") warn++;
     cat.err = err; cat.warn = warn;
   });
 
@@ -999,6 +1093,7 @@ function computeReport(course){
 
   return {
     categories:categories, completion:completion, completionStatus:completionStatus,
+    gradeCompletion:gradeCompletion, gradeStatus:gradeStatus,
     totalErr:totalErr, totalWarn:totalWarn, totalOk:totalOk, totalAlerts:totalAlerts,
     score:score, severity:severity, archived:archived
   };
@@ -1408,6 +1503,17 @@ function collectActionItems(report){
       names: report.completion.names.slice()
     });
   }
+  if (report.gradeStatus==="warn" && report.gradeCompletion && report.gradeCompletion.count > 0){
+    var thr = report.gradeCompletion.threshold;
+    items.push({
+      severity:"warn", categoryTitle:"השלמות",
+      label: report.gradeCompletion.count + " משתתפים עם ציון " + thr + " ומעלה שלא סומנו כהושלמו",
+      whatFound:"נמצאו משתתפים שציונם עובר את סף המעבר (" + thr + ") אך סטטוס ההשלמה שלהם עדיין “לא”.",
+      why:"לומד שציונו מעל סף המעבר אמור להיחשב כמי שעבר/השלים. פער כזה מעיד לרוב על נתוני השלמה לא מעודכנים או על סף מעבר שגוי (למשל ציון עובר שהוגדר 0).",
+      check:"עברו על שמות המשתתפים, וודאו את סטטוס ההשלמה שלהם ואת הגדרת “ציון עובר” בתנאי ההשלמה.",
+      names: report.gradeCompletion.names.slice()
+    });
+  }
   var order = {error:0, warn:1};
   items.forEach(function(it,i){ it._i = i; });
   items.sort(function(a,b){ return (order[a.severity]-order[b.severity]) || (a._i-b._i); });
@@ -1473,6 +1579,7 @@ function passedPanelHTML(report){
     });
   });
   if (report.completionStatus==="ok") passed.push({label:"בדיקת השלמה מול נוכחות", detected:"תקין"});
+  if (report.gradeStatus==="ok") passed.push({label:"בדיקת ציון מול השלמה", detected:"תקין"});
   if (!passed.length && !naCount) return "";
   var summary = '✓ ' + passed.length + ' בדיקות עברו' + (naCount ? ' · ' + naCount + ' לא רלוונטיות' : '');
   var rows = passed.map(function(p){
@@ -1598,11 +1705,84 @@ function overviewHTML(){
     '</section>';
   }
 
+  var actions = '<div class="actions ov-actions">' +
+    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">⬇ הורד סיכום מלא (הדפסה / PDF)</button>' +
+    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">📄 הורד רשימת תיקונים (טקסט)</button>' +
+  '</div>';
+
   return '<div class="overview">' +
     '<div class="ov-header"><h1 class="ov-h1">סקירת הקורסים שלי</h1>' +
       '<div class="ov-file">' + escapeHtml(courses[0].fileName) + (total>1?' · ' + total + ' קורסים':'') + '</div></div>' +
-    head + chips + grid + common +
+    head + chips + grid + common + actions +
   '</div>';
+}
+
+/* ---- full-portfolio summary: printable report (all courses) ---- */
+function fullReportHTML(){
+  var now = new Date();
+  var stamp = fmtDate(now) + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  var clean=0, warnC=0, errC=0;
+  var reports = courses.map(function(course){
+    var report = computeReport(course);
+    if (report.severity==="ok") clean++; else if (report.severity==="error") errC++; else warnC++;
+    return {course:course, report:report};
+  });
+  var sevRank = {error:0, warn:1, ok:2};
+  reports.sort(function(a,b){ return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr); });
+
+  var head = '<div class="pr-head">' +
+    '<h1>סיכום בקרת QA — כל הקורסים</h1>' +
+    '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + courses.length + ' קורסים · הופק ' + stamp + '</div>' +
+    '<div class="pr-tally">' +
+      '<span style="color:var(--ok)">✓ ' + clean + ' תקינים</span>' +
+      '<span style="color:var(--warn)">⚑ ' + warnC + ' עם הערות</span>' +
+      '<span style="color:var(--err)">⚠ ' + errC + ' דורשים טיפול</span>' +
+    '</div></div>';
+
+  var body = reports.map(function(r){
+    var items = collectActionItems(r.report);
+    var itemsHTML = items.length
+      ? '<ol class="pr-items">' + items.map(function(it){
+          var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
+          return '<li class="pr-item pr-' + it.severity + '">' +
+            '<div class="pr-item-title"><b>' + escapeHtml(it.label) + '</b> <span class="pr-sev">' + sev + ' · ' + escapeHtml(it.categoryTitle) + '</span></div>' +
+            '<div class="pr-line">' + escapeHtml(it.whatFound) + '</div>' +
+            (it.why ? '<div class="pr-line"><b>למה זה חשוב:</b> ' + escapeHtml(it.why) + '</div>' : "") +
+            (it.check ? '<div class="pr-line"><b>מה לעשות:</b> ' + escapeHtml(it.check) + '</div>' : "") +
+          '</li>';
+        }).join("") + '</ol>'
+      : '<div class="pr-clean">✓ הקורס מוגדר במלואו — אין פריטים שדורשים טיפול.</div>';
+    return '<section class="pr-course">' +
+      '<div class="pr-course-head"><span class="pr-score">' + r.report.score + '/100</span>' +
+        '<h2>' + escapeHtml(r.course.title) + '</h2></div>' +
+      itemsHTML +
+    '</section>';
+  }).join("");
+
+  return head + body;
+}
+
+/* ---- full-portfolio summary: plain-text checklist (all courses) ---- */
+function fullReportText(){
+  var lines = ["סיכום בקרת QA — כל הקורסים", courses[0].fileName + " · " + courses.length + " קורסים", ""];
+  var reports = courses.map(function(course){ return {course:course, report:computeReport(course)}; });
+  var sevRank = {error:0, warn:1, ok:2};
+  reports.sort(function(a,b){ return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr); });
+  reports.forEach(function(r){
+    lines.push("========================================");
+    lines.push(actionListText(r.report, r.course).replace(/^רשימת משימות — /, ""));
+  });
+  return lines.join("\n");
+}
+
+function downloadTextFile(filename, text){
+  var blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
 }
 
 function renderMain(){
@@ -1769,6 +1949,27 @@ function bindMainEvents(){
   $main.querySelectorAll(".ov-card[data-id]").forEach(function(el){
     el.addEventListener("click", function(){ selectCourse(el.getAttribute("data-id")); });
   });
+  var dlPdf = document.getElementById("downloadPdfBtn");
+  if (dlPdf){
+    dlPdf.addEventListener("click", function(){
+      var box = document.getElementById("printReport");
+      box.innerHTML = fullReportHTML();
+      document.body.classList.add("printing-full");
+      var cleanup = function(){
+        document.body.classList.remove("printing-full");
+        box.innerHTML = "";
+        window.removeEventListener("afterprint", cleanup);
+      };
+      window.addEventListener("afterprint", cleanup);
+      window.print();
+    });
+  }
+  var dlTxt = document.getElementById("downloadTxtBtn");
+  if (dlTxt){
+    dlTxt.addEventListener("click", function(){
+      downloadTextFile("course-qa-summary.txt", fullReportText());
+    });
+  }
   var printBtn = document.getElementById("printBtn");
   if (printBtn){
     printBtn.addEventListener("click", function(){
