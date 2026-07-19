@@ -240,8 +240,8 @@
     text-align:right; max-width:480px; margin:0 auto; font-size:13px; color:var(--text-muted);
     border-top:1px solid var(--paper-line); padding-top:18px; display:grid; gap:8px;
   }
-  .empty-checklist li{list-style:none; display:flex; gap:8px;}
-  .empty-checklist li::before{content:"—"; color:var(--gold); flex:none;}
+  .empty-checklist li{list-style:none; display:flex; gap:8px; align-items:baseline;}
+  .empty-checklist .ic{color:var(--gold);}
 
   /* ===== Course header / summary ===== */
   .course-header{
@@ -1987,10 +1987,10 @@ function renderMain(){
         '<div class="empty-how">' +
           '<div class="empty-how-title">מה תקבלי מכל קורס</div>' +
           '<ul class="empty-checklist">' +
-            '<li><b>תמונת מצב מיידית</b> — מספר הבעיות לתיקון וכותרת שאומרת אם הקורס מוכן או מה חוסם</li>' +
-            '<li><b>רשימת צעדים לפי דחיפות</b> — מה לעשות בכל צעד, ואיפה לתקן במערכת</li>' +
-            '<li><b>דגש על תקינות הציונים</b> — ציון עובר, ופערים בין ציון/נוכחות להשלמה</li>' +
-            '<li><b>סיכום להורדה</b> — ייצוא ל-PDF או העתקת רשימת המשימות</li>' +
+            '<li>' + icon('check') + '<span><b>תמונת מצב מיידית:</b> מספר הבעיות לתיקון וכותרת שאומרת אם הקורס מוכן או מה חוסם</span></li>' +
+            '<li>' + icon('check') + '<span><b>רשימת צעדים לפי דחיפות:</b> מה לעשות בכל צעד, ואיפה לתקן במערכת</span></li>' +
+            '<li>' + icon('check') + '<span><b>דגש על תקינות הציונים:</b> ציון עובר, ופערים בין ציון/נוכחות להשלמה</span></li>' +
+            '<li>' + icon('check') + '<span><b>סיכום להורדה:</b> ייצוא ל-PDF או העתקת רשימת המשימות</span></li>' +
           '</ul>' +
         '</div>' +
         '<div class="empty-privacy">' + icon('lock') + ' הכול נשאר במחשב שלך — הקובץ נבדק בדפדפן בלבד ולא נשלח לשום מקום.</div>' +
