@@ -155,14 +155,14 @@
   .summary-chip{display:flex; align-items:center; gap:8px;}
   .summary-chip .n{font-family:var(--mono); font-weight:700;}
 
-  .course-list{display:flex; flex-direction:column; gap:10px; margin-bottom:14px;}
+  .course-list{display:flex; flex-direction:column; gap:7px; margin-bottom:14px;}
   .course-item{
     position:relative;
     background:var(--paper-2);
     border:1px solid var(--paper-line);
     border-inline-end:5px solid var(--na);
-    border-radius:10px;
-    padding:12px 14px 12px 32px;
+    border-radius:9px;
+    padding:8px 12px;
     cursor:pointer;
     box-shadow:var(--shadow);
     transition:transform .12s ease, box-shadow .12s ease;
@@ -184,14 +184,9 @@
   .course-item.tone-low .issue-tag{color:var(--tone-low);}
   .course-item.tone-mid .issue-tag{color:var(--tone-mid);}
   .course-item.tone-high .issue-tag{color:var(--tone-high);}
-  .course-name{font-weight:700; font-size:13.5px; margin-bottom:3px; word-break:break-word;}
-  .course-meta{font-size:11.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .course-name{font-weight:700; font-size:12.5px; margin-bottom:2px; word-break:break-word; line-height:1.35;}
+  .course-meta{font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .course-meta .issue-tag{font-weight:700;}
-  .course-remove{
-    position:absolute; left:8px; top:10px; width:20px; height:20px; border:none; background:none;
-    color:var(--text-muted); cursor:pointer; border-radius:50%; font-size:13px; line-height:1;
-  }
-  .course-remove:hover{background:var(--err-bg); color:var(--err);}
 
   /* ===== Sidebar placeholder (before first upload) ===== */
   .sidebar-placeholder{
@@ -319,7 +314,6 @@
   .sev-chip.sev-warn{background:var(--warn-bg); color:var(--warn);}
   .cat-tag{font-size:11px; color:var(--text-muted); background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:2px 10px;}
   .action-label{font-weight:700; font-size:15px; line-height:1.4;}
-  .action-what{font-size:13px; color:var(--text-muted); margin-top:3px; unicode-bidi:plaintext; text-align:right;}
   .action-names{
     margin:10px 0 2px; padding:10px 12px; background:var(--paper); border:1px dashed var(--paper-line-strong);
     border-radius:8px; font-size:12.5px; line-height:1.8;
@@ -335,8 +329,6 @@
     padding:3px 10px; cursor:not-allowed; opacity:.75; display:inline-flex; align-items:center; gap:4px;
   }
   .why-text{font-size:13px; color:#2E4457; line-height:1.6;}
-  .action-do{font-size:13px; color:var(--text); margin-top:10px; line-height:1.6;}
-  .action-do .do-cap{font-weight:700; color:var(--ok);}
 
   /* ===== Narrative hero (situation → meaning → call to action) ===== */
   .hero{
@@ -356,17 +348,7 @@
   .hero-tone-high .hero-headline{color:#8A3A2A;}
   .hero-sub{font-size:14px; color:var(--text-muted); line-height:1.6; margin-bottom:12px; max-width:640px;}
   .hero .course-stats{margin-bottom:4px;}
-  .cta-primary{
-    margin-top:8px; display:inline-flex; align-items:center; gap:8px;
-    background:var(--brand-blue); color:#fff; border:none; border-radius:999px;
-    padding:11px 22px; font-family:var(--sans); font-weight:700; font-size:14.5px; cursor:pointer;
-    box-shadow:0 2px 8px rgba(30,78,156,.28); transition:background .15s, transform .05s;
-  }
-  .cta-primary:hover{background:var(--brand-blue-deep);}
-  .cta-primary:active{transform:translateY(1px);}
-  .cta-arrow{font-size:17px; line-height:1;}
   .ov-hero-body{flex:1; min-width:220px;}
-  .ov-hero .cta-primary{margin-top:12px;}
 
   /* ===== Grade-integrity spotlight (pulled to the top of the story) ===== */
   .grade-spotlight{
@@ -389,13 +371,12 @@
   .gs-where{font-size:12px; margin-top:6px; color:var(--info);}
 
   /* ===== Action-first affordances ===== */
-  .block-sub{font-size:13px; color:var(--text-muted); margin:-6px 0 14px;}
-  .action-do-lead{
-    margin-top:8px; background:var(--ok-bg); border:1px solid #A9DCBE; border-radius:8px;
+  .action-found-lead{
+    margin-top:8px; background:var(--paper); border:1px solid var(--paper-line-strong); border-radius:8px;
     padding:9px 12px; display:flex; gap:8px; align-items:baseline;
   }
-  .action-do-lead .do-cap{font-weight:800; color:#166B3C; flex:none; font-size:12px;}
-  .action-do-lead .do-text{font-size:13.5px; color:var(--text); line-height:1.6;}
+  .action-found-lead .found-cap{font-weight:800; color:var(--text); flex:none; font-size:12px;}
+  .action-found-lead .found-text{font-size:13.5px; color:var(--text); line-height:1.6;}
   .action-where{
     font-size:12.5px; color:var(--info); margin-top:8px; line-height:1.6;
     display:flex; gap:6px; align-items:baseline; flex-wrap:wrap;
@@ -403,14 +384,7 @@
   .action-where .where-pin{flex:none;}
   .action-where .where-cap{font-weight:700;}
   .action-where .where-text{color:#2E4457;}
-  .action-what .what-cap{font-weight:700; color:var(--text);}
   .action-why .why-cap{display:inline; text-transform:none; letter-spacing:0; margin-inline-end:4px;}
-  @keyframes actionFlash{
-    0%{box-shadow:0 0 0 0 rgba(246,194,27,0);}
-    15%{box-shadow:0 0 0 4px rgba(246,194,27,.6);}
-    100%{box-shadow:0 0 0 0 rgba(246,194,27,0);}
-  }
-  .action-flash{animation:actionFlash 1.7s ease-out;}
 
   /* ===== Opening screen polish ===== */
   .empty-eyebrow{
@@ -477,9 +451,22 @@
   .pass-val{color:var(--text-muted); margin-inline-start:auto; unicode-bidi:plaintext; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:55%;}
 
   /* compact key/value grid for course details */
-  .kv-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px; background:var(--paper-line); padding-top:1px;}
-  @media (max-width:620px){ .kv-grid{grid-template-columns:1fr;} }
-  .kv{background:var(--paper-2); padding:9px 4px;}
+  .kv-grid{
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+    border:1px solid var(--paper-line); border-radius:8px; overflow:hidden;
+    background:var(--paper-2); margin-top:4px;
+  }
+  .kv{
+    background:var(--paper-2); padding:9px 12px;
+    border-top:1px solid var(--paper-line); border-inline-start:1px solid var(--paper-line);
+  }
+  .kv:nth-child(1), .kv:nth-child(2){border-top:none;}
+  .kv:nth-child(odd){border-inline-start:none;}
+  @media (max-width:620px){
+    .kv-grid{grid-template-columns:1fr;}
+    .kv:nth-child(2){border-top:1px solid var(--paper-line);}
+    .kv:nth-child(even){border-inline-start:none;}
+  }
   .kv-k{font-size:11px; color:var(--text-muted); margin-bottom:2px;}
   .kv-v{font-size:13px; font-weight:600; unicode-bidi:plaintext; text-align:right; word-break:break-word;}
 
@@ -530,11 +517,6 @@
     font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:8px;
   }
   .ov-chip-n{font-family:var(--mono); font-weight:700; font-size:15px;}
-  .ov-nav-hint{
-    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:12px;
-    padding:14px 18px; font-size:13.5px; color:var(--text-muted); line-height:1.6; box-shadow:var(--shadow);
-    margin-bottom:16px;
-  }
 
   /* ===== Actions ===== */
   .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
@@ -572,7 +554,7 @@
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .actions, .panel-cta, .cta-primary, .back-to-overview{display:none !important;}
+    .sidebar, .add-file-btn, .actions, .panel-cta, .back-to-overview{display:none !important;}
     .panel > .panel-body{display:block !important;}
     .action-item, .panel, .course-header, .hero, .grade-spotlight, .banner, .verdict, .all-clear{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
@@ -1578,7 +1560,6 @@ function renderSidebar(){
     var issuesLabel = n === 0 ? "אין בעיות" : (n === 1 ? "בעיה אחת" : n + " בעיות");
     return (
       '<div class="course-item ' + toneClass + active + '" data-id="' + escapeHtml(c.course.id) + '">' +
-        '<button class="course-remove" data-remove="' + escapeHtml(c.course.id) + '" title="הסר קורס" aria-label="הסר קורס">✕</button>' +
         '<div class="course-name">' + escapeHtml(c.course.title) + '</div>' +
         '<div class="course-meta"><span class="issue-tag">' + issuesLabel + '</span> · ' +
           c.course.rows.length + ' משתתפים</div>' +
@@ -1613,25 +1594,22 @@ function heroHTML(report, course, items){
   var sev = report.severity;
   var n = items.length;
   var tone = toneForCount(n);
-  var headline, sub, ctaHTML = "";
+  var headline, sub = "";
 
   if (sev === "ok"){
     if (phase === "ran"){
-      headline = "הקורס תקין — אין מה לתקן";
-      sub = "כל הבדיקות עברו. הקורס כבר רץ ואין פערים שדורשים טיפול.";
+      headline = "אין מה לתקן";
+      sub = "כל הבדיקות עברו — אין פערים שדורשים טיפול.";
     } else {
-      headline = "הקורס מוכן להפצה";
+      headline = "מוכן להפצה";
       sub = "כל הבדיקות עברו — אפשר לפרסם אותו בקטלוג הקורסים.";
     }
   } else {
     if (phase === "ran"){
-      headline = "הקורס כבר רץ — נותרו " + n + " " + (n===1 ? "דבר לתיקון" : "דברים לתיקון והשלמה");
+      headline = n===1 ? "נותר דבר אחד לתיקון" : "נותרו " + n + " דברים לתיקון והשלמה";
     } else {
-      headline = "הקורס כמעט מוכן להפצה — נותרו " + n + " " + (n===1 ? "צעד" : "צעדים");
+      headline = n===1 ? "נותר צעד אחד" : "נותרו " + n + " צעדים";
     }
-    var first = items[0];
-    sub = "הכי דחוף עכשיו: " + (first ? first.label : "") + ". עברו על הצעדים לפי הסדר — כל אחד עם הסבר קצר ואיפה לתקן.";
-    ctaHTML = '<button class="cta-primary" type="button" data-cta-first>התחילי מהצעד הראשון <span class="cta-arrow">←</span></button>';
   }
 
   var badge = n === 0
@@ -1646,13 +1624,12 @@ function heroHTML(report, course, items){
         '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + (course.groupColumnName ? ' · לפי “' + escapeHtml(course.groupColumnName) + '”' : '') + '</div>' +
         '<h1 class="course-title">' + escapeHtml(course.title) + '</h1>' +
         '<div class="hero-headline">' + escapeHtml(headline) + '</div>' +
-        '<div class="hero-sub">' + escapeHtml(sub) + '</div>' +
+        (sub ? '<div class="hero-sub">' + escapeHtml(sub) + '</div>' : "") +
         '<div class="course-stats">' +
           '<span>✓ <b>' + report.totalOk + '</b> בדיקות תקינות</span>' +
           '<span>⚑ <b>' + report.totalAlerts + '</b> בעיות לתיקון</span>' +
           '<span>👥 <b>' + course.rows.length + '</b> משתתפים</span>' +
         '</div>' +
-        ctaHTML +
       '</div>' +
     '</div>' +
   '</div>';
@@ -1769,11 +1746,10 @@ function actionItemHTML(item, index){
         '</div>' +
         '<div class="action-label">' + escapeHtml(item.label) + '</div>' +
         /* the call-to-action leads — what to do comes first and stands out */
-        (item.check ? '<div class="action-do action-do-lead"><span class="do-cap">מה לעשות</span>' +
-          '<span class="do-text">' + escapeHtml(item.check) + '</span></div>' : "") +
+        (item.whatFound ? '<div class="action-found action-found-lead"><span class="found-cap">מה נמצא</span>' +
+          '<span class="found-text">' + escapeHtml(item.whatFound) + '</span></div>' : "") +
         (item.where ? '<div class="action-where"><span class="where-pin">📍</span>' +
           '<span class="where-cap">היכן לתקן:</span> <span class="where-text">' + escapeHtml(item.where) + '</span></div>' : "") +
-        '<div class="action-what"><span class="what-cap">מה נמצא:</span> ' + escapeHtml(item.whatFound) + '</div>' +
         namesHTML +
         (item.why ?
           '<div class="action-why"><span class="why-cap">למה זה חשוב:</span> ' +
@@ -1794,7 +1770,6 @@ function actionListHTML(report){
   }
   return '<section class="action-block">' +
     '<h2 class="block-title">הצעדים להשלמת הקורס <span class="block-count">' + items.length + '</span></h2>' +
-    '<p class="block-sub">מסודרים לפי דחיפות — התחילו מהצעד הראשון ורדו למטה.</p>' +
     '<div class="action-list">' +
       items.map(function(it,i){ return actionItemHTML(it, i+1); }).join("") +
     '</div>' +
@@ -1843,15 +1818,9 @@ function detailsPanelHTML(course){
 function actionListText(report, course){
   var items = collectActionItems(report);
   var lines = ["רשימת משימות — " + course.title, (items.length ? "בעיות שנמצאו: " + items.length : "אין בעיות — הקורס תקין"), ""];
-  if (!items.length){ lines.push("הקורס מוגדר במלואו — אין פריטים שדורשים טיפול."); return lines.join("\n"); }
+  if (!items.length){ return lines.join("\n"); }
   items.forEach(function(it, i){
-    var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
-    lines.push((i+1) + ". [" + sev + " · " + it.categoryTitle + "] " + it.label);
-    if (it.check) lines.push("   מה לעשות: " + it.check);
-    if (it.where) lines.push("   היכן לתקן: " + it.where);
-    if (it.whatFound) lines.push("   מה נמצא: " + it.whatFound);
-    if (it.why) lines.push("   למה זה חשוב: " + it.why);
-    lines.push("");
+    lines.push((i+1) + ". " + it.label);
   });
   return lines.join("\n");
 }
@@ -1869,11 +1838,6 @@ function overviewHTML(){
   var needAttention = total - tCount.clean;
   var worstTone = tCount.high>0 ? "high" : (tCount.mid>0 ? "mid" : (tCount.low>0 ? "low" : "clean"));
 
-  /* most-urgent course first (also drives the "start here" CTA) */
-  var sorted = cards.slice().sort(function(a,b){
-    return (b.report.totalAlerts-a.report.totalAlerts) || (b.report.totalErr-a.report.totalErr);
-  });
-
   /* headline */
   var head;
   if (needAttention === 0){
@@ -1882,12 +1846,10 @@ function overviewHTML(){
       '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
       '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
   } else {
-    var worst = sorted[0];
     head = '<div class="ov-hero ov-hero-tone-' + worstTone + '">' +
       '<div class="ov-hero-mark">' + (worstTone==="high"?"⚠":"⚑") + '</div>' +
       '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים כוללים בעיות לתיקון</div>' +
-      '<div class="ov-hero-sub">התחילו מהקורס הדחוף ביותר, והמשיכו לפי הסדר ברשימה שמימין.</div>' +
-      (worst ? '<button class="cta-primary" type="button" data-ov-cta="' + escapeHtml(worst.course.id) + '">התחילי מ־' + escapeHtml(worst.course.title) + ' <span class="cta-arrow">←</span></button>' : "") +
+      '<div class="ov-hero-sub">הדחוף ביותר מופיע ראשון ברשימה שמימין.</div>' +
       '</div></div>';
   }
 
@@ -1899,9 +1861,6 @@ function overviewHTML(){
     '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + tCount.high + '</span> 5+ בעיות</div>' +
   '</div>';
 
-  /* hint that steers the user to the sidebar (now the single course navigator) */
-  var nav = '<div class="ov-nav-hint">▸ בחרו קורס מהרשימה שמימין כדי לראות את הדוח המפורט שלו. הקורסים מסודרים לפי דחיפות — הדחופים ביותר למעלה.</div>';
-
   var actions = '<div class="actions ov-actions">' +
     '<button class="btn btn-primary" id="downloadPdfBtn" type="button">⬇ הורד סיכום מלא (הדפסה / PDF)</button>' +
     '<button class="btn btn-outline" id="downloadTxtBtn" type="button">📄 הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
@@ -1910,7 +1869,7 @@ function overviewHTML(){
   return '<div class="overview">' +
     '<div class="ov-header"><h1 class="ov-h1">סקירת הקורסים שלי</h1>' +
       '<div class="ov-file">' + escapeHtml(courses[0].fileName) + (total>1?' · ' + total + ' קורסים':'') + '</div></div>' +
-    head + chips + nav + actions +
+    head + chips + actions +
   '</div>';
 }
 
@@ -1937,27 +1896,35 @@ function fullReportHTML(){
     '</div></div>';
 
   var body = reports.map(function(r){
-    var items = collectActionItems(r.report);
-    var itemsHTML = items.length
-      ? '<ol class="pr-items">' + items.map(function(it){
-          var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
-          return '<li class="pr-item pr-' + it.severity + '">' +
-            '<div class="pr-item-title"><b>' + escapeHtml(it.label) + '</b> <span class="pr-sev">' + sev + ' · ' + escapeHtml(it.categoryTitle) + '</span></div>' +
-            (it.check ? '<div class="pr-line"><b>מה לעשות:</b> ' + escapeHtml(it.check) + '</div>' : "") +
-            (it.where ? '<div class="pr-line"><b>📍 היכן לתקן:</b> ' + escapeHtml(it.where) + '</div>' : "") +
-            '<div class="pr-line"><b>מה נמצא:</b> ' + escapeHtml(it.whatFound) + '</div>' +
-            (it.why ? '<div class="pr-line"><b>למה זה חשוב:</b> ' + escapeHtml(it.why) + '</div>' : "") +
-          '</li>';
-        }).join("") + '</ol>'
-      : '<div class="pr-clean">✓ הקורס מוגדר במלואו — אין פריטים שדורשים טיפול.</div>';
-    return '<section class="pr-course">' +
-      '<div class="pr-course-head"><span class="pr-score">' + (items.length ? items.length + (items.length===1?" בעיה":" בעיות") : "תקין") + '</span>' +
-        '<h2>' + escapeHtml(r.course.title) + '</h2></div>' +
-      itemsHTML +
-    '</section>';
+    return leanCourseSectionHTML(r.course, r.report);
   }).join("");
 
   return head + body;
+}
+
+/* ---- lean per-course block for downloads: title + count + issue labels only ---- */
+function leanCourseSectionHTML(course, report){
+  var items = collectActionItems(report);
+  var itemsHTML = items.length
+    ? '<ol class="pr-items">' + items.map(function(it){
+        return '<li class="pr-item pr-' + it.severity + '">' + escapeHtml(it.label) + '</li>';
+      }).join("") + '</ol>'
+    : '<div class="pr-clean">✓ אין בעיות — הקורס תקין.</div>';
+  return '<section class="pr-course">' +
+    '<div class="pr-course-head"><span class="pr-score">' + (items.length ? items.length + (items.length===1?" בעיה":" בעיות") : "תקין") + '</span>' +
+      '<h2>' + escapeHtml(course.title) + '</h2></div>' +
+    itemsHTML +
+  '</section>';
+}
+
+/* ---- single-course printable report (lean: name + issue list) ---- */
+function singleReportHTML(course, report){
+  var now = new Date();
+  var stamp = fmtDate(now) + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  var head = '<div class="pr-head">' +
+    '<h1>דוח QA — ' + escapeHtml(course.title) + '</h1>' +
+    '<div class="pr-sub">' + escapeHtml(course.fileName) + ' · הופק ' + stamp + '</div></div>';
+  return head + leanCourseSectionHTML(course, report);
 }
 
 /* ---- full-portfolio summary: plain-text checklist (all courses) ---- */
@@ -2068,12 +2035,6 @@ function scrollToTop(){ window.scrollTo(0, 0); if ($main) $main.scrollTop = 0; }
 function selectCourse(id){ activeId = id; renderSidebar(); renderMain(); scrollToTop(); }
 function showOverview(){ activeId = null; renderSidebar(); renderMain(); scrollToTop(); }
 
-function removeCourse(id){
-  courses = courses.filter(function(c){ return c.id !== id; });
-  if (activeId === id){ activeId = courses.length ? courses[0].id : null; }
-  renderSidebar(); renderMain();
-}
-
 function humanizeLoadError(err){
   var msg = (err && err.message) || String(err);
   if (msg.indexOf("DecompressionStream") !== -1){
@@ -2141,24 +2102,6 @@ function bindMainEvents(){
   $main.querySelectorAll("[data-overview]").forEach(function(el){
     el.addEventListener("click", function(){ showOverview(); });
   });
-  /* overview: "start from the most urgent course" CTA */
-  var ovCta = $main.querySelector("[data-ov-cta]");
-  if (ovCta){
-    ovCta.addEventListener("click", function(){ selectCourse(ovCta.getAttribute("data-ov-cta")); });
-  }
-  /* course hero: "start from the first step" CTA — scroll to and flash step 1 */
-  var ctaFirst = $main.querySelector("[data-cta-first]");
-  if (ctaFirst){
-    ctaFirst.addEventListener("click", function(){
-      var target = document.getElementById("action-1");
-      if (!target) return;
-      target.scrollIntoView({behavior:"smooth", block:"center"});
-      target.classList.remove("action-flash");
-      /* force reflow so the animation can retrigger on repeat clicks */
-      void target.offsetWidth;
-      target.classList.add("action-flash");
-    });
-  }
   var dlPdf = document.getElementById("downloadPdfBtn");
   if (dlPdf){
     dlPdf.addEventListener("click", function(){
@@ -2183,8 +2126,17 @@ function bindMainEvents(){
   var printBtn = document.getElementById("printBtn");
   if (printBtn){
     printBtn.addEventListener("click", function(){
-      /* expand every collapsed panel so the exported/printed report is complete */
-      $main.querySelectorAll("details.panel").forEach(function(d){ d.open = true; });
+      var course = courses.filter(function(c){return c.id===activeId;})[0];
+      if (!course) return;
+      var box = document.getElementById("printReport");
+      box.innerHTML = singleReportHTML(course, computeReport(course));
+      document.body.classList.add("printing-full");
+      var cleanup = function(){
+        document.body.classList.remove("printing-full");
+        box.innerHTML = "";
+        window.removeEventListener("afterprint", cleanup);
+      };
+      window.addEventListener("afterprint", cleanup);
       window.print();
     });
   }
@@ -2208,8 +2160,6 @@ document.getElementById("loadErrorsBar").addEventListener("click", function(e){
 });
 
 $courseList.addEventListener("click", function(e){
-  var remove = e.target.closest("[data-remove]");
-  if (remove){ e.stopPropagation(); removeCourse(remove.getAttribute("data-remove")); return; }
   if (e.target.closest("[data-overview]")){ showOverview(); return; }
   var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
