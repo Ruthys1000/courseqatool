@@ -319,7 +319,6 @@
   .sev-chip.sev-warn{background:var(--warn-bg); color:var(--warn);}
   .cat-tag{font-size:11px; color:var(--text-muted); background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:2px 10px;}
   .action-label{font-weight:700; font-size:15px; line-height:1.4;}
-  .action-what{font-size:13px; color:var(--text-muted); margin-top:3px; unicode-bidi:plaintext; text-align:right;}
   .action-names{
     margin:10px 0 2px; padding:10px 12px; background:var(--paper); border:1px dashed var(--paper-line-strong);
     border-radius:8px; font-size:12.5px; line-height:1.8;
@@ -403,7 +402,6 @@
   .action-where .where-pin{flex:none;}
   .action-where .where-cap{font-weight:700;}
   .action-where .where-text{color:#2E4457;}
-  .action-what .what-cap{font-weight:700; color:var(--text);}
   .action-why .why-cap{display:inline; text-transform:none; letter-spacing:0; margin-inline-end:4px;}
   @keyframes actionFlash{
     0%{box-shadow:0 0 0 0 rgba(246,194,27,0);}
@@ -1773,7 +1771,6 @@ function actionItemHTML(item, index){
           '<span class="do-text">' + escapeHtml(item.check) + '</span></div>' : "") +
         (item.where ? '<div class="action-where"><span class="where-pin">📍</span>' +
           '<span class="where-cap">היכן לתקן:</span> <span class="where-text">' + escapeHtml(item.where) + '</span></div>' : "") +
-        '<div class="action-what"><span class="what-cap">מה נמצא:</span> ' + escapeHtml(item.whatFound) + '</div>' +
         namesHTML +
         (item.why ?
           '<div class="action-why"><span class="why-cap">למה זה חשוב:</span> ' +
@@ -1849,7 +1846,6 @@ function actionListText(report, course){
     lines.push((i+1) + ". [" + sev + " · " + it.categoryTitle + "] " + it.label);
     if (it.check) lines.push("   מה לעשות: " + it.check);
     if (it.where) lines.push("   היכן לתקן: " + it.where);
-    if (it.whatFound) lines.push("   מה נמצא: " + it.whatFound);
     if (it.why) lines.push("   למה זה חשוב: " + it.why);
     lines.push("");
   });
@@ -1945,7 +1941,6 @@ function fullReportHTML(){
             '<div class="pr-item-title"><b>' + escapeHtml(it.label) + '</b> <span class="pr-sev">' + sev + ' · ' + escapeHtml(it.categoryTitle) + '</span></div>' +
             (it.check ? '<div class="pr-line"><b>מה לעשות:</b> ' + escapeHtml(it.check) + '</div>' : "") +
             (it.where ? '<div class="pr-line"><b>📍 היכן לתקן:</b> ' + escapeHtml(it.where) + '</div>' : "") +
-            '<div class="pr-line"><b>מה נמצא:</b> ' + escapeHtml(it.whatFound) + '</div>' +
             (it.why ? '<div class="pr-line"><b>למה זה חשוב:</b> ' + escapeHtml(it.why) + '</div>' : "") +
           '</li>';
         }).join("") + '</ol>'
