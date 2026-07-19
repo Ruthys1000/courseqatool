@@ -305,7 +305,7 @@
   .sev-chip.sev-warn{background:var(--warn-bg); color:var(--warn);}
   .cat-tag{font-size:11px; color:var(--text-muted); background:var(--paper); border:1px solid var(--paper-line); border-radius:999px; padding:2px 10px;}
   .action-label{font-weight:700; font-size:15px; line-height:1.4;}
-  .action-what{font-size:13px; color:var(--text-muted); margin-top:3px; unicode-bidi:plaintext;}
+  .action-what{font-size:13px; color:var(--text-muted); margin-top:3px; unicode-bidi:plaintext; text-align:right;}
   .action-names{
     margin:10px 0 2px; padding:10px 12px; background:var(--paper); border:1px dashed var(--paper-line-strong);
     border-radius:8px; font-size:12.5px; line-height:1.8;
@@ -343,13 +343,18 @@
   }
   .panel > summary{
     list-style:none; cursor:pointer; padding:14px 18px; font-weight:700; font-size:14px;
-    display:flex; align-items:center; gap:8px; user-select:none;
+    display:flex; align-items:center; gap:8px; user-select:none; transition:background .12s;
   }
+  .panel > summary:hover{background:rgba(30,78,156,.05);}
   .panel > summary::-webkit-details-marker{display:none;}
-  .panel > summary::after{
-    content:"▾"; margin-inline-start:auto; font-size:12px; color:var(--text-muted); transition:transform .15s;
+  .panel-cta{
+    margin-inline-start:auto; font-size:12px; font-weight:700; color:var(--brand-blue);
+    background:var(--info-bg); border:1px solid #CADCF0; border-radius:999px; padding:4px 12px;
+    white-space:nowrap; display:inline-flex; align-items:center; gap:5px;
   }
-  .panel[open] > summary::after{transform:rotate(180deg);}
+  .panel > summary:hover .panel-cta{background:#DBE8F8;}
+  .panel-cta::after{content:"הצג פרטים ▾";}
+  .panel[open] > summary .panel-cta::after{content:"הסתר ▴";}
   .passed-panel > summary{color:var(--ok);}
   .panel-note{font-weight:400; color:var(--text-muted); font-size:12px;}
   .panel-body{padding:4px 18px 16px; border-top:1px solid var(--paper-line);}
@@ -364,7 +369,79 @@
   @media (max-width:620px){ .kv-grid{grid-template-columns:1fr;} }
   .kv{background:var(--paper-2); padding:9px 4px;}
   .kv-k{font-size:11px; color:var(--text-muted); margin-bottom:2px;}
-  .kv-v{font-size:13px; font-weight:600; unicode-bidi:plaintext; word-break:break-word;}
+  .kv-v{font-size:13px; font-weight:600; unicode-bidi:plaintext; text-align:right; word-break:break-word;}
+
+  /* ===== Sidebar: overview entry + back link ===== */
+  .overview-item{
+    background:var(--paper-2); border:1px solid var(--paper-line); border-inline-end:5px solid var(--brand-blue);
+    border-radius:10px; padding:11px 14px; margin-bottom:10px; cursor:pointer; font-weight:700; font-size:13.5px;
+    display:flex; align-items:center; gap:8px; box-shadow:var(--shadow);
+  }
+  .overview-item:hover{background:var(--paper);}
+  .overview-item.active{background:#EEF4FC; border-color:#BcD2EC;}
+  .overview-item .ov-icon{color:var(--brand-blue);}
+  .back-to-overview{
+    border:none; background:none; color:var(--brand-blue); cursor:pointer; font-weight:700; font-size:12.5px;
+    padding:0; margin-bottom:8px; display:inline-flex; align-items:center; gap:4px;
+  }
+  .back-to-overview:hover{text-decoration:underline;}
+
+  /* ===== Overview screen ===== */
+  .ov-header{margin-bottom:16px;}
+  .ov-h1{font-family:var(--serif); font-weight:700; font-size:24px; margin:0 0 4px;}
+  .ov-file{font-size:12px; color:var(--text-muted); unicode-bidi:plaintext;}
+  .ov-hero{
+    display:flex; align-items:center; gap:16px; border-radius:14px; padding:20px 22px; margin-bottom:16px;
+    border:1px solid transparent; box-shadow:var(--shadow);
+  }
+  .ov-hero-mark{
+    flex:none; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:26px; font-weight:700; color:#fff;
+  }
+  .ov-hero-title{font-family:var(--serif); font-weight:700; font-size:20px; line-height:1.3;}
+  .ov-hero-sub{font-size:13.5px; margin-top:3px;}
+  .ov-hero-ok{background:var(--ok-bg); border-color:#A9DCBE;}
+  .ov-hero-ok .ov-hero-mark{background:var(--ok);}
+  .ov-hero-ok .ov-hero-title{color:#166B3C;} .ov-hero-ok .ov-hero-sub{color:#2E6B47;}
+  .ov-hero-warn{background:var(--warn-bg); border-color:#E4C68A;}
+  .ov-hero-warn .ov-hero-mark{background:var(--warn);}
+  .ov-hero-warn .ov-hero-title{color:#6B4A10;} .ov-hero-warn .ov-hero-sub{color:#6B4A10;}
+  .ov-hero-error{background:var(--err-bg); border-color:#E3B4B4;}
+  .ov-hero-error .ov-hero-mark{background:var(--err);}
+  .ov-hero-error .ov-hero-title{color:#8A2A2A;} .ov-hero-error .ov-hero-sub{color:#8A2A2A;}
+  .ov-chips{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
+  .ov-chip{
+    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:999px; padding:8px 16px;
+    font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:8px;
+  }
+  .ov-chip-n{font-family:var(--mono); font-weight:700; font-size:15px;}
+  .ov-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; margin-bottom:26px;}
+  .ov-card{
+    text-align:right; background:var(--paper-2); border:1px solid var(--paper-line);
+    border-inline-end:5px solid var(--na); border-radius:12px; padding:14px 16px; cursor:pointer;
+    box-shadow:var(--shadow); transition:transform .1s, box-shadow .1s; font-family:inherit;
+  }
+  .ov-card:hover{transform:translateY(-2px); box-shadow:0 4px 14px rgba(20,40,80,.12);}
+  .ov-card.sev-ok{border-inline-end-color:var(--ok);}
+  .ov-card.sev-warn{border-inline-end-color:var(--warn);}
+  .ov-card.sev-error{border-inline-end-color:var(--err);}
+  .ov-card-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .ov-card-score{font-family:var(--mono); font-weight:700; font-size:22px;}
+  .ov-badge{font-size:11px; font-weight:700; border-radius:999px; padding:3px 10px;}
+  .ov-badge.ok{background:var(--ok-bg); color:var(--ok);}
+  .ov-badge.warn{background:var(--warn-bg); color:var(--warn);}
+  .ov-badge.error{background:var(--err-bg); color:var(--err);}
+  .ov-card-name{font-weight:700; font-size:14.5px; line-height:1.35; margin-bottom:6px;}
+  .ov-card-meta{font-size:12px; color:var(--text-muted);}
+  .ov-common{background:var(--paper-2); border:1px solid var(--paper-line); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow);}
+  .ov-common .block-title{margin-bottom:10px;}
+  .ov-common-list{display:flex; flex-direction:column;}
+  .ov-common-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--paper-line); font-size:13.5px;}
+  .ov-common-row:last-child{border-bottom:none;}
+  .ov-dot{width:9px; height:9px; border-radius:50%; flex:none;}
+  .ov-dot.err{background:var(--err);} .ov-dot.warn{background:var(--warn);}
+  .ov-common-label{font-weight:600;}
+  .ov-common-count{margin-inline-start:auto; font-size:12.5px; color:var(--text-muted); font-weight:600;}
 
   /* ===== Actions ===== */
   .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
@@ -1270,7 +1347,11 @@ function renderSidebar(){
     '<div class="summary-chip" style="color:var(--warn)"><span class="n">' + warnCourses + '</span> עם הערות</div>' +
     '<div class="summary-chip" style="color:var(--err)"><span class="n">' + errCourses + '</span> דורשים טיפול</div>';
 
-  $courseList.innerHTML = cards.map(function(c){
+  var overviewItem =
+    '<div class="overview-item' + (activeId===null ? ' active' : '') + '" data-overview="1">' +
+      '<span class="ov-icon">▦</span> סקירה כללית' +
+    '</div>';
+  $courseList.innerHTML = overviewItem + cards.map(function(c){
     var statusClass = c.report.severity==="ok" ? "status-ok" : (c.report.severity==="error" ? "status-error" : "status-warn");
     var active = c.course.id === activeId ? " active" : "";
     return (
@@ -1399,7 +1480,8 @@ function passedPanelHTML(report){
       '<span class="pass-val">' + escapeHtml(String(p.detected)) + '</span>';
     return '<div class="pass-row"><span class="pass-mark">✓</span><span class="pass-label">' + escapeHtml(p.label) + '</span>' + val + '</div>';
   }).join("");
-  return '<details class="panel passed-panel"><summary>' + escapeHtml(summary) + '</summary>' +
+  return '<details class="panel passed-panel"><summary>' + escapeHtml(summary) +
+    '<span class="panel-cta"></span></summary>' +
     '<div class="panel-body">' + rows + '</div></details>';
 }
 
@@ -1412,7 +1494,8 @@ function detailsPanelHTML(course){
     return '<div class="kv"><div class="kv-k">' + escapeHtml(f.label) + '</div>' +
       '<div class="kv-v">' + escapeHtml(v) + '</div></div>';
   }).join("");
-  return '<details class="panel details-panel"><summary>פרטי הקורס <span class="panel-note">(למידע בלבד)</span></summary>' +
+  return '<details class="panel details-panel"><summary>פרטי הקורס <span class="panel-note">(למידע בלבד)</span>' +
+    '<span class="panel-cta"></span></summary>' +
     '<div class="panel-body kv-grid">' + cells + '</div></details>';
 }
 
@@ -1432,8 +1515,98 @@ function actionListText(report, course){
   return lines.join("\n");
 }
 
+/* ---- portfolio overview: status of every course at a glance ---- */
+function overviewHTML(){
+  var cards = courses.map(function(course){
+    var report = computeReport(course);
+    return {course:course, report:report, items:collectActionItems(report)};
+  });
+  var clean=0, warnC=0, errC=0;
+  cards.forEach(function(c){
+    if (c.report.severity==="ok") clean++;
+    else if (c.report.severity==="error") errC++;
+    else warnC++;
+  });
+  var needAttention = errC + warnC;
+  var total = cards.length;
+
+  /* headline */
+  var head;
+  if (needAttention === 0){
+    head = '<div class="ov-hero ov-hero-ok">' +
+      '<div class="ov-hero-mark">✓</div>' +
+      '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
+      '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
+  } else {
+    head = '<div class="ov-hero ov-hero-' + (errC>0?"error":"warn") + '">' +
+      '<div class="ov-hero-mark">' + (errC>0?"⚠":"⚑") + '</div>' +
+      '<div><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים דורשים טיפול</div>' +
+      '<div class="ov-hero-sub">התחילו מהקורסים המסומנים באדום — הם החוסרים הקריטיים ביותר.</div></div></div>';
+  }
+
+  /* status chips */
+  var chips = '<div class="ov-chips">' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--ok)">' + clean + '</span> ללא התראות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--warn)">' + warnC + '</span> עם הערות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--err)">' + errC + '</span> דורשים טיפול</div>' +
+  '</div>';
+
+  /* worst-first course grid */
+  var sevRank = {error:0, warn:1, ok:2};
+  var sorted = cards.slice().sort(function(a,b){
+    return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr) || (b.report.totalAlerts-a.report.totalAlerts);
+  });
+  var grid = '<div class="ov-grid">' + sorted.map(function(c){
+    var sev = c.report.severity;
+    var statusClass = sev==="ok" ? "sev-ok" : (sev==="error" ? "sev-error" : "sev-warn");
+    var badge = sev==="ok"
+      ? '<span class="ov-badge ok">✓ תקין</span>'
+      : '<span class="ov-badge ' + (sev==="error"?"error":"warn") + '">' + c.report.totalAlerts + ' ' + (c.report.totalAlerts===1?"התראה":"התראות") + '</span>';
+    return '<button class="ov-card ' + statusClass + '" type="button" data-id="' + escapeHtml(c.course.id) + '">' +
+      '<div class="ov-card-top"><span class="ov-card-score">' + c.report.score + '</span>' + badge + '</div>' +
+      '<div class="ov-card-name">' + escapeHtml(c.course.title) + '</div>' +
+      '<div class="ov-card-meta">👥 ' + c.course.rows.length + ' משתתפים</div>' +
+    '</button>';
+  }).join("") + '</div>';
+
+  /* common issues across courses */
+  var common = "";
+  var counts = {};
+  cards.forEach(function(c){
+    var seen = {};
+    c.items.forEach(function(it){
+      if (seen[it.label]) return; seen[it.label] = true;
+      if (!counts[it.label]) counts[it.label] = {label:it.label, severity:it.severity, courses:0};
+      counts[it.label].courses++;
+      if (it.severity==="error") counts[it.label].severity = "error";
+    });
+  });
+  var commonList = Object.keys(counts).map(function(k){return counts[k];})
+    .filter(function(x){return x.courses >= 1;})
+    .sort(function(a,b){return b.courses-a.courses;}).slice(0,6);
+  if (commonList.length){
+    common = '<section class="ov-common">' +
+      '<h2 class="block-title">בעיות נפוצות</h2>' +
+      '<div class="ov-common-list">' + commonList.map(function(x){
+        var dot = x.severity==="error" ? "err" : "warn";
+        return '<div class="ov-common-row">' +
+          '<span class="ov-dot ' + dot + '"></span>' +
+          '<span class="ov-common-label">' + escapeHtml(x.label) + '</span>' +
+          '<span class="ov-common-count">' + (x.courses===1?"קורס אחד":x.courses + " קורסים") + '</span>' +
+        '</div>';
+      }).join("") + '</div>' +
+    '</section>';
+  }
+
+  return '<div class="overview">' +
+    '<div class="ov-header"><h1 class="ov-h1">סקירת הקורסים שלי</h1>' +
+      '<div class="ov-file">' + escapeHtml(courses[0].fileName) + (total>1?' · ' + total + ' קורסים':'') + '</div></div>' +
+    head + chips + grid + common +
+  '</div>';
+}
+
 function renderMain(){
-  if (!activeId || !courses.length){
+  if (!courses.length){
     $main.innerHTML =
       '<div class="empty-state">' +
         '<h2>בואו נבדוק את איכות הגדרת הקורס</h2>' +
@@ -1455,8 +1628,14 @@ function renderMain(){
     return;
   }
 
+  if (activeId === null){
+    $main.innerHTML = overviewHTML();
+    bindMainEvents();
+    return;
+  }
+
   var course = courses.filter(function(c){return c.id===activeId;})[0];
-  if (!course) return;
+  if (!course){ activeId = null; renderMain(); return; }
   var report = computeReport(course);
   var scoreColor = report.severity==="ok" ? "var(--ok)" : (report.severity==="error" ? "var(--err)" : "var(--warn)");
 
@@ -1482,6 +1661,7 @@ function renderMain(){
       '<div class="score-ring-hole"><strong>' + report.score + '</strong><span>ציון QA</span></div>' +
     '</div>' +
     '<div class="course-header-info">' +
+      '<button class="back-to-overview" type="button" data-overview="1">→ חזרה לסקירה כללית</button>' +
       '<div class="course-eyebrow">קובץ: ' + escapeHtml(course.fileName) + (course.groupColumnName ? ' · לפי “' + escapeHtml(course.groupColumnName) + '”' : '') + '</div>' +
       '<h1 class="course-title">' + escapeHtml(course.title) + '</h1>' +
       '<div class="course-stats">' +
@@ -1511,6 +1691,7 @@ function renderMain(){
    ===================================================================== */
 
 function selectCourse(id){ activeId = id; renderSidebar(); renderMain(); }
+function showOverview(){ activeId = null; renderSidebar(); renderMain(); }
 
 function removeCourse(id){
   courses = courses.filter(function(c){ return c.id !== id; });
@@ -1542,7 +1723,7 @@ function addFiles(fileList){
       if (isExcel){
         buildCoursesFromXLSX(file.name, fileId, e.target.result).then(function(newCourses){
           newCourses.forEach(function(co){ courses.push(co); });
-          if (!activeId && courses.length) activeId = courses[0].id;
+          /* leave activeId null so the portfolio overview shows after upload */
         }).catch(function(err){
           console.error("Failed to parse", file.name, err);
           loadErrors.push({fileName:file.name, message: humanizeLoadError(err)});
@@ -1551,7 +1732,7 @@ function addFiles(fileList){
         try{
           var newCourses = buildCoursesFromCSV(file.name, fileId, e.target.result);
           newCourses.forEach(function(co){ courses.push(co); });
-          if (!activeId && courses.length) activeId = courses[0].id;
+          /* leave activeId null so the portfolio overview shows after upload */
         } catch(err){
           console.error("Failed to parse", file.name, err);
           loadErrors.push({fileName:file.name, message: humanizeLoadError(err)});
@@ -1581,6 +1762,13 @@ function bindDropzone(){
 }
 
 function bindMainEvents(){
+  /* overview: back-to-overview link and course cards */
+  $main.querySelectorAll("[data-overview]").forEach(function(el){
+    el.addEventListener("click", function(){ showOverview(); });
+  });
+  $main.querySelectorAll(".ov-card[data-id]").forEach(function(el){
+    el.addEventListener("click", function(){ selectCourse(el.getAttribute("data-id")); });
+  });
   var printBtn = document.getElementById("printBtn");
   if (printBtn){
     printBtn.addEventListener("click", function(){
@@ -1630,6 +1818,7 @@ document.getElementById("loadErrorsBar").addEventListener("click", function(e){
 $courseList.addEventListener("click", function(e){
   var remove = e.target.closest("[data-remove]");
   if (remove){ e.stopPropagation(); removeCourse(remove.getAttribute("data-remove")); return; }
+  if (e.target.closest("[data-overview]")){ showOverview(); return; }
   var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
 });
