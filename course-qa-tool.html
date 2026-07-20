@@ -2291,8 +2291,9 @@ function overviewHTML(){
   var gradePanel = gradeIntegrityPanelHTML();
 
   return '<div class="overview dashboard">' + header + narrative + stats +
+    mistakePanel +
     gradePanel +
-    coordTable + mistakePanel +
+    coordTable +
     courseTable + actions +
   '</div>';
 }
