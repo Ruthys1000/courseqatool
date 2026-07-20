@@ -131,12 +131,21 @@
   }
 
   /* ===== Sidebar ===== */
-  .sidebar{position:sticky; top:20px;}
+  /* flex column capped to the viewport so a long course list scrolls inside #courseList
+     while the search box, summary and add-file button stay put (essential at ~300 courses) */
+  .sidebar{position:sticky; top:20px; display:flex; flex-direction:column; max-height:calc(100vh - 40px);}
   /* single-column mobile: don't pin the sidebar, or it overlaps the report on scroll.
      Must come after the sticky rule above to win at equal specificity. */
   @media (max-width:880px){
-    .sidebar{position:static; top:auto;}
+    .sidebar{position:static; top:auto; max-height:none;}
   }
+  .sidebar-search{
+    width:100%; box-sizing:border-box; margin-bottom:10px;
+    padding:8px 12px; font-family:var(--sans); font-size:13px; direction:rtl;
+    border:1px solid var(--paper-line); border-radius:8px; background:var(--paper-2); color:var(--text);
+  }
+  .sidebar-search:focus{outline:none; border-color:var(--brand-blue);}
+  .sidebar-no-match{font-size:12.5px; color:var(--text-muted); padding:8px 4px;}
   .sidebar-title{
     font-size:11px; letter-spacing:.06em; color:var(--text-muted);
     margin:0 4px 10px; font-weight:700;
@@ -160,7 +169,10 @@
   .summary-chip{display:flex; align-items:center; gap:8px;}
   .summary-chip .n{font-family:var(--mono); font-weight:700;}
 
-  .course-list{display:flex; flex-direction:column; gap:7px; margin-bottom:14px;}
+  .course-list{display:flex; flex-direction:column; gap:7px; margin-bottom:14px; overflow-y:auto; overflow-x:hidden; min-height:0; flex:1 1 auto;}
+  @media (max-width:880px){
+    .course-list{overflow:visible; flex:0 0 auto;}
+  }
   .course-item{
     position:relative;
     background:var(--paper-2);
@@ -511,6 +523,81 @@
   }
   .ov-chip-n{font-family:var(--mono); font-weight:700; font-size:15px;}
 
+  /* ===== Management dashboard ===== */
+  .dashboard .ov-h1{display:flex; align-items:center; gap:8px;}
+  .dash-stats{margin-bottom:20px;}
+  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+  @media (max-width:980px){ .dash-grid{grid-template-columns:1fr;} }
+  .dash-panel{
+    background:var(--paper-2); border:1px solid var(--paper-line); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:16px;
+  }
+  .dash-h2{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--serif); font-size:15px; font-weight:700; margin:0 0 12px; color:var(--text);
+  }
+  .dash-h2 .ic{color:var(--brand-blue);}
+  .dash-scroll{overflow-x:auto;}
+
+  .dash-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .dash-table th{
+    text-align:right; font-size:11.5px; font-weight:700; color:var(--text-muted);
+    padding:7px 10px; border-bottom:2px solid var(--paper-line); white-space:nowrap;
+  }
+  .dash-table td{padding:8px 10px; border-bottom:1px solid var(--paper-line); color:var(--text);}
+  .dash-table tbody tr:last-child td{border-bottom:none;}
+  .dash-num{text-align:center; font-family:var(--mono);}
+  .dash-err{color:var(--err); font-weight:700;}
+  .dash-warn{color:var(--warn); font-weight:700;}
+
+  .dash-sort{cursor:pointer; user-select:none;}
+  .dash-sort:hover{color:var(--brand-blue);}
+  .dash-sort.sorted{color:var(--brand-blue);}
+  .dash-sort.sorted.asc::after{content:" ▲"; font-size:9px;}
+  .dash-sort.sorted.desc::after{content:" ▼"; font-size:9px;}
+
+  .dash-courses tbody tr[data-id]{cursor:pointer;}
+  .dash-courses tbody tr[data-id]:hover td{background:var(--paper);}
+  .dash-title{font-weight:600;}
+  .dash-empty td{text-align:center; color:var(--text-muted); padding:18px;}
+
+  .dash-dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-inline-end:7px; vertical-align:middle;}
+  .dash-dot.tone-clean{background:var(--tone-clean);}
+  .dash-dot.tone-low{background:var(--tone-low);}
+  .dash-dot.tone-mid{background:var(--tone-mid);}
+  .dash-dot.tone-high{background:var(--tone-high);}
+
+  .dash-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  #dashSearch, #dashCoordFilter{
+    font-family:var(--sans); font-size:13px; direction:rtl; color:var(--text);
+    border:1px solid var(--paper-line); border-radius:8px; padding:8px 12px; background:var(--paper-2);
+  }
+  #dashSearch{flex:1 1 200px; min-width:160px;}
+  #dashSearch:focus, #dashCoordFilter:focus{outline:none; border-color:var(--brand-blue);}
+  .dash-chips{display:flex; gap:6px; flex-wrap:wrap;}
+  .dash-chip{
+    border:1px solid var(--paper-line); border-radius:999px; padding:5px 13px; font-size:12.5px;
+    background:var(--paper-2); color:var(--text-muted); cursor:pointer; font-family:var(--sans);
+  }
+  .dash-chip:hover{border-color:var(--paper-line-strong);}
+  .dash-chip.tone-clean.active{background:var(--tone-clean-bg); border-color:var(--tone-clean); color:var(--tone-clean);}
+  .dash-chip.tone-low.active{background:var(--tone-low-bg); border-color:var(--tone-low); color:var(--tone-low);}
+  .dash-chip.tone-mid.active{background:var(--tone-mid-bg); border-color:var(--tone-mid); color:var(--tone-mid);}
+  .dash-chip.tone-high.active{background:var(--tone-high-bg); border-color:var(--tone-high); color:var(--tone-high);}
+  .dash-count{font-size:12px; color:var(--text-muted); margin-inline-start:auto; font-family:var(--mono);}
+
+  .dash-bars{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .dash-bar-row{display:grid; grid-template-columns:1fr 110px auto; align-items:center; gap:10px;}
+  .dash-bar-label{font-size:12.5px; color:var(--text);}
+  .dash-bar-track{background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
+  .dash-bar{height:100%; border-radius:4px;}
+  .dash-bar-n{font-size:11.5px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap; text-align:left;}
+  .dash-clean{font-size:13px; color:var(--tone-clean); font-weight:700; display:flex; align-items:center; gap:8px;}
+  @media (max-width:520px){
+    .dash-bar-row{grid-template-columns:1fr auto;}
+    .dash-bar-track{display:none;}
+  }
+
   /* ===== Actions ===== */
   .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
   .btn{
@@ -575,6 +662,7 @@
       <div id="sidebarTitle" class="sidebar-title">קורסים שנבדקו</div>
       <div id="loadErrorsBar"></div>
       <div id="summaryBar" class="summary-bar" style="display:none;"></div>
+      <input type="text" id="sidebarSearch" class="sidebar-search" placeholder="חיפוש קורס…" autocomplete="off" style="display:none;">
       <div id="courseList" class="course-list"></div>
       <button class="add-file-btn" id="addFileBtn" type="button">＋ הוסף דוח סטטוס (Excel / CSV)</button>
       <div id="sidebarNote" class="sidebar-note">קובץ יכול להכיל קורס אחד או כמה קורסים — הכלי מפצל אותם לפי עמודת מזהה הקורס. אפשר להעלות כמה קבצים.</div>
@@ -726,6 +814,16 @@ function colOf(course, name){
   var seen = {}; var distinct = [];
   for (var j=0;j<vals.length;j++){ if(!seen[vals[j]]){ seen[vals[j]]=true; distinct.push(vals[j]); } }
   return {exists:true, value:distinct[0] || "", distinct:distinct, inconsistent:distinct.length>1};
+}
+/* course coordinator (רכזת) for management grouping — uses the actual value on the
+   course regardless of the APPROVED_COORDINATORS allow-list (approval only affects a
+   course's QA status, not who it's grouped under). */
+var COORDINATOR_COL = "רכזת אחראית על הקורס";
+var NO_COORDINATOR  = "ללא רכזת";
+function coordinatorOf(course){
+  var c = colOf(course, COORDINATOR_COL);
+  var v = c.exists ? normName(c.value) : "";
+  return isEmptyVal(v) ? NO_COORDINATOR : v;
 }
 function invalidDistinctValues(c, checkFn){
   var invalids = [];
@@ -1141,6 +1239,11 @@ function computeInfoRows(course){
    ===================================================================== */
 
 function computeReport(course){
+  var hit = _reportCache[course.id];
+  if (hit) return hit;
+  return (_reportCache[course.id] = computeReportUncached(course));
+}
+function computeReportUncached(course){
   var ctx = {course:course};
 
   var categories = CATEGORIES.map(function(cat){
@@ -1485,6 +1588,17 @@ var activeId = null;
 var loadErrors = [];
 var fileCounter = 0;
 
+/* per-course report cache — computeReport is otherwise re-run 4–5× per interaction
+   (sidebar, dashboard aggregations, drill-down, exports). Courses are immutable after
+   buildCoursesFromRows, so caching by course.id is safe; invalidate on every upload. */
+var _reportCache = Object.create(null);
+function invalidateReportCache(){ _reportCache = Object.create(null); }
+
+/* management-dashboard filter/sort state — held at module scope so a full re-render
+   (e.g. after navigating away and back) preserves the user's current view. */
+var dashFilter = { search:"", coordinator:"", bucket:"", sortKey:"alerts", sortDir:"desc" };
+var sidebarSearch = "";
+
 /* =====================================================================
    11. RENDER
    ===================================================================== */
@@ -1529,9 +1643,12 @@ function renderSidebar(){
   var titleEl = document.getElementById("sidebarTitle");
   var addBtnEl = document.getElementById("addFileBtn");
   var noteEl = document.getElementById("sidebarNote");
+  var searchEl = document.getElementById("sidebarSearch");
   if (titleEl) titleEl.style.display = hasCourses ? "" : "none";
   if (addBtnEl) addBtnEl.style.display = hasCourses ? "" : "none";
   if (noteEl) noteEl.style.display = hasCourses ? "" : "none";
+  /* show the sidebar search only once there are enough courses to warrant it */
+  if (searchEl) searchEl.style.display = courses.length > 8 ? "" : "none";
 
   if (!hasCourses){
     $summaryBar.style.display = "none";
@@ -1569,11 +1686,18 @@ function renderSidebar(){
     return (b.report.totalAlerts - a.report.totalAlerts) || (b.report.totalErr - a.report.totalErr);
   });
 
+  /* sidebar search filters the visible list; the summary tallies above stay
+     portfolio-wide (computed before this filter) */
+  var q = sidebarSearch.trim();
+  var visible = q ? cards.filter(function(c){ return c.course.title.indexOf(q) !== -1; }) : cards;
+
   var overviewItem =
     '<div class="overview-item' + (activeId===null ? ' active' : '') + '" data-overview="1">' +
       '<span class="ov-icon">' + icon('grid') + '</span> סקירה כללית' +
     '</div>';
-  $courseList.innerHTML = overviewItem + cards.map(function(c){
+  var emptyItem = (q && !visible.length)
+    ? '<div class="sidebar-no-match">אין קורס שתואם ל“' + escapeHtml(q) + '”.</div>' : '';
+  $courseList.innerHTML = overviewItem + emptyItem + visible.map(function(c){
     var n = c.report.totalAlerts;
     var toneClass = "tone-" + toneForCount(n);
     var active = c.course.id === activeId ? " active" : "";
@@ -1748,6 +1872,48 @@ function collectActionItems(report){
   return items;
 }
 
+/* ---- management aggregations (portfolio-wide) ---- */
+
+/* per-coordinator roll-up: course count, how many have issues, total errors/warnings */
+function buildCoordinatorSummary(){
+  var map = Object.create(null), order = [];
+  courses.forEach(function(course){
+    var name = coordinatorOf(course), r = computeReport(course);
+    var e = map[name];
+    if (!e){ e = map[name] = {name:name, count:0, withIssues:0, err:0, warn:0}; order.push(name); }
+    e.count++; e.err += r.totalErr; e.warn += r.totalWarn;
+    if (r.totalAlerts > 0) e.withIssues++;
+  });
+  return order.map(function(n){ return map[n]; })
+    .sort(function(a,b){ return (b.err - a.err) || (b.warn - a.warn) || (b.count - a.count); });
+}
+
+/* the synthetic completion/grade action items embed a per-course count in their label
+   ("3 משתתפים עם…"), which would fragment aggregation — strip a leading number so they
+   collapse into one mistake-type. */
+function normalizeMistakeLabel(item){
+  return String(item.label).replace(/^\s*\d+\s+/, "");
+}
+
+/* which QA mistake-types recur most across the whole portfolio — counts the number of
+   courses each check fails in (primary) and total occurrences (tiebreak). */
+function buildTopMistakeTypes(){
+  var map = Object.create(null), order = [];
+  courses.forEach(function(course){
+    var seen = Object.create(null);
+    collectActionItems(computeReport(course)).forEach(function(it){
+      var key = normalizeMistakeLabel(it);
+      var e = map[key];
+      if (!e){ e = map[key] = {label:key, severity:it.severity, courses:0, occurrences:0}; order.push(key); }
+      e.occurrences++;
+      if (!seen[key]){ e.courses++; seen[key] = true; }
+      if (it.severity === "error") e.severity = "error"; /* errors dominate the badge color */
+    });
+  });
+  return order.map(function(k){ return map[k]; })
+    .sort(function(a,b){ return (b.courses - a.courses) || (b.occurrences - a.occurrences); });
+}
+
 function actionItemHTML(item, index){
   var sevClass = item.severity==="error" ? "error" : "warn";
   var sevLabel = item.severity==="error" ? "חוסר" : "לתשומת לב";
@@ -1842,51 +2008,139 @@ function actionListText(report, course){
 }
 
 /* ---- portfolio overview: status of every course at a glance ---- */
+/* ---- management dashboard (portfolio home when no single course is selected) ---- */
 function overviewHTML(){
-  var cards = courses.map(function(course){
-    return {course:course, report:computeReport(course)};
-  });
-  /* group courses on the same soft count scale as the sidebar, so the aggregate
-     never lumps a 1-2 issue course under a harsh "needs treatment" bucket */
+  var reports = courses.map(function(course){ return computeReport(course); });
   var tCount = {clean:0, low:0, mid:0, high:0};
-  cards.forEach(function(c){ tCount[toneForCount(c.report.totalAlerts)]++; });
-  var total = cards.length;
-  var needAttention = total - tCount.clean;
-  var worstTone = tCount.high>0 ? "high" : (tCount.mid>0 ? "mid" : (tCount.low>0 ? "low" : "clean"));
+  var totalErr = 0;
+  reports.forEach(function(r){ tCount[toneForCount(r.totalAlerts)]++; totalErr += r.totalErr; });
+  var total = courses.length;
+  var withIssues = total - tCount.clean;
 
-  /* headline */
-  var head;
-  if (needAttention === 0){
-    head = '<div class="ov-hero ov-hero-tone-clean">' +
-      '<div class="ov-hero-mark">' + icon('check') + '</div>' +
-      '<div><div class="ov-hero-title">כל הקורסים תקינים</div>' +
-      '<div class="ov-hero-sub">' + total + ' ' + (total===1?"קורס נבדק ועבר":"קורסים נבדקו ועברו") + ' את בדיקת ה-QA. אין מה לתקן.</div></div></div>';
-  } else {
-    head = '<div class="ov-hero ov-hero-tone-' + worstTone + '">' +
-      '<div class="ov-hero-mark">' + (worstTone==="high"?icon('alert'):icon('flag')) + '</div>' +
-      '<div class="ov-hero-body"><div class="ov-hero-title">' + needAttention + ' מתוך ' + total + ' קורסים כוללים בעיות לתיקון</div>' +
-      '<div class="ov-hero-sub">הדחוף ביותר מופיע ראשון ברשימה שמימין.</div>' +
-      '</div></div>';
-  }
+  /* --- header --- */
+  var header = '<div class="ov-header"><h1 class="ov-h1">' + icon('grid') + ' לוח ניהול — בקרת QA לקורסים</h1>' +
+    '<div class="ov-file">' + escapeHtml(courses[0].fileName) + ' · ' + total + ' קורסים</div></div>';
 
-  /* status chips — double as a legend for the sidebar color scale */
-  var chips = '<div class="ov-chips">' +
+  /* --- summary stat row (reuses the overview chip scale) --- */
+  var stats = '<div class="ov-chips dash-stats">' +
+    '<div class="ov-chip"><span class="ov-chip-n">' + total + '</span> קורסים</div>' +
     '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-clean)">' + tCount.clean + '</span> ללא בעיות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-low)">' + tCount.low + '</span> 1–2 בעיות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-mid)">' + tCount.mid + '</span> 3–4 בעיות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + tCount.high + '</span> 5+ בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + withIssues + '</span> עם בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--err)">' + totalErr + '</span> סה״כ שגיאות</div>' +
   '</div>';
 
+  /* --- summary by coordinator --- */
+  var coordRows = buildCoordinatorSummary();
+  var coordTable = '<section class="dash-panel"><h2 class="dash-h2">' + icon('users') + ' סיכום לפי רכזת</h2>' +
+    '<div class="dash-scroll"><table class="dash-table" id="dashCoordTable"><thead><tr>' +
+      '<th>רכזת</th><th class="dash-num">קורסים</th><th class="dash-num">עם בעיות</th>' +
+      '<th class="dash-num">שגיאות</th><th class="dash-num">התראות</th></tr></thead><tbody>' +
+    coordRows.map(function(c){
+      return '<tr><td>' + escapeHtml(c.name) + '</td>' +
+        '<td class="dash-num">' + c.count + '</td>' +
+        '<td class="dash-num">' + c.withIssues + '</td>' +
+        '<td class="dash-num' + (c.err?' dash-err':'') + '">' + c.err + '</td>' +
+        '<td class="dash-num' + (c.warn?' dash-warn':'') + '">' + c.warn + '</td></tr>';
+    }).join("") +
+    '</tbody></table></div></section>';
+
+  /* --- most common mistake-types --- */
+  var mistakes = buildTopMistakeTypes().slice(0, 10);
+  var maxCourses = mistakes.reduce(function(m,x){ return Math.max(m, x.courses); }, 1);
+  var mistakeList = mistakes.length
+    ? '<ul class="dash-bars">' + mistakes.map(function(x){
+        var pct = Math.round(x.courses / maxCourses * 100);
+        var toneVar = x.severity === "error" ? "--err" : "--warn";
+        return '<li class="dash-bar-row">' +
+          '<div class="dash-bar-label">' + escapeHtml(x.label) + '</div>' +
+          '<div class="dash-bar-track"><div class="dash-bar" style="width:' + pct + '%;background:var(' + toneVar + ')"></div></div>' +
+          '<div class="dash-bar-n">' + x.courses + ' ' + (x.courses===1?'קורס':'קורסים') + '</div>' +
+        '</li>';
+      }).join("") + '</ul>'
+    : '<div class="dash-clean">' + icon('check') + ' אין טעויות חוזרות — כל הקורסים תקינים.</div>';
+  var mistakePanel = '<section class="dash-panel"><h2 class="dash-h2">' + icon('alert') + ' סוגי הטעויות הנפוצות</h2>' +
+    mistakeList + '</section>';
+
+  /* --- filterable/sortable course table --- */
+  var coordOptions = '<option value="">כל הרכזות</option>' +
+    coordRows.map(function(c){
+      return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>';
+    }).join("");
+  var buckets = [["clean","ללא בעיות"],["low","1–2"],["mid","3–4"],["high","5+"]];
+  var chips = buckets.map(function(b){
+    return '<button type="button" class="dash-chip tone-' + b[0] + '" data-bucket="' + b[0] + '">' + b[1] + '</button>';
+  }).join("");
+  var toolbar = '<div class="dash-toolbar">' +
+      '<input type="text" id="dashSearch" placeholder="חיפוש קורס…" autocomplete="off">' +
+      '<select id="dashCoordFilter">' + coordOptions + '</select>' +
+      '<div class="dash-chips">' + chips + '</div>' +
+      '<span class="dash-count" id="dashCount"></span>' +
+    '</div>';
+  function th(key, label, num){
+    return '<th class="dash-sort' + (num?' dash-num':'') + '" data-sort="' + key + '">' + label + '</th>';
+  }
+  var courseTable = '<section class="dash-panel"><h2 class="dash-h2">' + icon('grid') + ' קורסים</h2>' +
+    toolbar +
+    '<div class="dash-scroll"><table class="dash-table dash-courses" id="dashCourseTable"><thead><tr>' +
+      th("title","שם הקורס",false) + th("coordinator","רכזת",false) +
+      th("err","שגיאות",true) + th("warn","התראות",true) + th("alerts","סטטוס",true) +
+    '</tr></thead><tbody id="dashCourseBody"></tbody></table></div></section>';
+
+  /* --- export actions (unchanged; bindMainEvents wires these) --- */
   var actions = '<div class="actions ov-actions">' +
     '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום מלא (הדפסה / PDF)</button>' +
     '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
   '</div>';
 
-  return '<div class="overview">' +
-    '<div class="ov-header"><h1 class="ov-h1">סקירת הקורסים שלי</h1>' +
-      '<div class="ov-file">' + escapeHtml(courses[0].fileName) + (total>1?' · ' + total + ' קורסים':'') + '</div></div>' +
-    head + chips + actions +
+  return '<div class="overview dashboard">' + header + stats +
+    '<div class="dash-grid">' + coordTable + mistakePanel + '</div>' +
+    courseTable + actions +
   '</div>';
+}
+
+/* rows for the management course table, after applying dashFilter (search/coordinator/bucket) + sort */
+function dashCourseRowsData(){
+  var rows = courses.map(function(course){
+    var r = computeReport(course);
+    return {id:course.id, title:course.title, coord:coordinatorOf(course),
+            err:r.totalErr, warn:r.totalWarn, alerts:r.totalAlerts, tone:toneForCount(r.totalAlerts)};
+  });
+  var f = dashFilter, q = f.search.trim();
+  if (q) rows = rows.filter(function(x){ return x.title.indexOf(q) !== -1; });
+  if (f.coordinator) rows = rows.filter(function(x){ return x.coord === f.coordinator; });
+  if (f.bucket) rows = rows.filter(function(x){ return x.tone === f.bucket; });
+  var dir = f.sortDir === "asc" ? 1 : -1;
+  rows.sort(function(a,b){
+    var k = f.sortKey;
+    if (k === "title" || k === "coordinator"){
+      var av = k==="title" ? a.title : a.coord, bv = k==="title" ? b.title : b.coord;
+      return av.localeCompare(bv, "he") * dir;
+    }
+    return ((a[k]||0) - (b[k]||0)) * dir;
+  });
+  return rows;
+}
+
+/* re-render only the course-table body (keeps the search input's focus/caret on keystroke) */
+function renderDashCourseBody(){
+  var body = document.getElementById("dashCourseBody");
+  if (!body) return;
+  var rows = dashCourseRowsData();
+  var cnt = document.getElementById("dashCount");
+  if (cnt) cnt.textContent = rows.length + " קורסים";
+  if (!rows.length){
+    body.innerHTML = '<tr class="dash-empty"><td colspan="5">לא נמצאו קורסים שתואמים לסינון.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(function(x){
+    var issues = x.alerts === 0 ? "תקין" : (x.alerts === 1 ? "בעיה אחת" : x.alerts + " בעיות");
+    return '<tr data-id="' + escapeHtml(x.id) + '">' +
+      '<td class="dash-title">' + escapeHtml(x.title) + '</td>' +
+      '<td>' + escapeHtml(x.coord) + '</td>' +
+      '<td class="dash-num' + (x.err?' dash-err':'') + '">' + x.err + '</td>' +
+      '<td class="dash-num' + (x.warn?' dash-warn':'') + '">' + x.warn + '</td>' +
+      '<td><span class="dash-dot tone-' + x.tone + '"></span>' + issues + '</td></tr>';
+  }).join("");
 }
 
 /* ---- full-portfolio summary: printable report (all courses) ---- */
@@ -2076,7 +2330,7 @@ function addFiles(fileList){
     var isExcel = /\.(xlsx|xlsm)$/i.test(file.name);
     var reader = new FileReader();
     reader.onload = function(e){
-      function done(){ pending--; if (pending === 0){ renderSidebar(); renderMain(); } }
+      function done(){ pending--; if (pending === 0){ invalidateReportCache(); renderSidebar(); renderMain(); } }
       if (isExcel){
         buildCoursesFromXLSX(file.name, fileId, e.target.result).then(function(newCourses){
           newCourses.forEach(function(co){ courses.push(co); });
@@ -2099,7 +2353,7 @@ function addFiles(fileList){
     };
     reader.onerror = function(){
       loadErrors.push({fileName:file.name, message:"לא ניתן היה לקרוא את הקובץ."});
-      pending--; if (pending === 0){ renderSidebar(); renderMain(); }
+      pending--; if (pending === 0){ invalidateReportCache(); renderSidebar(); renderMain(); }
     };
     if (isExcel) reader.readAsArrayBuffer(file);
     else reader.readAsText(file, "UTF-8");
@@ -2161,6 +2415,64 @@ function bindMainEvents(){
       window.print();
     });
   }
+  bindDashboardEvents();
+}
+
+/* management-dashboard controls (only present when the portfolio dashboard is on screen).
+   Filter mutations re-render just the table body so the search input keeps focus/caret;
+   control values are re-read from dashFilter on every render so state survives navigation. */
+function bindDashboardEvents(){
+  var tbl = document.getElementById("dashCourseTable");
+  if (!tbl) return;
+
+  var search = document.getElementById("dashSearch");
+  if (search){
+    search.value = dashFilter.search;
+    search.addEventListener("input", function(){ dashFilter.search = search.value; renderDashCourseBody(); });
+  }
+
+  var coordFilter = document.getElementById("dashCoordFilter");
+  if (coordFilter){
+    coordFilter.value = dashFilter.coordinator;
+    coordFilter.addEventListener("change", function(){ dashFilter.coordinator = coordFilter.value; renderDashCourseBody(); });
+  }
+
+  $main.querySelectorAll(".dash-chip[data-bucket]").forEach(function(ch){
+    if (ch.getAttribute("data-bucket") === dashFilter.bucket) ch.classList.add("active");
+    ch.addEventListener("click", function(){
+      var b = ch.getAttribute("data-bucket");
+      dashFilter.bucket = (dashFilter.bucket === b) ? "" : b; /* toggle off if re-clicked */
+      $main.querySelectorAll(".dash-chip[data-bucket]").forEach(function(c){ c.classList.remove("active"); });
+      if (dashFilter.bucket) ch.classList.add("active");
+      renderDashCourseBody();
+    });
+  });
+
+  tbl.querySelectorAll("th[data-sort]").forEach(function(head){
+    var key = head.getAttribute("data-sort");
+    if (key === dashFilter.sortKey) head.classList.add("sorted", dashFilter.sortDir);
+    head.addEventListener("click", function(){
+      if (dashFilter.sortKey === key){
+        dashFilter.sortDir = dashFilter.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        dashFilter.sortKey = key;
+        dashFilter.sortDir = (key === "title" || key === "coordinator") ? "asc" : "desc";
+      }
+      tbl.querySelectorAll("th[data-sort]").forEach(function(h){ h.classList.remove("sorted","asc","desc"); });
+      head.classList.add("sorted", dashFilter.sortDir);
+      renderDashCourseBody();
+    });
+  });
+
+  var body = document.getElementById("dashCourseBody");
+  if (body){
+    body.addEventListener("click", function(e){
+      var tr = e.target.closest("tr[data-id]");
+      if (tr) selectCourse(tr.getAttribute("data-id"));
+    });
+  }
+
+  renderDashCourseBody();
 }
 
 document.getElementById("addFileBtn").addEventListener("click", function(){
@@ -2184,6 +2496,13 @@ $courseList.addEventListener("click", function(e){
   if (e.target.closest("[data-overview]")){ showOverview(); return; }
   var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
+});
+
+/* sidebar search — bound once; lives outside #courseList so rebuilding the list
+   never destroys the input or drops focus */
+document.getElementById("sidebarSearch").addEventListener("input", function(e){
+  sidebarSearch = e.target.value;
+  renderSidebar();
 });
 
 /* init */
