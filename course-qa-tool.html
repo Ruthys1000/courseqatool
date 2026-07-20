@@ -591,10 +591,12 @@
   .dash-bars{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:13px;}
   .dash-bar-row{display:flex; flex-direction:column; gap:5px;}
   .dash-bar-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
-  .dash-bar-label{font-size:12.5px; color:var(--text); line-height:1.4;}
+  .dash-bar-label{font-size:12.5px; color:var(--text); line-height:1.5;}
+  .dash-bar-label .sev-chip{margin-inline-end:7px; vertical-align:1px;}
   .dash-bar-n{font-size:11.5px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap;}
   .dash-bar-track{width:100%; background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
-  .dash-bar{height:100%; border-radius:4px;}
+  /* one neutral fill — length encodes frequency; severity lives in the tag beside the label */
+  .dash-bar{height:100%; border-radius:4px; background:var(--brand-sky);}
   .dash-clean{font-size:13px; color:var(--tone-clean); font-weight:700; display:flex; align-items:center; gap:8px;}
 
   /* ===== Actions ===== */
@@ -2049,13 +2051,16 @@ function overviewHTML(){
   var mistakeList = mistakes.length
     ? '<ul class="dash-bars">' + mistakes.map(function(x){
         var pct = Math.round(x.courses / maxCourses * 100);
-        var toneVar = x.severity === "error" ? "--err" : "--warn";
+        /* bar length = frequency only (one neutral colour); severity is shown by a
+           separate tag so the two signals don't get conflated on the bar itself */
+        var sevClass = x.severity === "error" ? "sev-error" : "sev-warn";
+        var sevLabel = x.severity === "error" ? "שגיאה" : "לתשומת לב";
         return '<li class="dash-bar-row">' +
           '<div class="dash-bar-head">' +
-            '<span class="dash-bar-label">' + escapeHtml(x.label) + '</span>' +
+            '<span class="dash-bar-label"><span class="sev-chip ' + sevClass + '">' + sevLabel + '</span>' + escapeHtml(x.label) + '</span>' +
             '<span class="dash-bar-n">' + x.courses + ' ' + (x.courses===1?'קורס':'קורסים') + '</span>' +
           '</div>' +
-          '<div class="dash-bar-track"><div class="dash-bar" style="width:' + pct + '%;background:var(' + toneVar + ')"></div></div>' +
+          '<div class="dash-bar-track"><div class="dash-bar" style="width:' + pct + '%"></div></div>' +
         '</li>';
       }).join("") + '</ul>'
     : '<div class="dash-clean">' + icon('check') + ' אין טעויות חוזרות — כל הקורסים תקינים.</div>';
