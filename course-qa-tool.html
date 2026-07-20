@@ -2023,8 +2023,8 @@ function overviewHTML(){
   /* --- summary stat row (reuses the overview chip scale) --- */
   var stats = '<div class="ov-chips dash-stats">' +
     '<div class="ov-chip"><span class="ov-chip-n">' + total + '</span> קורסים</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-clean)">' + tCount.clean + '</span> ללא בעיות</div>' +
-    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--tone-high)">' + withIssues + '</span> עם בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--ok)">' + tCount.clean + '</span> ללא בעיות</div>' +
+    '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--warn)">' + withIssues + '</span> עם בעיות</div>' +
     '<div class="ov-chip"><span class="ov-chip-n" style="color:var(--err)">' + totalErr + '</span> סה״כ שגיאות</div>' +
   '</div>';
 
