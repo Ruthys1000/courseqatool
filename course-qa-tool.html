@@ -526,8 +526,6 @@
   /* ===== Management dashboard ===== */
   .dashboard .ov-h1{display:flex; align-items:center; gap:8px;}
   .dash-stats{margin-bottom:20px;}
-  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
-  @media (max-width:980px){ .dash-grid{grid-template-columns:1fr;} }
   .dash-panel{
     background:var(--paper-2); border:1px solid var(--paper-line); border-radius:var(--radius);
     padding:16px 18px; margin-bottom:16px;
@@ -599,6 +597,55 @@
   /* one neutral fill — length encodes frequency; severity lives in the tag beside the label */
   .dash-bar{height:100%; border-radius:4px; background:var(--brand-sky);}
   .dash-clean{font-size:13px; color:var(--tone-clean); font-weight:700; display:flex; align-items:center; gap:8px;}
+
+  /* narrative summary line + panel hints */
+  .dash-narrative{
+    display:flex; align-items:flex-start; gap:8px; margin:0 0 18px;
+    background:var(--paper-2); border:1px solid var(--paper-line); border-inline-start:4px solid var(--brand-blue);
+    border-radius:var(--radius); padding:12px 14px; font-size:13.5px; color:var(--text); line-height:1.5;
+  }
+  .dash-narrative .ic{color:var(--brand-blue); flex:none; margin-top:2px;}
+  .dash-narrative-clean{border-inline-start-color:var(--tone-clean);}
+  .dash-narrative-clean .ic{color:var(--tone-clean);}
+  .dash-panel-hint{font-size:11.5px; color:var(--text-muted); margin:-4px 0 12px;}
+
+  /* drillable mistake bars */
+  .dash-bar-head{cursor:pointer; border-radius:6px; padding:2px 4px; margin:-2px -4px;}
+  .dash-bar-head:hover{background:var(--paper);}
+  .dash-caret{display:inline-block; color:var(--text-muted); margin-inline-end:5px; transition:transform .15s ease; vertical-align:1px;}
+  .dash-bar-row.expanded .dash-caret{transform:rotate(180deg);}
+  .dash-bar-row.expanded .dash-bar{background:var(--brand-blue);}
+  .dash-drill{
+    margin:8px 0 4px; padding:12px 14px; background:var(--paper); border:1px solid var(--paper-line);
+    border-radius:10px;
+  }
+  .drill-where, .gi-why .drill-where{font-size:12px; color:var(--info); margin-bottom:10px; line-height:1.5;}
+  .drill-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; max-height:280px; overflow-y:auto;}
+  .drill-course{border-inline-start:2px solid var(--paper-line-strong); padding-inline-start:10px;}
+  .drill-course-top{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
+  .drill-course-link{font-size:13px; font-weight:700; color:var(--brand-blue); cursor:pointer; text-decoration:none;}
+  .drill-course-link:hover{text-decoration:underline;}
+  .drill-coord{font-size:11.5px; color:var(--text-muted);}
+  .drill-detail{font-size:12px; color:var(--text-muted); line-height:1.5; margin-top:2px;}
+  .dash-show-table{
+    margin-top:12px; border:1px solid var(--paper-line-strong); background:var(--paper-2); color:var(--brand-blue);
+    border-radius:999px; padding:5px 13px; font-size:12px; font-weight:700; cursor:pointer; font-family:var(--sans);
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .dash-show-table:hover{background:var(--paper);}
+
+  /* clickable coordinator rows */
+  .dash-coord-row{cursor:pointer;}
+  .dash-coord-row:hover td{background:var(--paper);}
+
+  /* grade-integrity panel */
+  .gi-panel{border-inline-start:4px solid var(--tone-mid);}
+  .gi-lead{font-size:12.5px; color:var(--text-muted); line-height:1.6; margin:0 0 14px;}
+  .gi-group{padding:12px 0; border-top:1px solid var(--paper-line);}
+  .gi-group:first-of-type{border-top:none; padding-top:0;}
+  .gi-head{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:13.5px; color:var(--text); margin-bottom:6px;}
+  .gi-why{font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:10px;}
+  .gi-list{max-height:220px;}
 
   /* ===== Actions ===== */
   .actions{display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;}
@@ -1599,6 +1646,7 @@ function invalidateReportCache(){ _reportCache = Object.create(null); }
 /* management-dashboard filter/sort state — held at module scope so a full re-render
    (e.g. after navigating away and back) preserves the user's current view. */
 var dashFilter = { search:"", coordinator:"", errorType:"", bucket:"", sortKey:"alerts", sortDir:"desc" };
+var dashExpandedMistake = "";  /* label of the currently drilled-open mistake type in the chart */
 var sidebarSearch = "";
 
 /* =====================================================================
@@ -1667,20 +1715,13 @@ function renderSidebar(){
       '</div>';
     return;
   }
-  var tCount = {clean:0, low:0, mid:0, high:0};
   var cards = courses.map(function(course){
-    var report = computeReport(course);
-    tCount[toneForCount(report.totalAlerts)]++;
-    return {course:course, report:report};
+    return {course:course, report:computeReport(course)};
   });
 
-  $summaryBar.style.display = "flex";
-  $summaryBar.innerHTML =
-    '<div class="summary-chip"><span class="n">' + courses.length + '</span> קורסים נבדקו</div>' +
-    '<div class="summary-chip" style="color:var(--tone-clean)"><span class="n">' + tCount.clean + '</span> ללא בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-low)"><span class="n">' + tCount.low + '</span> 1–2 בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-mid)"><span class="n">' + tCount.mid + '</span> 3–4 בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-high)"><span class="n">' + tCount.high + '</span> 5+ בעיות</div>';
+  /* the portfolio counts live in the main dashboard's stat chips — keep the sidebar lean
+     so the course list starts at the top (no duplicate counts box pushing it down) */
+  $summaryBar.style.display = "none";
 
   /* worst-first so the courses that need attention rise to the top —
      essential once the list holds dozens of courses */
@@ -1902,18 +1943,49 @@ function normalizeMistakeLabel(item){
 function buildTopMistakeTypes(){
   var map = Object.create(null), order = [];
   courses.forEach(function(course){
+    var coord = coordinatorOf(course);
     var seen = Object.create(null);
     collectActionItems(computeReport(course)).forEach(function(it){
       var key = normalizeMistakeLabel(it);
       var e = map[key];
-      if (!e){ e = map[key] = {label:key, severity:it.severity, courses:0, occurrences:0}; order.push(key); }
+      if (!e){ e = map[key] = {label:key, category:it.categoryTitle, severity:it.severity, courses:0, occurrences:0, affected:[]}; order.push(key); }
       e.occurrences++;
-      if (!seen[key]){ e.courses++; seen[key] = true; }
       if (it.severity === "error") e.severity = "error"; /* errors dominate the badge color */
+      if (!seen[key]){
+        e.courses++; seen[key] = true;
+        /* keep per-course detail so a manager can drill from a bar into who/which/what */
+        e.affected.push({id:course.id, title:course.title, coord:coord,
+                         whatFound:it.whatFound || "", where:it.where || "",
+                         names:(it.names && it.names.length) ? it.names.slice() : null});
+      }
     });
   });
   return order.map(function(k){ return map[k]; })
     .sort(function(a,b){ return (b.courses - a.courses) || (b.occurrences - a.occurrences); });
+}
+
+/* portfolio-wide grade/completion integrity — the three signals that make completion data
+   unreliable, aggregated across all courses (mirrors the single-course gradeSpotlightHTML). */
+function buildGradeIntegrity(){
+  var passing = [], gradeMismatch = [], attendanceMismatch = [];
+  courses.forEach(function(course){
+    var r = computeReport(course);
+    var coord = coordinatorOf(course);
+    var pg = null;
+    r.categories.forEach(function(cat){ cat.fields.forEach(function(f){ if (f.id === "passing-grade") pg = f; }); });
+    if (pg && (pg.status === "warn" || pg.status === "error")){
+      passing.push({id:course.id, title:course.title, coord:coord, note:pg.note || "", where:pg.where || ""});
+    }
+    if (r.gradeStatus === "warn" && r.gradeCompletion && r.gradeCompletion.count > 0){
+      gradeMismatch.push({id:course.id, title:course.title, coord:coord,
+                          count:r.gradeCompletion.count, names:r.gradeCompletion.names.slice()});
+    }
+    if (r.completionStatus === "warn" && r.completion && r.completion.count > 0){
+      attendanceMismatch.push({id:course.id, title:course.title, coord:coord,
+                               count:r.completion.count, names:r.completion.names.slice()});
+    }
+  });
+  return {passing:passing, gradeMismatch:gradeMismatch, attendanceMismatch:attendanceMismatch};
 }
 
 function actionItemHTML(item, index){
@@ -2009,6 +2081,133 @@ function actionListText(report, course){
   return lines.join("\n");
 }
 
+/* ---- dashboard render helpers (narrative, grade panel, drillable mistakes) ---- */
+
+/* one-sentence "what's the story" line under the header */
+function dashNarrativeHTML(tCount, total){
+  var withIssues = total - tCount.clean;
+  if (withIssues === 0){
+    return '<div class="dash-narrative dash-narrative-clean">' + icon('check') +
+      ' כל ' + total + ' הקורסים תקינים — אין פערים שדורשים טיפול.</div>';
+  }
+  /* the numbers already live in the stat chips — keep the narrative to the "story" */
+  var parts = [];
+  var top = buildTopMistakeTypes().filter(function(x){ return x.category !== "השלמות"; })[0];
+  if (top){ parts.push('הטעות הנפוצה ביותר: «' + top.label + '» ב-' + top.courses + ' קורסים'); }
+  var coordRows = buildCoordinatorSummary();
+  if (coordRows.length > 1 && coordRows[0].err > 0){
+    parts.push('הרכזת עם הכי הרבה שגיאות: ' + coordRows[0].name + ' (' + coordRows[0].err + ' שגיאות)');
+  }
+  if (!parts.length){ parts.push(withIssues + ' מתוך ' + total + ' קורסים דורשים טיפול'); }
+  return '<div class="dash-narrative">' + icon('flag') + ' ' + escapeHtml(parts.join(' · ')) + '</div>';
+}
+
+/* participant name list, capped so a big class doesn't flood the panel */
+function dashNames(names){
+  var cap = 12;
+  var shown = names.slice(0, cap).map(function(n){ return escapeHtml(n); }).join(" · ");
+  if (names.length > cap) shown += " · ועוד " + (names.length - cap);
+  return '<b>משתתפים:</b> ' + shown;
+}
+
+/* drill panel under an expanded mistake bar: who / which course / what exactly / where to fix */
+function mistakeDrillHTML(x){
+  var where = "";
+  for (var i=0;i<x.affected.length;i++){ if (x.affected[i].where){ where = x.affected[i].where; break; } }
+  var list = x.affected.map(function(a){
+    var detail = a.names
+      ? '<div class="drill-detail">' + dashNames(a.names) + '</div>'
+      : (a.whatFound ? '<div class="drill-detail">' + escapeHtml(a.whatFound) + '</div>' : '');
+    return '<li class="drill-course">' +
+        '<div class="drill-course-top">' +
+          '<a class="drill-course-link" data-course-id="' + escapeHtml(a.id) + '">' + escapeHtml(a.title) + '</a>' +
+          '<span class="drill-coord">' + escapeHtml(a.coord) + '</span>' +
+        '</div>' + detail +
+      '</li>';
+  }).join("");
+  return '<div class="dash-drill">' +
+    (where ? '<div class="drill-where"><span class="where-pin">' + icon('mapPin') + '</span> <b>היכן לתקן:</b> ' + escapeHtml(where) + '</div>' : '') +
+    '<ul class="drill-list">' + list + '</ul>' +
+    '<button type="button" class="dash-show-table" data-label="' + escapeHtml(x.label) + '">' + icon('arrowRight') + ' הצג קורסים אלה בטבלה</button>' +
+  '</div>';
+}
+
+/* the mistakes chart body (top 10), with the currently expanded type drilled open */
+function dashMistakeBarsHTML(){
+  /* grade/completion issues have their own dedicated panel — keep them out of this chart */
+  var mistakes = buildTopMistakeTypes().filter(function(x){ return x.category !== "השלמות"; }).slice(0, 10);
+  if (!mistakes.length){
+    return '<div class="dash-clean">' + icon('check') + ' אין טעויות חוזרות — כל הקורסים תקינים.</div>';
+  }
+  var maxCourses = mistakes.reduce(function(m,x){ return Math.max(m, x.courses); }, 1);
+  return '<ul class="dash-bars">' + mistakes.map(function(x){
+    var pct = Math.round(x.courses / maxCourses * 100);
+    var sevClass = x.severity === "error" ? "sev-error" : "sev-warn";
+    var sevLabel = x.severity === "error" ? "שגיאה" : "לתשומת לב";
+    var expanded = (x.label === dashExpandedMistake);
+    return '<li class="dash-bar-row' + (expanded ? ' expanded' : '') + '">' +
+      '<div class="dash-bar-head" role="button" tabindex="0" aria-expanded="' + expanded + '" data-mistake="' + escapeHtml(x.label) + '">' +
+        '<span class="dash-bar-label"><span class="dash-caret">' + icon('chevronDown') + '</span>' +
+          '<span class="sev-chip ' + sevClass + '">' + sevLabel + '</span>' + escapeHtml(x.label) + '</span>' +
+        '<span class="dash-bar-n">' + x.courses + ' ' + (x.courses===1?'קורס':'קורסים') + '</span>' +
+      '</div>' +
+      '<div class="dash-bar-track"><div class="dash-bar" style="width:' + pct + '%"></div></div>' +
+      (expanded ? mistakeDrillHTML(x) : '') +
+    '</li>';
+  }).join("") + '</ul>';
+}
+function renderMistakeBars(){
+  var box = document.getElementById("dashMistakeBars");
+  if (box) box.innerHTML = dashMistakeBarsHTML();
+}
+
+/* focused grade/completion integrity panel (empty string when nothing to show) */
+function gradeIntegrityPanelHTML(){
+  var g = buildGradeIntegrity();
+  if (!g.passing.length && !g.gradeMismatch.length && !g.attendanceMismatch.length) return "";
+
+  function courseList(rows, detailFn){
+    return '<ul class="drill-list gi-list">' + rows.map(function(a){
+      return '<li class="drill-course">' +
+        '<div class="drill-course-top">' +
+          '<a class="drill-course-link" data-course-id="' + escapeHtml(a.id) + '">' + escapeHtml(a.title) + '</a>' +
+          '<span class="drill-coord">' + escapeHtml(a.coord) + '</span>' +
+        '</div>' + (detailFn ? detailFn(a) : '') +
+      '</li>';
+    }).join("") + '</ul>';
+  }
+  var groups = "";
+  if (g.passing.length){
+    groups += '<div class="gi-group">' +
+      '<div class="gi-head"><span class="sev-chip sev-warn">לתשומת לב</span>' +
+        '<b>' + g.passing.length + ' ' + (g.passing.length===1?'קורס':'קורסים') + ' עם סף מעבר (ציון עובר) לא תקין</b></div>' +
+      '<div class="gi-why">סף מעבר של 0 משמעו שכל לומד «עובר» אוטומטית — וחישוב ההשלמה יוצא שגוי. ' +
+        '<span class="drill-where"><span class="where-pin">' + icon('mapPin') + '</span> <b>היכן לתקן:</b> הגדרות השלמה ← תנאי השלמה (ציון עובר / הסתר ציון)</span></div>' +
+      courseList(g.passing, function(a){ return a.note ? '<div class="drill-detail">' + escapeHtml(a.note) + '</div>' : ''; }) +
+    '</div>';
+  }
+  var totalGrade = g.gradeMismatch.reduce(function(s,a){ return s + a.count; }, 0);
+  if (g.gradeMismatch.length){
+    groups += '<div class="gi-group">' +
+      '<div class="gi-head"><span class="sev-chip sev-warn">לתשומת לב</span>' +
+        '<b>' + g.gradeMismatch.length + ' ' + (g.gradeMismatch.length===1?'קורס':'קורסים') + ' עם משתתפים שעברו בציון אך לא סומנו כהושלמו (' + totalGrade + ' משתתפים)</b></div>' +
+      courseList(g.gradeMismatch, function(a){ return '<div class="drill-detail">' + dashNames(a.names) + '</div>'; }) +
+    '</div>';
+  }
+  var totalAtt = g.attendanceMismatch.reduce(function(s,a){ return s + a.count; }, 0);
+  if (g.attendanceMismatch.length){
+    groups += '<div class="gi-group">' +
+      '<div class="gi-head"><span class="sev-chip sev-warn">לתשומת לב</span>' +
+        '<b>' + g.attendanceMismatch.length + ' ' + (g.attendanceMismatch.length===1?'קורס':'קורסים') + ' עם משתתפים שעמדו בנוכחות אך לא סומנו כהושלמו (' + totalAtt + ' משתתפים)</b></div>' +
+      courseList(g.attendanceMismatch, function(a){ return '<div class="drill-detail">' + dashNames(a.names) + '</div>'; }) +
+    '</div>';
+  }
+  return '<section class="dash-panel gi-panel"><h2 class="dash-h2">' + icon('target') + ' תקינות ציונים והשלמות</h2>' +
+    '<p class="gi-lead">שדות הציון וההשלמה קובעים אם לומד נחשב «עבר». בעיות כאן שקטות אך קריטיות — כדאי לטפל בהן קודם.</p>' +
+    groups +
+  '</section>';
+}
+
 /* ---- portfolio overview: status of every course at a glance ---- */
 /* ---- management dashboard (portfolio home when no single course is selected) ---- */
 function overviewHTML(){
@@ -2038,36 +2237,19 @@ function overviewHTML(){
       '<th>רכזת</th><th class="dash-num">קורסים</th><th class="dash-num">עם בעיות</th>' +
       '<th class="dash-num">שגיאות</th><th class="dash-num">התראות</th></tr></thead><tbody>' +
     coordRows.map(function(c){
-      return '<tr><td>' + escapeHtml(c.name) + '</td>' +
+      return '<tr class="dash-coord-row" data-coord="' + escapeHtml(c.name) + '"><td>' + escapeHtml(c.name) + '</td>' +
         '<td class="dash-num">' + c.count + '</td>' +
         '<td class="dash-num">' + c.withIssues + '</td>' +
         '<td class="dash-num' + (c.err?' dash-err':'') + '">' + c.err + '</td>' +
         '<td class="dash-num' + (c.warn?' dash-warn':'') + '">' + c.warn + '</td></tr>';
     }).join("") +
-    '</tbody></table></div></section>';
+    '</tbody></table></div><div class="dash-panel-hint">לחיצה על רכזת מסננת את טבלת הקורסים למטה</div></section>';
 
-  /* --- most common mistake-types (full list drives the error-type filter; top 10 the chart) --- */
+  /* --- most common mistake-types: drillable bars (click a bar to see who / which / what) --- */
   var allMistakes = buildTopMistakeTypes();
-  var mistakes = allMistakes.slice(0, 10);
-  var maxCourses = mistakes.reduce(function(m,x){ return Math.max(m, x.courses); }, 1);
-  var mistakeList = mistakes.length
-    ? '<ul class="dash-bars">' + mistakes.map(function(x){
-        var pct = Math.round(x.courses / maxCourses * 100);
-        /* bar length = frequency only (one neutral colour); severity is shown by a
-           separate tag so the two signals don't get conflated on the bar itself */
-        var sevClass = x.severity === "error" ? "sev-error" : "sev-warn";
-        var sevLabel = x.severity === "error" ? "שגיאה" : "לתשומת לב";
-        return '<li class="dash-bar-row">' +
-          '<div class="dash-bar-head">' +
-            '<span class="dash-bar-label"><span class="sev-chip ' + sevClass + '">' + sevLabel + '</span>' + escapeHtml(x.label) + '</span>' +
-            '<span class="dash-bar-n">' + x.courses + ' ' + (x.courses===1?'קורס':'קורסים') + '</span>' +
-          '</div>' +
-          '<div class="dash-bar-track"><div class="dash-bar" style="width:' + pct + '%"></div></div>' +
-        '</li>';
-      }).join("") + '</ul>'
-    : '<div class="dash-clean">' + icon('check') + ' אין טעויות חוזרות — כל הקורסים תקינים.</div>';
   var mistakePanel = '<section class="dash-panel"><h2 class="dash-h2">' + icon('alert') + ' סוגי הטעויות הנפוצות</h2>' +
-    mistakeList + '</section>';
+    (allMistakes.length ? '<p class="dash-panel-hint">לחיצה על טעות פותחת אילו קורסים, אצל מי, ומה בדיוק חסר</p>' : '') +
+    '<div id="dashMistakeBars">' + dashMistakeBarsHTML() + '</div></section>';
 
   /* --- filterable/sortable course table --- */
   var coordOptions = '<option value="">כל הרכזות</option>' +
@@ -2105,8 +2287,13 @@ function overviewHTML(){
     '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
   '</div>';
 
-  return '<div class="overview dashboard">' + header + stats +
-    '<div class="dash-grid">' + coordTable + mistakePanel + '</div>' +
+  var narrative = dashNarrativeHTML(tCount, total);
+  var gradePanel = gradeIntegrityPanelHTML();
+
+  return '<div class="overview dashboard">' + header + narrative + stats +
+    mistakePanel +
+    gradePanel +
+    coordTable +
     courseTable + actions +
   '</div>';
 }
@@ -2490,6 +2677,62 @@ function bindDashboardEvents(){
     body.addEventListener("click", function(e){
       var tr = e.target.closest("tr[data-id]");
       if (tr) selectCourse(tr.getAttribute("data-id"));
+    });
+  }
+
+  function scrollToCourseTable(){
+    var t = document.getElementById("dashCourseTable");
+    if (t) t.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  /* coordinator row → filter the course table to that coordinator (wires the existing dropdown) */
+  $main.querySelectorAll(".dash-coord-row[data-coord]").forEach(function(row){
+    row.addEventListener("click", function(){
+      dashFilter.coordinator = row.getAttribute("data-coord");
+      if (coordFilter) coordFilter.value = dashFilter.coordinator;
+      renderDashCourseBody();
+      scrollToCourseTable();
+    });
+  });
+
+  /* drillable mistake bars (delegated: expand toggle, open course, jump to filtered table) */
+  var bars = document.getElementById("dashMistakeBars");
+  if (bars){
+    bars.addEventListener("click", function(e){
+      var link = e.target.closest(".drill-course-link[data-course-id]");
+      if (link){ selectCourse(link.getAttribute("data-course-id")); return; }
+      var showBtn = e.target.closest(".dash-show-table[data-label]");
+      if (showBtn){
+        dashFilter.errorType = showBtn.getAttribute("data-label");
+        if (errorFilter) errorFilter.value = dashFilter.errorType;
+        renderDashCourseBody();
+        scrollToCourseTable();
+        return;
+      }
+      var head = e.target.closest(".dash-bar-head[data-mistake]");
+      if (head){
+        var label = head.getAttribute("data-mistake");
+        dashExpandedMistake = (dashExpandedMistake === label) ? "" : label;
+        renderMistakeBars();
+      }
+    });
+    bars.addEventListener("keydown", function(e){
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var head = e.target.closest(".dash-bar-head[data-mistake]");
+      if (!head) return;
+      e.preventDefault();
+      var label = head.getAttribute("data-mistake");
+      dashExpandedMistake = (dashExpandedMistake === label) ? "" : label;
+      renderMistakeBars();
+    });
+  }
+
+  /* grade-integrity panel course links → open that course */
+  var gi = $main.querySelector(".gi-panel");
+  if (gi){
+    gi.addEventListener("click", function(e){
+      var link = e.target.closest(".drill-course-link[data-course-id]");
+      if (link) selectCourse(link.getAttribute("data-course-id"));
     });
   }
 
