@@ -1918,12 +1918,17 @@ function fullReportHTML(){
   return head + body;
 }
 
-/* ---- lean per-course block for downloads: title + count + issue labels only ---- */
+/* ---- lean per-course block for downloads: title + count + issue label & what's missing ---- */
 function leanCourseSectionHTML(course, report){
   var items = collectActionItems(report);
   var itemsHTML = items.length
     ? '<ol class="pr-items">' + items.map(function(it){
-        return '<li class="pr-item pr-' + it.severity + '">' + escapeHtml(it.label) + '</li>';
+        var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
+        var line = it.whatFound ? '<div class="pr-line">' + escapeHtml(it.whatFound) + '</div>' : "";
+        return '<li class="pr-item pr-' + it.severity + '">' +
+          escapeHtml(it.label) + ' <span class="pr-sev">· ' + sev + '</span>' +
+          line +
+        '</li>';
       }).join("") + '</ol>'
     : '<div class="pr-clean">' + icon('check') + ' אין בעיות — הקורס תקין.</div>';
   return '<section class="pr-course">' +
