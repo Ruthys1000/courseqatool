@@ -526,8 +526,6 @@
   /* ===== Management dashboard ===== */
   .dashboard .ov-h1{display:flex; align-items:center; gap:8px;}
   .dash-stats{margin-bottom:20px;}
-  .dash-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
-  @media (max-width:980px){ .dash-grid{grid-template-columns:1fr;} }
   .dash-panel{
     background:var(--paper-2); border:1px solid var(--paper-line); border-radius:var(--radius);
     padding:16px 18px; margin-bottom:16px;
@@ -1717,20 +1715,13 @@ function renderSidebar(){
       '</div>';
     return;
   }
-  var tCount = {clean:0, low:0, mid:0, high:0};
   var cards = courses.map(function(course){
-    var report = computeReport(course);
-    tCount[toneForCount(report.totalAlerts)]++;
-    return {course:course, report:report};
+    return {course:course, report:computeReport(course)};
   });
 
-  $summaryBar.style.display = "flex";
-  $summaryBar.innerHTML =
-    '<div class="summary-chip"><span class="n">' + courses.length + '</span> קורסים נבדקו</div>' +
-    '<div class="summary-chip" style="color:var(--tone-clean)"><span class="n">' + tCount.clean + '</span> ללא בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-low)"><span class="n">' + tCount.low + '</span> 1–2 בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-mid)"><span class="n">' + tCount.mid + '</span> 3–4 בעיות</div>' +
-    '<div class="summary-chip" style="color:var(--tone-high)"><span class="n">' + tCount.high + '</span> 5+ בעיות</div>';
+  /* the portfolio counts live in the main dashboard's stat chips — keep the sidebar lean
+     so the course list starts at the top (no duplicate counts box pushing it down) */
+  $summaryBar.style.display = "none";
 
   /* worst-first so the courses that need attention rise to the top —
      essential once the list holds dozens of courses */
@@ -1957,7 +1948,7 @@ function buildTopMistakeTypes(){
     collectActionItems(computeReport(course)).forEach(function(it){
       var key = normalizeMistakeLabel(it);
       var e = map[key];
-      if (!e){ e = map[key] = {label:key, severity:it.severity, courses:0, occurrences:0, affected:[]}; order.push(key); }
+      if (!e){ e = map[key] = {label:key, category:it.categoryTitle, severity:it.severity, courses:0, occurrences:0, affected:[]}; order.push(key); }
       e.occurrences++;
       if (it.severity === "error") e.severity = "error"; /* errors dominate the badge color */
       if (!seen[key]){
@@ -2099,13 +2090,15 @@ function dashNarrativeHTML(tCount, total){
     return '<div class="dash-narrative dash-narrative-clean">' + icon('check') +
       ' כל ' + total + ' הקורסים תקינים — אין פערים שדורשים טיפול.</div>';
   }
-  var parts = [withIssues + ' מתוך ' + total + ' קורסים כוללים בעיות (' + tCount.clean + ' תקינים)'];
-  var top = buildTopMistakeTypes()[0];
+  /* the numbers already live in the stat chips — keep the narrative to the "story" */
+  var parts = [];
+  var top = buildTopMistakeTypes().filter(function(x){ return x.category !== "השלמות"; })[0];
   if (top){ parts.push('הטעות הנפוצה ביותר: «' + top.label + '» ב-' + top.courses + ' קורסים'); }
   var coordRows = buildCoordinatorSummary();
   if (coordRows.length > 1 && coordRows[0].err > 0){
-    parts.push('הרכזת עם הכי הרבה שגיאות: ' + coordRows[0].name + ' (' + coordRows[0].err + ')');
+    parts.push('הרכזת עם הכי הרבה שגיאות: ' + coordRows[0].name + ' (' + coordRows[0].err + ' שגיאות)');
   }
+  if (!parts.length){ parts.push(withIssues + ' מתוך ' + total + ' קורסים דורשים טיפול'); }
   return '<div class="dash-narrative">' + icon('flag') + ' ' + escapeHtml(parts.join(' · ')) + '</div>';
 }
 
@@ -2141,7 +2134,8 @@ function mistakeDrillHTML(x){
 
 /* the mistakes chart body (top 10), with the currently expanded type drilled open */
 function dashMistakeBarsHTML(){
-  var mistakes = buildTopMistakeTypes().slice(0, 10);
+  /* grade/completion issues have their own dedicated panel — keep them out of this chart */
+  var mistakes = buildTopMistakeTypes().filter(function(x){ return x.category !== "השלמות"; }).slice(0, 10);
   if (!mistakes.length){
     return '<div class="dash-clean">' + icon('check') + ' אין טעויות חוזרות — כל הקורסים תקינים.</div>';
   }
@@ -2298,7 +2292,7 @@ function overviewHTML(){
 
   return '<div class="overview dashboard">' + header + narrative + stats +
     gradePanel +
-    '<div class="dash-grid">' + coordTable + mistakePanel + '</div>' +
+    coordTable + mistakePanel +
     courseTable + actions +
   '</div>';
 }
