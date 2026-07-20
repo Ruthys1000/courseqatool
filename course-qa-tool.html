@@ -568,12 +568,13 @@
   .dash-dot.tone-high{background:var(--tone-high);}
 
   .dash-toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
-  #dashSearch, #dashCoordFilter{
+  #dashSearch, #dashCoordFilter, #dashErrorFilter{
     font-family:var(--sans); font-size:13px; direction:rtl; color:var(--text);
     border:1px solid var(--paper-line); border-radius:8px; padding:8px 12px; background:var(--paper-2);
   }
   #dashSearch{flex:1 1 200px; min-width:160px;}
-  #dashSearch:focus, #dashCoordFilter:focus{outline:none; border-color:var(--brand-blue);}
+  #dashErrorFilter{max-width:220px;}
+  #dashSearch:focus, #dashCoordFilter:focus, #dashErrorFilter:focus{outline:none; border-color:var(--brand-blue);}
   .dash-chips{display:flex; gap:6px; flex-wrap:wrap;}
   .dash-chip{
     border:1px solid var(--paper-line); border-radius:999px; padding:5px 13px; font-size:12.5px;
@@ -1597,7 +1598,7 @@ function invalidateReportCache(){ _reportCache = Object.create(null); }
 
 /* management-dashboard filter/sort state — held at module scope so a full re-render
    (e.g. after navigating away and back) preserves the user's current view. */
-var dashFilter = { search:"", coordinator:"", bucket:"", sortKey:"alerts", sortDir:"desc" };
+var dashFilter = { search:"", coordinator:"", errorType:"", bucket:"", sortKey:"alerts", sortDir:"desc" };
 var sidebarSearch = "";
 
 /* =====================================================================
@@ -2045,8 +2046,9 @@ function overviewHTML(){
     }).join("") +
     '</tbody></table></div></section>';
 
-  /* --- most common mistake-types --- */
-  var mistakes = buildTopMistakeTypes().slice(0, 10);
+  /* --- most common mistake-types (full list drives the error-type filter; top 10 the chart) --- */
+  var allMistakes = buildTopMistakeTypes();
+  var mistakes = allMistakes.slice(0, 10);
   var maxCourses = mistakes.reduce(function(m,x){ return Math.max(m, x.courses); }, 1);
   var mistakeList = mistakes.length
     ? '<ul class="dash-bars">' + mistakes.map(function(x){
@@ -2072,6 +2074,10 @@ function overviewHTML(){
     coordRows.map(function(c){
       return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>';
     }).join("");
+  var errorOptions = '<option value="">כל סוגי הטעויות</option>' +
+    allMistakes.map(function(t){
+      return '<option value="' + escapeHtml(t.label) + '">' + escapeHtml(t.label) + '</option>';
+    }).join("");
   var buckets = [["clean","ללא בעיות"],["low","1–2"],["mid","3–4"],["high","5+"]];
   var chips = buckets.map(function(b){
     return '<button type="button" class="dash-chip tone-' + b[0] + '" data-bucket="' + b[0] + '">' + b[1] + '</button>';
@@ -2079,6 +2085,7 @@ function overviewHTML(){
   var toolbar = '<div class="dash-toolbar">' +
       '<input type="text" id="dashSearch" placeholder="חיפוש קורס…" autocomplete="off">' +
       '<select id="dashCoordFilter">' + coordOptions + '</select>' +
+      '<select id="dashErrorFilter">' + errorOptions + '</select>' +
       '<div class="dash-chips">' + chips + '</div>' +
       '<span class="dash-count" id="dashCount"></span>' +
     '</div>';
@@ -2109,11 +2116,13 @@ function dashCourseRowsData(){
   var rows = courses.map(function(course){
     var r = computeReport(course);
     return {id:course.id, title:course.title, coord:coordinatorOf(course),
-            err:r.totalErr, warn:r.totalWarn, alerts:r.totalAlerts, tone:toneForCount(r.totalAlerts)};
+            err:r.totalErr, warn:r.totalWarn, alerts:r.totalAlerts, tone:toneForCount(r.totalAlerts),
+            mistakes:collectActionItems(r).map(normalizeMistakeLabel)};
   });
   var f = dashFilter, q = f.search.trim();
   if (q) rows = rows.filter(function(x){ return x.title.indexOf(q) !== -1; });
   if (f.coordinator) rows = rows.filter(function(x){ return x.coord === f.coordinator; });
+  if (f.errorType) rows = rows.filter(function(x){ return x.mistakes.indexOf(f.errorType) !== -1; });
   if (f.bucket) rows = rows.filter(function(x){ return x.tone === f.bucket; });
   var dir = f.sortDir === "asc" ? 1 : -1;
   rows.sort(function(a,b){
@@ -2441,6 +2450,12 @@ function bindDashboardEvents(){
   if (coordFilter){
     coordFilter.value = dashFilter.coordinator;
     coordFilter.addEventListener("change", function(){ dashFilter.coordinator = coordFilter.value; renderDashCourseBody(); });
+  }
+
+  var errorFilter = document.getElementById("dashErrorFilter");
+  if (errorFilter){
+    errorFilter.value = dashFilter.errorType;
+    errorFilter.addEventListener("change", function(){ dashFilter.errorType = errorFilter.value; renderDashCourseBody(); });
   }
 
   $main.querySelectorAll(".dash-chip[data-bucket]").forEach(function(ch){
