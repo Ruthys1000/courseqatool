@@ -589,11 +589,13 @@
      regardless of how long the (variable-length Hebrew) mistake label is */
   .dash-bars{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:13px;}
   .dash-bar-row{display:flex; flex-direction:column; gap:5px;}
-  .dash-bar-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  /* cap only the bar unit (label line + track) so bars don't stretch across the whole screen;
+     tables and the drill-down panel below stay full-width */
+  .dash-bar-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; max-width:640px;}
   .dash-bar-label{font-size:12.5px; color:var(--text); line-height:1.5;}
   .dash-bar-label .sev-chip{margin-inline-end:7px; vertical-align:1px;}
   .dash-bar-n{font-size:11.5px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap;}
-  .dash-bar-track{width:100%; background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
+  .dash-bar-track{width:100%; max-width:640px; background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
   /* one neutral fill — length encodes frequency; severity lives in the tag beside the label */
   .dash-bar{height:100%; border-radius:4px; background:var(--brand-sky);}
   .dash-clean{font-size:13px; color:var(--tone-clean); font-weight:700; display:flex; align-items:center; gap:8px;}
@@ -2072,8 +2074,9 @@ function detailsPanelHTML(course){
 }
 
 /* ---- plain-text export of the action list (for "copy") ---- */
-function actionListText(report, course){
+function actionListText(report, course, mistakeFilter){
   var items = collectActionItems(report);
+  if (mistakeFilter) items = items.filter(function(it){ return normalizeMistakeLabel(it) === mistakeFilter; });
   var lines = ["רשימת משימות — " + course.title, (items.length ? "בעיות שנמצאו: " + items.length : "אין בעיות — הקורס תקין"), ""];
   if (!items.length){ return lines.join("\n"); }
   items.forEach(function(it, i){
@@ -2284,8 +2287,8 @@ function overviewHTML(){
 
   /* --- export actions (unchanged; bindMainEvents wires these) --- */
   var actions = '<div class="actions ov-actions">' +
-    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום מלא (הדפסה / PDF)</button>' +
-    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
+    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום לפי הסינון הנוכחי (הדפסה / PDF)</button>' +
+    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לפי הסינון הנוכחי (טקסט)</button>' +
   '</div>';
 
   var narrative = dashNarrativeHTML(tCount, total);
@@ -2346,21 +2349,51 @@ function renderDashCourseBody(){
   }).join("");
 }
 
-/* ---- full-portfolio summary: printable report (all courses) ---- */
+/* ---- exports respect the on-screen dashboard filter ---- */
+/* courses matching the active dashFilter, in the table's filtered+sorted order (reuses
+   dashCourseRowsData so the filter/sort logic lives in one place) */
+function dashFilteredCourses(){
+  var byId = {}; courses.forEach(function(c){ byId[c.id] = c; });
+  return dashCourseRowsData().map(function(x){ return byId[x.id]; }).filter(Boolean);
+}
+/* human-readable summary of the active filter (for the report header); "" when none */
+function dashFilterSummary(){
+  var f = dashFilter, parts = [];
+  var bucketLabels = {clean:"ללא בעיות", low:"1–2 בעיות", mid:"3–4 בעיות", high:"5+ בעיות"};
+  if (f.search.trim()) parts.push('חיפוש: "' + f.search.trim() + '"');
+  if (f.coordinator) parts.push("רכזת: " + f.coordinator);
+  if (f.errorType) parts.push("סוג טעות: " + f.errorType);
+  if (f.bucket && bucketLabels[f.bucket]) parts.push("חומרה: " + bucketLabels[f.bucket]);
+  return parts.join(" · ");
+}
+
+/* ---- full-portfolio summary: printable report (respects the active filter) ---- */
 function fullReportHTML(){
   var now = new Date();
   var stamp = fmtDate(now) + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  var filtered = dashFilteredCourses();
+  var mistakeFilter = dashFilter.errorType || null;
+  var summary = dashFilterSummary();
+  var title = summary ? "סיכום בקרת QA — לפי הסינון" : "סיכום בקרת QA — כל הקורסים";
+
+  if (!filtered.length){
+    return '<div class="pr-head"><h1>' + title + '</h1>' +
+      '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · הופק ' + stamp + '</div>' +
+      (summary ? '<div class="pr-sub">' + escapeHtml(summary) + '</div>' : '') +
+      '</div><section class="pr-course"><div class="pr-clean">לא נמצאו קורסים שתואמים לסינון.</div></section>';
+  }
+
   var tCount = {clean:0, low:0, mid:0, high:0};
-  var reports = courses.map(function(course){
+  var reports = filtered.map(function(course){
     var report = computeReport(course);
     tCount[toneForCount(report.totalAlerts)]++;
     return {course:course, report:report};
   });
-  reports.sort(function(a,b){ return (b.report.totalAlerts-a.report.totalAlerts) || (b.report.totalErr-a.report.totalErr); });
 
   var head = '<div class="pr-head">' +
-    '<h1>סיכום בקרת QA — כל הקורסים</h1>' +
-    '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + courses.length + ' קורסים · הופק ' + stamp + '</div>' +
+    '<h1>' + title + '</h1>' +
+    '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + filtered.length + ' קורסים · הופק ' + stamp + '</div>' +
+    (summary ? '<div class="pr-sub">' + escapeHtml(summary) + '</div>' : '') +
     '<div class="pr-tally">' +
       '<span style="color:var(--tone-clean)">' + icon('check') + ' ' + tCount.clean + ' ללא בעיות</span>' +
       '<span style="color:var(--tone-low)">' + tCount.low + ' עם 1–2 בעיות</span>' +
@@ -2369,15 +2402,17 @@ function fullReportHTML(){
     '</div></div>';
 
   var body = reports.map(function(r){
-    return leanCourseSectionHTML(r.course, r.report);
+    return leanCourseSectionHTML(r.course, r.report, mistakeFilter);
   }).join("");
 
   return head + body;
 }
 
-/* ---- lean per-course block for downloads: title + count + issue label & what's missing ---- */
-function leanCourseSectionHTML(course, report){
+/* ---- lean per-course block for downloads: title + count + issue label & what's missing.
+   mistakeFilter (optional): normalized mistake label — keep only matching items. ---- */
+function leanCourseSectionHTML(course, report, mistakeFilter){
   var items = collectActionItems(report);
+  if (mistakeFilter) items = items.filter(function(it){ return normalizeMistakeLabel(it) === mistakeFilter; });
   var itemsHTML = items.length
     ? '<ol class="pr-items">' + items.map(function(it){
         var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
@@ -2407,13 +2442,17 @@ function singleReportHTML(course, report){
 
 /* ---- full-portfolio summary: plain-text checklist (all courses) ---- */
 function fullReportText(){
-  var lines = ["סיכום בקרת QA — כל הקורסים", courses[0].fileName + " · " + courses.length + " קורסים", ""];
-  var reports = courses.map(function(course){ return {course:course, report:computeReport(course)}; });
-  var sevRank = {error:0, warn:1, ok:2};
-  reports.sort(function(a,b){ return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr); });
-  reports.forEach(function(r){
+  var filtered = dashFilteredCourses();
+  var mistakeFilter = dashFilter.errorType || null;
+  var summary = dashFilterSummary();
+  var title = summary ? "סיכום בקרת QA — לפי הסינון" : "סיכום בקרת QA — כל הקורסים";
+  var lines = [title, courses[0].fileName + " · " + filtered.length + " קורסים"];
+  if (summary) lines.push("סינון: " + summary);
+  lines.push("");
+  if (!filtered.length){ lines.push("לא נמצאו קורסים שתואמים לסינון."); return lines.join("\n"); }
+  filtered.forEach(function(course){
     lines.push("========================================");
-    lines.push(actionListText(r.report, r.course).replace(/^רשימת משימות — /, ""));
+    lines.push(actionListText(computeReport(course), course, mistakeFilter).replace(/^רשימת משימות — /, ""));
   });
   return lines.join("\n");
 }
