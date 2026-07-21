@@ -2287,8 +2287,8 @@ function overviewHTML(){
 
   /* --- export actions (unchanged; bindMainEvents wires these) --- */
   var actions = '<div class="actions ov-actions">' +
-    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום לפי הסינון הנוכחי (הדפסה / PDF)</button>' +
-    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לפי הסינון הנוכחי (טקסט)</button>' +
+    '<button class="btn btn-primary" id="downloadWorkBtn" type="button">' + icon('fileText') + 'הורד דוח עבודה (בעיות לתיקון)</button>' +
+    '<button class="btn btn-outline" id="downloadStatusBtn" type="button">' + icon('grid') + 'הורד דוח מצב (כל הקורסים)</button>' +
   '</div>';
 
   var narrative = dashNarrativeHTML(tCount, total);
@@ -2466,6 +2466,128 @@ function downloadTextFile(filename, text){
   document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
 }
+function downloadHtmlFile(filename, html){
+  var blob = new Blob([html], {type:"text/html;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+/* =====================================================================
+   STANDALONE REPORTS — downloaded as self-contained .html files (not a
+   print of the app). Clean, print-ready, with an in-page print button.
+   ===================================================================== */
+function reportStamp(){
+  var n = new Date();
+  return fmtDate(n) + " " + String(n.getHours()).padStart(2,"0") + ":" + String(n.getMinutes()).padStart(2,"0");
+}
+/* wrap report body in a full, self-contained HTML document */
+function reportShell(docTitle, bodyHTML){
+  var css =
+    "*{box-sizing:border-box}" +
+    "body{margin:0;font-family:'Assistant','Segoe UI',Arial,sans-serif;color:#1a2230;background:#f4f5f7;line-height:1.6}" +
+    ".bar{position:sticky;top:0;background:#fff;border-bottom:1px solid #e3e7ee;padding:11px 20px;text-align:start}" +
+    ".bar button{font:inherit;font-weight:700;font-size:14px;cursor:pointer;background:#2b5fa8;color:#fff;border:0;border-radius:8px;padding:9px 18px}" +
+    ".bar button:hover{background:#244f8c}" +
+    ".doc{max-width:860px;margin:22px auto;background:#fff;border:1px solid #e3e7ee;border-radius:10px;padding:30px 34px}" +
+    ".rt{font-size:24px;font-weight:800;margin:0 0 6px}" +
+    ".rm{color:#5a6474;font-size:13.5px;margin:0 0 20px;border-bottom:2px solid #2b5fa8;padding-bottom:14px}" +
+    ".rs{font-size:14.5px;color:#333;margin:0 0 22px}.rs b{color:#1a2230}" +
+    ".wc{margin:0 0 22px;padding:0 0 18px;border-bottom:1px solid #eceff3}.wc:last-child{border-bottom:0;margin-bottom:0}" +
+    ".wch{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px}" +
+    ".wcn{font-size:17px;font-weight:800;margin:0}.wcc{font-size:13px;color:#5a6474}" +
+    ".wcx{font-size:12px;color:#5a6474;margin-inline-start:auto;font-weight:700}" +
+    ".pb{border-inline-start:3px solid #cdd5e1;padding:6px 12px;margin:0 0 8px}" +
+    ".pb.e{border-inline-start-color:#b42318}.pb.w{border-inline-start-color:#b54708}" +
+    ".pbl{font-weight:700;font-size:14.5px}" +
+    ".pbs{font-size:11.5px;font-weight:700;padding:1px 8px;border-radius:999px;margin-inline-start:6px}" +
+    ".pb.e .pbs{color:#b42318;background:#fbeae8}.pb.w .pbs{color:#b54708;background:#fbf2e1}" +
+    ".pbt{font-size:13.3px;color:#3a4453;margin:3px 0 0}" +
+    ".pbn{font-size:12.5px;color:#5a6474;margin:3px 0 0}.pbn b{color:#1a2230}" +
+    "table{width:100%;border-collapse:collapse;font-size:13.5px}" +
+    "th{text-align:right;font-size:12px;color:#5a6474;font-weight:700;border-bottom:2px solid #cdd5e1;padding:8px 10px;white-space:nowrap}" +
+    "td{padding:8px 10px;border-bottom:1px solid #eceff3}" +
+    ".num{text-align:center;font-variant-numeric:tabular-nums}" +
+    ".en{color:#b42318;font-weight:700}.wn{color:#b54708;font-weight:700}" +
+    ".ok{color:#2f855a;font-weight:700}.empty{color:#5a6474;padding:14px 0}" +
+    "@media print{body{background:#fff}.no-print{display:none}.doc{margin:0;border:0;border-radius:0;max-width:none;padding:0}.wc{break-inside:avoid}}";
+  return '<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+    '<title>' + escapeHtml(docTitle) + '</title><style>' + css + '</style></head><body>' +
+    '<div class="bar no-print"><button type="button" onclick="window.print()">הדפס / שמור כ-PDF</button></div>' +
+    '<main class="doc">' + bodyHTML + '</main></body></html>';
+}
+/* report 1 — work report: only courses with problems, each with its issue list */
+function buildWorkReportDoc(){
+  var filtered = dashFilteredCourses();
+  var mistakeFilter = dashFilter.errorType || null;
+  var summary = dashFilterSummary();
+  var meta = escapeHtml(courses[0].fileName) + " · הופק " + reportStamp() + (summary ? " · " + escapeHtml(summary) : "");
+  var body = '<h1 class="rt">דוח עבודה — בעיות לתיקון</h1><p class="rm">' + meta + '</p>';
+
+  var withIssues = filtered.map(function(c){ return {course:c, report:computeReport(c)}; })
+    .filter(function(x){ return (x.report.totalErr + x.report.totalWarn) > 0; });
+  withIssues.sort(function(a,b){ return (b.report.totalErr - a.report.totalErr) || (b.report.totalAlerts - a.report.totalAlerts); });
+
+  if (!withIssues.length){
+    body += '<p class="rs"><b>אין בעיות פתוחות</b> — כל הקורסים' + (summary ? ' בסינון הנוכחי' : '') + ' תקינים.</p>';
+    return reportShell("דוח עבודה — בקרת QA לקורסים", body);
+  }
+  var totalProblems = 0;
+  var blocks = withIssues.map(function(x){
+    var items = collectActionItems(x.report);
+    if (mistakeFilter) items = items.filter(function(it){ return normalizeMistakeLabel(it) === mistakeFilter; });
+    if (!items.length) return "";
+    totalProblems += items.length;
+    var probs = items.map(function(it){
+      var isErr = it.severity === "error";
+      var text = it.whatFound ? '<p class="pbt">' + escapeHtml(it.whatFound) + '</p>' : '';
+      var names = (it.names && it.names.length)
+        ? '<p class="pbn"><b>משתתפים:</b> ' + it.names.map(function(n){ return escapeHtml(n); }).join(" · ") + '</p>' : '';
+      return '<div class="pb ' + (isErr ? 'e' : 'w') + '"><span class="pbs">' + (isErr ? 'שגיאה' : 'התראה') + '</span>' +
+        '<span class="pbl">' + escapeHtml(it.label) + '</span>' + text + names + '</div>';
+    }).join("");
+    return '<section class="wc"><div class="wch">' +
+      '<h2 class="wcn">' + escapeHtml(x.course.title) + '</h2>' +
+      '<span class="wcc">רכזת: ' + escapeHtml(coordinatorOf(x.course)) + '</span>' +
+      '<span class="wcx">' + items.length + (items.length === 1 ? " בעיה" : " בעיות") + '</span>' +
+      '</div>' + probs + '</section>';
+  }).join("");
+  body += '<p class="rs"><b>' + withIssues.length + '</b> קורסים דורשים טיפול · <b>' + totalProblems + '</b> בעיות סה״כ.</p>' + blocks;
+  return reportShell("דוח עבודה — בקרת QA לקורסים", body);
+}
+/* report 2 — status report: table of every course with its status */
+function buildStatusReportDoc(){
+  var filtered = dashFilteredCourses();
+  var summary = dashFilterSummary();
+  var meta = escapeHtml(courses[0].fileName) + " · הופק " + reportStamp() + (summary ? " · " + escapeHtml(summary) : "");
+  var body = '<h1 class="rt">דוח מצב — כל הקורסים</h1><p class="rm">' + meta + '</p>';
+
+  if (!filtered.length){
+    body += '<p class="empty">לא נמצאו קורסים שתואמים לסינון.</p>';
+    return reportShell("דוח מצב — בקרת QA לקורסים", body);
+  }
+  var tCount = {clean:0, low:0, mid:0, high:0};
+  var rows = filtered.map(function(c){
+    var r = computeReport(c);
+    tCount[toneForCount(r.totalAlerts)]++;
+    return {title:c.title, coord:coordinatorOf(c), err:r.totalErr, warn:r.totalWarn, alerts:r.totalAlerts};
+  });
+  rows.sort(function(a,b){ return (b.alerts - a.alerts) || (b.err - a.err); });
+  body += '<p class="rs"><b>' + filtered.length + '</b> קורסים · ' + tCount.clean + ' ללא בעיות · ' + (filtered.length - tCount.clean) + ' עם בעיות</p>';
+  var trs = rows.map(function(x){
+    var status = x.alerts === 0 ? '<span class="ok">תקין</span>' : (x.alerts + (x.alerts === 1 ? " בעיה" : " בעיות"));
+    return '<tr><td>' + escapeHtml(x.title) + '</td><td>' + escapeHtml(x.coord) + '</td>' +
+      '<td class="num' + (x.err ? ' en' : '') + '">' + x.err + '</td>' +
+      '<td class="num' + (x.warn ? ' wn' : '') + '">' + x.warn + '</td>' +
+      '<td>' + status + '</td></tr>';
+  }).join("");
+  body += '<table><thead><tr><th>שם הקורס</th><th>רכזת</th><th class="num">שגיאות</th><th class="num">התראות</th><th>סטטוס</th></tr></thead><tbody>' + trs + '</tbody></table>';
+  return reportShell("דוח מצב — בקרת QA לקורסים", body);
+}
 
 function renderMain(){
   if (!courses.length){
@@ -2619,25 +2741,16 @@ function bindMainEvents(){
   $main.querySelectorAll("[data-overview]").forEach(function(el){
     el.addEventListener("click", function(){ showOverview(); });
   });
-  var dlPdf = document.getElementById("downloadPdfBtn");
-  if (dlPdf){
-    dlPdf.addEventListener("click", function(){
-      var box = document.getElementById("printReport");
-      box.innerHTML = fullReportHTML();
-      document.body.classList.add("printing-full");
-      var cleanup = function(){
-        document.body.classList.remove("printing-full");
-        box.innerHTML = "";
-        window.removeEventListener("afterprint", cleanup);
-      };
-      window.addEventListener("afterprint", cleanup);
-      window.print();
+  var dlWork = document.getElementById("downloadWorkBtn");
+  if (dlWork){
+    dlWork.addEventListener("click", function(){
+      downloadHtmlFile("דוח-עבודה-QA.html", buildWorkReportDoc());
     });
   }
-  var dlTxt = document.getElementById("downloadTxtBtn");
-  if (dlTxt){
-    dlTxt.addEventListener("click", function(){
-      downloadTextFile("course-qa-summary.txt", fullReportText());
+  var dlStatus = document.getElementById("downloadStatusBtn");
+  if (dlStatus){
+    dlStatus.addEventListener("click", function(){
+      downloadHtmlFile("דוח-מצב-QA.html", buildStatusReportDoc());
     });
   }
   var printBtn = document.getElementById("printBtn");
