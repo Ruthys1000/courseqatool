@@ -589,11 +589,13 @@
      regardless of how long the (variable-length Hebrew) mistake label is */
   .dash-bars{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:13px;}
   .dash-bar-row{display:flex; flex-direction:column; gap:5px;}
-  .dash-bar-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  /* cap only the bar unit (label line + track) so bars don't stretch across the whole screen;
+     tables and the drill-down panel below stay full-width */
+  .dash-bar-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; max-width:640px;}
   .dash-bar-label{font-size:12.5px; color:var(--text); line-height:1.5;}
   .dash-bar-label .sev-chip{margin-inline-end:7px; vertical-align:1px;}
   .dash-bar-n{font-size:11.5px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap;}
-  .dash-bar-track{width:100%; background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
+  .dash-bar-track{width:100%; max-width:640px; background:var(--paper-line); border-radius:4px; height:8px; overflow:hidden;}
   /* one neutral fill — length encodes frequency; severity lives in the tag beside the label */
   .dash-bar{height:100%; border-radius:4px; background:var(--brand-sky);}
   .dash-clean{font-size:13px; color:var(--tone-clean); font-weight:700; display:flex; align-items:center; gap:8px;}
@@ -1160,32 +1162,19 @@ RULES.push({
 /* ---- passing grade (ציון עובר) ---- */
 RULES.push({
   id:"passing-grade", category:"completions", label:"ציון עובר",
-  why:"אם הקורס מציג ציון, יש להגדיר “ציון עובר” (מקובל 80) כדי שחישוב ההשלמה יהיה נכון. ציון עובר של 0 משמעו שכל לומד “עובר” אוטומטית — גם ללא ציון אמיתי.",
-  check:"ודאו שהוגדר ציון עובר מתאים (למשל 80) בתנאי ההשלמה; אם הקורס ללא ציון — ודאו שמסומן “הסתר ציון”.",
-  where:"הגדרות השלמה ← תנאי השלמה (ציון עובר / הסתר ציון)",
+  why:"ברוב הקורסים אין ציון נדרש, ולכן “ציון עובר” אמור להיות 0 — זו הגדרה תקינה. ציון שמופיע (למשל 100) הוא לרוב תשובת שאלון האפקטיביות, שיש להגדיר במשקל 0 כדי שלא ייחשב כחלק מהציון. רק בקורס עם מבחן או משימה נדרשת יש להגדיר ציון עובר אמיתי.",
+  check:"אם יש בקורס משימת אפקטיביות — ודאו שהיא מוגדרת במשקל 0 ושמסומן “חישוב הציון מתעלם ממשימות במשקל אפס”. רק בקורס עם מבחן/משימה נדרשת הגדירו ציון עובר (למשל 80).",
+  where:"הגדרות השלמה ← תנאי השלמה · ומשקל המשימות (חישוב הציון מתעלם ממשימות במשקל אפס)",
   compute:function(ctx){
     var course = ctx.course;
     var c = colOf(course, "ציון עובר");
-    if (!c.exists) return {status:"warn", detected:null, note:"העמודה “ציון עובר” לא נמצאה בקובץ."};
-    /* highest actual learner grade in the course, to judge whether grades are in use */
-    var gradeIdx = course.columnIndex["ציון"];
-    var maxGrade = null;
-    if (gradeIdx !== undefined){
-      for (var i=0;i<course.rows.length;i++){
-        var g = toNumber(course.rows[i][gradeIdx]);
-        if (!isNaN(g) && (maxGrade===null || g>maxGrade)) maxGrade = g;
-      }
-    }
-    var hasRealGrades = (maxGrade !== null && maxGrade > 0);
+    if (!c.exists) return {status:"na", detected:null, note:"העמודה “ציון עובר” לא נמצאה בקובץ."};
     var passNum = toNumber(c.value);
     if (isEmptyVal(c.value) || passNum === 0){
-      var shown = isEmptyVal(c.value) ? "לא הוגדר" : "0";
-      if (hasRealGrades){
-        return {status:"warn", detected:(isEmptyVal(c.value)?null:c.value),
-          note:"ציון עובר " + shown + ", בעוד שקיימים בקורס ציונים (עד " + maxGrade + "). אם הקורס עם ציון — הגדירו ציון עובר (מומלץ 80); אם ללא ציון — ודאו שמסומן “הסתר ציון”."};
-      }
+      /* ציון עובר 0 / לא-מוגדר הוא ההגדרה התקינה ברוב הקורסים (אין מבחן/משימה נדרשת),
+         ולכן אינו טעות. ציון שמופיע הוא לרוב שאלון אפקטיביות שאמור להיות במשקל 0. */
       return {status:"na", detected:(isEmptyVal(c.value)?null:c.value),
-        note:"נראה שהקורס ללא ציון. ודאו שמסומן “הסתר ציון” בכללי ההשלמה."};
+        note:"ציון עובר 0 (או לא מוגדר) — תקין ברוב הקורסים שאין בהם מבחן או משימה נדרשת. אם מופיע ציון (למשל 100) הוא לרוב תשובת שאלון האפקטיביות; יש להגדיר אותה במשקל 0 ולסמן “חישוב הציון מתעלם ממשימות במשקל אפס” כדי שלא תיחשב לציון. רק בקורס עם מבחן/משימה נדרשת יש להגדיר ציון עובר אמיתי (למשל 80)."};
     }
     var bad = invalidDistinctValues(c, function(v){ var n=toNumber(v); return (!isNaN(n) && n>=0 && n<=100) ? null : "אינו ציון תקין בטווח 0–100"; });
     if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
@@ -1202,9 +1191,23 @@ function evalCompletionVsAttendance(course){
   var statusIdx = course.columnIndex["סטטוס השלמה"];
   var nameIdx = course.columnIndex[course.participantNameCol];
   if (attIdx === undefined || statusIdx === undefined){
-    return {available:false, count:0, names:[],
+    return {available:false, count:0, names:[], threshold:80,
       note:"העמודות “נוכחות במפגשים” ו/או “סטטוס השלמה” לא נמצאו בקובץ — לא ניתן לבצע בדיקה זו."};
   }
+  /* גוזרים את דרישת הנוכחות של הקורס מהנתונים עצמם: הנוכחות הנמוכה ביותר מבין מי
+     שכן הושלם ("כן"). בקורס שדורש 100% נוכחות הסף יוצא 100, ולכן מי שנכח חלקית
+     וסומן "לא" הוא תקין ואינו מסומן כטעות. ברירת מחדל 80% כשאין משתתף שהושלם ללמוד ממנו.
+     (הסתייגות: משתתף "כן" חריג עם נוכחות נמוכה עלול להוריד את הסף — לחידוד מול נתוני אמת.) */
+  var minCompletedPct = null;
+  for (var k=0;k<course.rows.length;k++){
+    var st = course.rows[k][statusIdx];
+    var stStr = (st===null||st===undefined) ? "" : String(st).trim();
+    if (stStr === "כן"){
+      var p = parseAttendancePct(course.rows[k][attIdx]);
+      if (p !== null && (minCompletedPct===null || p < minCompletedPct)) minCompletedPct = p;
+    }
+  }
+  var threshold = (minCompletedPct !== null) ? minCompletedPct : 80;
   var names = [];
   for (var i=0;i<course.rows.length;i++){
     var row = course.rows[i];
@@ -1212,13 +1215,13 @@ function evalCompletionVsAttendance(course){
     if (pct === null) continue;
     var status = row[statusIdx];
     var statusStr = (status===null||status===undefined) ? "" : String(status).trim();
-    if (Math.round(pct*100)/100 >= 80 && statusStr === "לא"){
+    if (Math.round(pct*100)/100 >= threshold && statusStr === "לא"){
       var nm = (nameIdx !== undefined && row[nameIdx]!=null && String(row[nameIdx]).trim()!=="")
         ? String(row[nameIdx]).trim() : ("משתתף בשורה " + (i+1));
       names.push(nm);
     }
   }
-  return {available:true, count:names.length, names:names};
+  return {available:true, count:names.length, names:names, threshold:Math.round(threshold)};
 }
 
 /* participants whose grade is at/above the passing bar but marked "not completed" */
@@ -1837,14 +1840,14 @@ function gradeSpotlightHTML(report){
     var gc = report.gradeCompletion;
     rows.push({sev:"warn",
       title: gc.count + " משתתפים עם ציון " + gc.threshold + " ומעלה שלא סומנו כהושלמו",
-      text:"ציונם עובר את סף המעבר אך סטטוס ההשלמה עדיין “לא” — לרוב נתוני השלמה לא מעודכנים או ציון עובר שגוי.",
+      text:"ציונם עובר את סף המעבר אך סטטוס ההשלמה “לא”. לרוב זה תקין ולא טעות — ייתכן שענו רק על שאלון האפקטיביות, שלא נכחו בכל המפגשים הנדרשים, או שהוזן ציון ידנית. כדאי לעבור על השמות ולוודא.",
       where:"מופע הקורס ← דוח השלמות · והגדרות השלמה ← תנאי השלמה", names: gc.names.slice()});
   }
   if (report.completionStatus === "warn" && report.completion && report.completion.count > 0){
     var cc = report.completion;
     rows.push({sev:"warn",
-      title: cc.count + " משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו",
-      text:"עמדו בדרישת הנוכחות אך סטטוס ההשלמה שלהם עדיין “לא”. כדאי לעדכן את סטטוס ההשלמה.",
+      title: cc.count + " משתתפים בנוכחות מספקת (מעל " + cc.threshold + "%) שלא סומנו כהושלמו",
+      text:"נכחו לפי דרישת הנוכחות של הקורס אך סטטוס ההשלמה עדיין “לא”. כדאי לבדוק אם יש לעדכן את סטטוס ההשלמה. (בקורסים שדורשים 100% נוכחות — מי שנכח חלקית וסומן “לא” הוא תקין ואינו נכלל כאן.)",
       where:"מופע הקורס ← רישום נוכחות ודוח השלמות", names: cc.names.slice()});
   }
   if (!rows.length) return "";
@@ -1889,9 +1892,9 @@ function collectActionItems(report){
   if (report.completionStatus==="warn" && report.completion && report.completion.count > 0){
     items.push({
       severity:"warn", categoryTitle:"השלמות",
-      label: report.completion.count + " משתתפים עם נוכחות מעל 80% שלא סומנו כהושלמו",
-      whatFound:"נמצאו משתתפים בעלי נוכחות מספקת שסטטוס ההשלמה שלהם עדיין “לא”.",
-      why:"ייתכן שנתוני ההשלמה אינם מעודכנים. כדאי לוודא שהמשתתפים שעמדו בדרישות הנוכחות אכן סומנו כמי שהשלימו את הקורס.",
+      label: report.completion.count + " משתתפים בנוכחות מספקת (מעל " + report.completion.threshold + "%) שלא סומנו כהושלמו",
+      whatFound:"נמצאו משתתפים שנכחו לפי דרישת הנוכחות של הקורס אך סטטוס ההשלמה שלהם עדיין “לא”.",
+      why:"ייתכן שנתוני ההשלמה אינם מעודכנים. בקורסים שדורשים 100% נוכחות — מי שנכח חלקית וסומן “לא” הוא תקין ואינו נכלל כאן.",
       check:"עברו על שמות המשתתפים, וודאו/עדכנו את סטטוס ההשלמה שלהם במערכת.",
       where:"מופע הקורס ← רישום נוכחות ודוח השלמות",
       names: report.completion.names.slice()
@@ -1903,8 +1906,8 @@ function collectActionItems(report){
       severity:"warn", categoryTitle:"השלמות",
       label: report.gradeCompletion.count + " משתתפים עם ציון " + thr + " ומעלה שלא סומנו כהושלמו",
       whatFound:"נמצאו משתתפים שציונם עובר את סף המעבר (" + thr + ") אך סטטוס ההשלמה שלהם עדיין “לא”.",
-      why:"לומד שציונו מעל סף המעבר אמור להיחשב כמי שעבר/השלים. פער כזה מעיד לרוב על נתוני השלמה לא מעודכנים או על סף מעבר שגוי (למשל ציון עובר שהוגדר 0).",
-      check:"עברו על שמות המשתתפים, וודאו את סטטוס ההשלמה שלהם ואת הגדרת “ציון עובר” בתנאי ההשלמה.",
+      why:"לרוב זה תקין ולא טעות — ייתכן שהמשתתף ענה רק על שאלון האפקטיביות, שלא נכח בכל המפגשים הנדרשים, או שהוזן ציון ידנית. פער כזה שווה בדיקה אך אינו בהכרח שגיאה.",
+      check:"עברו על שמות המשתתפים ובדקו מול הנוכחות והדרישות; אם קיים בקורס מבחן/משימה נדרשת — ודאו את הגדרת “ציון עובר”.",
       where:"מופע הקורס ← דוח השלמות · והגדרות השלמה ← תנאי השלמה",
       names: report.gradeCompletion.names.slice()
     });
@@ -2071,8 +2074,9 @@ function detailsPanelHTML(course){
 }
 
 /* ---- plain-text export of the action list (for "copy") ---- */
-function actionListText(report, course){
+function actionListText(report, course, mistakeFilter){
   var items = collectActionItems(report);
+  if (mistakeFilter) items = items.filter(function(it){ return normalizeMistakeLabel(it) === mistakeFilter; });
   var lines = ["רשימת משימות — " + course.title, (items.length ? "בעיות שנמצאו: " + items.length : "אין בעיות — הקורס תקין"), ""];
   if (!items.length){ return lines.join("\n"); }
   items.forEach(function(it, i){
@@ -2180,9 +2184,9 @@ function gradeIntegrityPanelHTML(){
   if (g.passing.length){
     groups += '<div class="gi-group">' +
       '<div class="gi-head"><span class="sev-chip sev-warn">לתשומת לב</span>' +
-        '<b>' + g.passing.length + ' ' + (g.passing.length===1?'קורס':'קורסים') + ' עם סף מעבר (ציון עובר) לא תקין</b></div>' +
-      '<div class="gi-why">סף מעבר של 0 משמעו שכל לומד «עובר» אוטומטית — וחישוב ההשלמה יוצא שגוי. ' +
-        '<span class="drill-where"><span class="where-pin">' + icon('mapPin') + '</span> <b>היכן לתקן:</b> הגדרות השלמה ← תנאי השלמה (ציון עובר / הסתר ציון)</span></div>' +
+        '<b>' + g.passing.length + ' ' + (g.passing.length===1?'קורס':'קורסים') + ' עם ערך ציון עובר לא תקין</b></div>' +
+      '<div class="gi-why">נמצא ערך “ציון עובר” לא תקין (מחוץ לטווח 0–100) או לא אחיד בין המשתתפים. (ציון עובר 0 הוא תקין ברוב הקורסים ואינו נכלל כאן.) ' +
+        '<span class="drill-where"><span class="where-pin">' + icon('mapPin') + '</span> <b>היכן לתקן:</b> הגדרות השלמה ← תנאי השלמה (ציון עובר)</span></div>' +
       courseList(g.passing, function(a){ return a.note ? '<div class="drill-detail">' + escapeHtml(a.note) + '</div>' : ''; }) +
     '</div>';
   }
@@ -2283,8 +2287,8 @@ function overviewHTML(){
 
   /* --- export actions (unchanged; bindMainEvents wires these) --- */
   var actions = '<div class="actions ov-actions">' +
-    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום מלא (הדפסה / PDF)</button>' +
-    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לכל הקורסים (טקסט)</button>' +
+    '<button class="btn btn-primary" id="downloadPdfBtn" type="button">' + icon('download') + 'הורד סיכום לפי הסינון הנוכחי (הדפסה / PDF)</button>' +
+    '<button class="btn btn-outline" id="downloadTxtBtn" type="button">' + icon('fileText') + 'הורד רשימת תיקונים לפי הסינון הנוכחי (טקסט)</button>' +
   '</div>';
 
   var narrative = dashNarrativeHTML(tCount, total);
@@ -2345,21 +2349,51 @@ function renderDashCourseBody(){
   }).join("");
 }
 
-/* ---- full-portfolio summary: printable report (all courses) ---- */
+/* ---- exports respect the on-screen dashboard filter ---- */
+/* courses matching the active dashFilter, in the table's filtered+sorted order (reuses
+   dashCourseRowsData so the filter/sort logic lives in one place) */
+function dashFilteredCourses(){
+  var byId = {}; courses.forEach(function(c){ byId[c.id] = c; });
+  return dashCourseRowsData().map(function(x){ return byId[x.id]; }).filter(Boolean);
+}
+/* human-readable summary of the active filter (for the report header); "" when none */
+function dashFilterSummary(){
+  var f = dashFilter, parts = [];
+  var bucketLabels = {clean:"ללא בעיות", low:"1–2 בעיות", mid:"3–4 בעיות", high:"5+ בעיות"};
+  if (f.search.trim()) parts.push('חיפוש: "' + f.search.trim() + '"');
+  if (f.coordinator) parts.push("רכזת: " + f.coordinator);
+  if (f.errorType) parts.push("סוג טעות: " + f.errorType);
+  if (f.bucket && bucketLabels[f.bucket]) parts.push("חומרה: " + bucketLabels[f.bucket]);
+  return parts.join(" · ");
+}
+
+/* ---- full-portfolio summary: printable report (respects the active filter) ---- */
 function fullReportHTML(){
   var now = new Date();
   var stamp = fmtDate(now) + " " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+  var filtered = dashFilteredCourses();
+  var mistakeFilter = dashFilter.errorType || null;
+  var summary = dashFilterSummary();
+  var title = summary ? "סיכום בקרת QA — לפי הסינון" : "סיכום בקרת QA — כל הקורסים";
+
+  if (!filtered.length){
+    return '<div class="pr-head"><h1>' + title + '</h1>' +
+      '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · הופק ' + stamp + '</div>' +
+      (summary ? '<div class="pr-sub">' + escapeHtml(summary) + '</div>' : '') +
+      '</div><section class="pr-course"><div class="pr-clean">לא נמצאו קורסים שתואמים לסינון.</div></section>';
+  }
+
   var tCount = {clean:0, low:0, mid:0, high:0};
-  var reports = courses.map(function(course){
+  var reports = filtered.map(function(course){
     var report = computeReport(course);
     tCount[toneForCount(report.totalAlerts)]++;
     return {course:course, report:report};
   });
-  reports.sort(function(a,b){ return (b.report.totalAlerts-a.report.totalAlerts) || (b.report.totalErr-a.report.totalErr); });
 
   var head = '<div class="pr-head">' +
-    '<h1>סיכום בקרת QA — כל הקורסים</h1>' +
-    '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + courses.length + ' קורסים · הופק ' + stamp + '</div>' +
+    '<h1>' + title + '</h1>' +
+    '<div class="pr-sub">' + escapeHtml(courses[0].fileName) + ' · ' + filtered.length + ' קורסים · הופק ' + stamp + '</div>' +
+    (summary ? '<div class="pr-sub">' + escapeHtml(summary) + '</div>' : '') +
     '<div class="pr-tally">' +
       '<span style="color:var(--tone-clean)">' + icon('check') + ' ' + tCount.clean + ' ללא בעיות</span>' +
       '<span style="color:var(--tone-low)">' + tCount.low + ' עם 1–2 בעיות</span>' +
@@ -2368,15 +2402,17 @@ function fullReportHTML(){
     '</div></div>';
 
   var body = reports.map(function(r){
-    return leanCourseSectionHTML(r.course, r.report);
+    return leanCourseSectionHTML(r.course, r.report, mistakeFilter);
   }).join("");
 
   return head + body;
 }
 
-/* ---- lean per-course block for downloads: title + count + issue label & what's missing ---- */
-function leanCourseSectionHTML(course, report){
+/* ---- lean per-course block for downloads: title + count + issue label & what's missing.
+   mistakeFilter (optional): normalized mistake label — keep only matching items. ---- */
+function leanCourseSectionHTML(course, report, mistakeFilter){
   var items = collectActionItems(report);
+  if (mistakeFilter) items = items.filter(function(it){ return normalizeMistakeLabel(it) === mistakeFilter; });
   var itemsHTML = items.length
     ? '<ol class="pr-items">' + items.map(function(it){
         var sev = it.severity==="error" ? "חוסר" : "לתשומת לב";
@@ -2406,13 +2442,17 @@ function singleReportHTML(course, report){
 
 /* ---- full-portfolio summary: plain-text checklist (all courses) ---- */
 function fullReportText(){
-  var lines = ["סיכום בקרת QA — כל הקורסים", courses[0].fileName + " · " + courses.length + " קורסים", ""];
-  var reports = courses.map(function(course){ return {course:course, report:computeReport(course)}; });
-  var sevRank = {error:0, warn:1, ok:2};
-  reports.sort(function(a,b){ return (sevRank[a.report.severity]-sevRank[b.report.severity]) || (b.report.totalErr-a.report.totalErr); });
-  reports.forEach(function(r){
+  var filtered = dashFilteredCourses();
+  var mistakeFilter = dashFilter.errorType || null;
+  var summary = dashFilterSummary();
+  var title = summary ? "סיכום בקרת QA — לפי הסינון" : "סיכום בקרת QA — כל הקורסים";
+  var lines = [title, courses[0].fileName + " · " + filtered.length + " קורסים"];
+  if (summary) lines.push("סינון: " + summary);
+  lines.push("");
+  if (!filtered.length){ lines.push("לא נמצאו קורסים שתואמים לסינון."); return lines.join("\n"); }
+  filtered.forEach(function(course){
     lines.push("========================================");
-    lines.push(actionListText(r.report, r.course).replace(/^רשימת משימות — /, ""));
+    lines.push(actionListText(computeReport(course), course, mistakeFilter).replace(/^רשימת משימות — /, ""));
   });
   return lines.join("\n");
 }
