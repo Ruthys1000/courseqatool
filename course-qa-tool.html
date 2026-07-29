@@ -750,6 +750,52 @@
   .btn-outline{background:transparent; color:var(--text); border:1px solid var(--paper-line-strong);}
   .btn-outline:hover{background:var(--paper);}
 
+  /* ===== Snapshot (exported departmental dashboard) banner ===== */
+  .snapshot-banner{
+    display:flex; align-items:flex-start; gap:var(--sp-2);
+    background:var(--paper-2); border:1px solid var(--paper-line-strong);
+    border-inline-start:5px solid var(--brand-blue);
+    border-radius:var(--r-md); padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-4);
+    font-size:var(--fs-sm); color:var(--text); line-height:1.55;
+  }
+  .snapshot-banner .ic{width:1.2em; height:1.2em; color:var(--brand-blue); flex:none; margin-top:2px;}
+  .snapshot-banner b{display:block; font-size:var(--fs-base); margin-bottom:2px;}
+
+  /* ===== Check-selection config panel (global + per-course) ===== */
+  .config-panel{
+    background:var(--paper-2); border:1px solid var(--paper-line);
+    border-radius:var(--r-md); padding:0 var(--sp-4); margin-bottom:var(--sp-4);
+    box-shadow:var(--shadow);
+  }
+  .config-summary{
+    cursor:pointer; list-style:none; font-weight:700; font-size:var(--fs-base);
+    display:flex; align-items:center; gap:var(--sp-2); padding:var(--sp-3) 0;
+  }
+  .config-summary::-webkit-details-marker{display:none;}
+  .config-summary::after{content:"▾"; margin-inline-start:auto; color:var(--text-muted); transition:transform .15s ease;}
+  .config-panel[open] .config-summary::after{transform:rotate(180deg);}
+  .config-summary .ic{width:1.1em; height:1.1em; color:var(--brand-blue);}
+  .config-hint{margin:0 0 var(--sp-3); font-size:var(--fs-xs); color:var(--text-muted); line-height:1.5;}
+  .chk-groups{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:var(--sp-3) var(--sp-4); padding-bottom:var(--sp-4);}
+  .chk-group-title{font-size:var(--fs-xs); font-weight:700; color:var(--text-muted); margin-bottom:var(--sp-1); padding-bottom:2px; border-bottom:1px solid var(--paper-line);}
+  .chk-item{display:flex; align-items:flex-start; gap:var(--sp-2); padding:3px 0; font-size:var(--fs-sm); cursor:pointer; line-height:1.4;}
+  .chk-item input{margin-top:2px; flex:none; cursor:pointer;}
+  .chk-item.chk-locked{opacity:.55; cursor:default;}
+  .chk-note{font-size:var(--fs-xs); color:var(--text-muted); font-weight:700;}
+
+  /* ===== Remove-course control on each sidebar card ===== */
+  .course-item{padding-inline-end:calc(var(--sp-3) + 22px);}
+  .course-remove{
+    position:absolute; inset-inline-end:6px; top:6px;
+    width:22px; height:22px; border:none; border-radius:var(--r-sm);
+    background:transparent; color:var(--text-muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;
+    opacity:0; transition:opacity .12s ease, background .12s ease, color .12s ease;
+  }
+  .course-item:hover .course-remove, .course-remove:focus-visible{opacity:1;}
+  .course-remove:hover{background:var(--err-bg); color:var(--err);}
+  .course-remove .ic{width:14px; height:14px;}
+
   footer.trust-footer{
     text-align:center; padding:var(--sp-5); font-size:var(--fs-xs); color:var(--text-muted);
   }
@@ -775,7 +821,7 @@
   @media print{
     .letterhead-trust{display:none;}
     .app-shell{display:block; padding:0;}
-    .sidebar, .add-file-btn, .actions, .panel-cta, .back-to-overview{display:none !important;}
+    .sidebar, .add-file-btn, .actions, .panel-cta, .back-to-overview, .config-panel{display:none !important;}
     .panel > .panel-body{display:block !important;}
     .action-item, .panel, .course-header, .hero, .grade-spotlight, .banner, .verdict{box-shadow:none; break-inside:avoid;}
     body{background:#fff;}
@@ -1279,6 +1325,20 @@ RULES.push({
   }
 });
 
+/* The two special evaluators (below) live outside RULES, but the user must be able
+   to show/hide them like any other check. We expose them as pseudo-checks with ids
+   the config layer and computeReport recognise. */
+var SPECIAL_CHECKS = [
+  {id:"completion-attendance", category:"completions", label:"נוכחות מול סטטוס השלמה"},
+  {id:"grade-completion",      category:"completions", label:"ציון מול סטטוס השלמה"}
+];
+/* every toggleable check, in display order, tagged by category — used to build the
+   check-selection panels (global + per-course). */
+function allChecks(){
+  return RULES.map(function(r){ return {id:r.id, category:r.category, label:r.label}; })
+              .concat(SPECIAL_CHECKS);
+}
+
 /* =====================================================================
    5. SPECIAL EVALUATORS — attendance/grade vs completion status
    ===================================================================== */
@@ -1395,7 +1455,7 @@ function computeReportUncached(course){
   var ctx = {course:course};
 
   var categories = CATEGORIES.map(function(cat){
-    var fields = RULES.filter(function(r){ return r.category === cat.id; }).map(function(rule){
+    var fields = RULES.filter(function(r){ return r.category === cat.id && isCheckEnabled(r.id, course.id); }).map(function(rule){
       var auto = rule.compute(ctx);
       return {
         id:rule.id, label:rule.label, why:rule.why||"", check:rule.check||"", where:rule.where||"",
@@ -1409,9 +1469,15 @@ function computeReportUncached(course){
   if (courseInfoCat) courseInfoCat.infoRows = computeInfoRows(course);
 
   var completionsCat = categories.filter(function(c){return c.id==="completions";})[0];
-  var completion = evalCompletionVsAttendance(course);
+  /* the two special evaluators are toggleable like any rule: a disabled one is
+     reported as unavailable, so it neither renders nor counts toward the tally. */
+  var completion = isCheckEnabled("completion-attendance", course.id)
+    ? evalCompletionVsAttendance(course)
+    : {available:false, count:0, names:[], threshold:80};
   if (completionsCat) completionsCat.completion = completion;
-  var gradeCompletion = evalGradeVsCompletion(course);
+  var gradeCompletion = isCheckEnabled("grade-completion", course.id)
+    ? evalGradeVsCompletion(course)
+    : {available:false, count:0, names:[], threshold:80};
 
   /* tally scored items */
   var totalErr=0, totalWarn=0, totalOk=0;
@@ -1749,6 +1815,27 @@ var dashExpandedMistake = "";  /* label of the currently drilled-open mistake ty
 var sidebarSearch = "";
 
 /* =====================================================================
+   Check-selection config — which QA checks are shown (and therefore counted).
+   The tool is a master template: a coordinator hides checks that aren't relevant
+   for a department, portfolio-wide or for a single course, then exports a dashboard.
+     globalDisabled:    { checkId -> true }             (hidden for every course)
+     perCourseDisabled: { courseId -> { checkId -> true } } (hidden for that course only)
+   Hiding a check removes it from the error/warning tally and the score too
+   (isCheckEnabled short-circuits it in computeReportUncached).
+   ===================================================================== */
+var checkConfig = { globalDisabled:{}, perCourseDisabled:{} };
+function isCheckEnabled(id, courseId){
+  if (checkConfig.globalDisabled[id]) return false;
+  var pc = checkConfig.perCourseDisabled[courseId];
+  return !(pc && pc[id]);
+}
+/* SNAPSHOT_MODE: true when this file was opened as an exported departmental dashboard
+   (data + config are baked in). The upload/edit affordances are then hidden — the
+   dashboard is a dated, read-only snapshot, but filtering/sorting/drilling stay live. */
+var SNAPSHOT_MODE = false;
+var SNAPSHOT_DATE = null;
+
+/* =====================================================================
    11. RENDER
    ===================================================================== */
 
@@ -1796,8 +1883,9 @@ function renderSidebar(){
   var noteEl = document.getElementById("sidebarNote");
   var searchEl = document.getElementById("sidebarSearch");
   if (titleEl) titleEl.style.display = hasCourses ? "" : "none";
-  if (addBtnEl) addBtnEl.style.display = hasCourses ? "" : "none";
-  if (noteEl) noteEl.style.display = hasCourses ? "" : "none";
+  /* in a read-only snapshot there is no uploading — hide the add button + note entirely */
+  if (addBtnEl) addBtnEl.style.display = (hasCourses && !SNAPSHOT_MODE) ? "" : "none";
+  if (noteEl) noteEl.style.display = (hasCourses && !SNAPSHOT_MODE) ? "" : "none";
   /* Show the sidebar search only once there are enough courses to warrant it —
      and not on the dashboard, which has its own search over the same courses.
      Two search boxes for one list on the same screen is just confusing. */
@@ -1849,8 +1937,12 @@ function renderSidebar(){
     var toneClass = "tone-" + toneForCount(n);
     var active = c.course.id === activeId ? " active" : "";
     var issuesLabel = n === 0 ? "אין בעיות" : (n === 1 ? "בעיה אחת" : n + " בעיות");
+    var removeBtn = SNAPSHOT_MODE ? "" :
+      '<button class="course-remove" type="button" data-remove-id="' + escapeHtml(c.course.id) + '" ' +
+        'title="הסר קורס מהרשימה" aria-label="הסר את הקורס ' + escapeHtml(c.course.title) + '">' + icon('x') + '</button>';
     return (
       '<div class="course-item ' + toneClass + active + '" data-id="' + escapeHtml(c.course.id) + '">' +
+        removeBtn +
         '<div class="course-name">' + escapeHtml(c.course.title) + '</div>' +
         '<div class="course-meta"><span class="issue-tag">' + issuesLabel + '</span> · ' +
           c.course.rows.length + ' משתתפים</div>' +
@@ -2327,9 +2419,15 @@ function overviewHTML(){
   var total = courses.length;
   var withIssues = total - tCount.clean;
 
+  /* --- snapshot banner (only in an exported departmental dashboard) --- */
+  var banner = SNAPSHOT_MODE ? snapshotBannerHTML() : "";
+
   /* --- header --- */
   var header = '<div class="ov-header"><h1 class="ov-h1">' + icon('grid') + ' לוח ניהול — בקרת QA לקורסים</h1>' +
     '<div class="ov-file">' + escapeHtml(courses[0].fileName) + ' · ' + total + ' קורסים</div></div>';
+
+  /* --- global check-selection panel (hidden in a read-only snapshot) --- */
+  var configPanel = SNAPSHOT_MODE ? "" : checkPanelHTML(null);
 
   /* --- summary stat row (reuses the overview chip scale) --- */
   var stats = '<div class="ov-chips dash-stats">' +
@@ -2391,21 +2489,35 @@ function overviewHTML(){
       th("err","שגיאות",true) + th("warn","התראות",true) + th("alerts","סטטוס",false) +
     '</tr></thead><tbody id="dashCourseBody"></tbody></table></div></section>';
 
-  /* --- export actions (unchanged; bindMainEvents wires these) --- */
+  /* --- export actions (bindMainEvents wires these) --- */
+  /* the "save dashboard" export is the master-template feature; it's hidden inside an
+     already-exported snapshot (a department shouldn't re-freeze a frozen dashboard). */
+  var saveDashBtn = SNAPSHOT_MODE ? "" :
+    '<button class="btn btn-primary" id="saveDashboardBtn" type="button">' + icon('download') + 'שמור דאשבורד כקובץ (HTML, מתוארך)</button>';
   var actions = '<div class="actions ov-actions">' +
-    '<button class="btn btn-primary" id="downloadWorkBtn" type="button">' + icon('fileText') + 'הורד דוח עבודה (בעיות לתיקון)</button>' +
+    saveDashBtn +
+    '<button class="btn btn-outline" id="downloadWorkBtn" type="button">' + icon('fileText') + 'הורד דוח עבודה (בעיות לתיקון)</button>' +
     '<button class="btn btn-outline" id="downloadStatusBtn" type="button">' + icon('grid') + 'הורד דוח מצב (כל הקורסים)</button>' +
   '</div>';
 
   var narrative = dashNarrativeHTML(tCount, total);
   var gradePanel = gradeIntegrityPanelHTML();
 
-  return '<div class="overview dashboard">' + header + narrative + stats +
+  return '<div class="overview dashboard">' + banner + header + configPanel + narrative + stats +
     mistakePanel +
     gradePanel +
     coordTable +
     courseTable + actions +
   '</div>';
+}
+
+/* dated read-only banner shown at the top of an exported departmental dashboard */
+function snapshotBannerHTML(){
+  var d = SNAPSHOT_DATE ? new Date(SNAPSHOT_DATE) : new Date();
+  var stamp = fmtDate(d) + " " + String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+  return '<div class="snapshot-banner">' + icon('lock') +
+    '<span><b>דאשבורד מחלקתי · תמונת מצב לקריאה בלבד</b>הופק בתאריך ' + escapeHtml(stamp) +
+    '. הנתונים והבדיקות קבועים; ניתן לסנן, למיין ולצלול, אך לא להעלות קובץ או לשנות תצורה.</span></div>';
 }
 
 /* rows for the management course table, after applying dashFilter (search/coordinator/bucket) + sort */
@@ -2585,6 +2697,131 @@ function downloadHtmlFile(filename, html){
   document.body.appendChild(a); a.click();
   document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function dateSlug(){
+  var n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+
+/* =====================================================================
+   REMOVE A COURSE — takes a course out of the current session's list.
+   Only affects what's on screen (and what an exported dashboard will contain);
+   re-uploading the source file brings it back.
+   ===================================================================== */
+function removeCourse(id){
+  var course = courses.filter(function(c){ return c.id === id; })[0];
+  if (!course) return;
+  if (!window.confirm('להסיר את הקורס “' + course.title + '” מהרשימה?\nההסרה משפיעה על התצוגה ועל דאשבורד שיוצא — העלאת הקובץ מחדש תשחזר אותו.')) return;
+  courses = courses.filter(function(c){ return c.id !== id; });
+  delete checkConfig.perCourseDisabled[id];
+  invalidateReportCache();
+  if (activeId === id) { showOverview(); }
+  else { renderSidebar(); renderMain(); }
+}
+
+/* =====================================================================
+   EXPORT DASHBOARD SNAPSHOT — a self-contained, dated .html file that boots
+   straight into the dashboard. It's a copy of this very page with the parsed
+   courses + check-config embedded as JSON, so the exported file reuses all of
+   the tool's rendering (no duplicated code) yet needs no upload. On load the
+   boot code (bottom of the IIFE) hydrates from the embedded payload and enters
+   SNAPSHOT_MODE (read-only: no upload, no config edits, no course removal),
+   while filtering / sorting / drilling stay fully interactive.
+   ===================================================================== */
+function exportDashboardSnapshot(){
+  if (!courses.length) return;
+  var payload = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    courses: courses,
+    checkConfig: checkConfig,
+    meta: { fileName: courses[0] && courses[0].fileName }
+  };
+  var htmlEl = document.documentElement.cloneNode(true);
+  /* trim volatile / regenerated DOM so the file stays lean — the app rebuilds
+     these on load from the payload */
+  ["mainArea","courseList","printReport","loadErrorsBar"].forEach(function(id){
+    var el = htmlEl.querySelector("#" + id);
+    if (el) el.innerHTML = "";
+  });
+  var prev = htmlEl.querySelector("#__QA_SNAPSHOT__");
+  if (prev) prev.parentNode.removeChild(prev);
+  var s = document.createElement("script");
+  s.type = "application/json";
+  s.id = "__QA_SNAPSHOT__";
+  /* the only sequence that could close the script early is "</script"; escaping the
+     slash keeps it inert and JSON.parse restores it ("\/" is a valid JSON escape). */
+  s.textContent = JSON.stringify(payload).replace(/<\/script/gi, "<\\/script");
+  htmlEl.querySelector("head").appendChild(s);
+  downloadHtmlFile("דאשבורד-QA-" + dateSlug() + ".html", "<!doctype html>\n" + htmlEl.outerHTML);
+}
+
+/* =====================================================================
+   CHECK-SELECTION PANELS — let a coordinator choose which checks are shown
+   (and counted). Global panel lives on the dashboard; a per-course panel lives
+   in each course view and can additionally hide checks for that one course.
+   ===================================================================== */
+/* remember which config panels the user has expanded, so toggling a check (which
+   re-renders the view) doesn't collapse the panel or lose their place. */
+var configPanelOpen = {};
+function configPanelKey(scope, courseId){ return scope === "global" ? "global" : "course:" + courseId; }
+function checkPanelHTML(courseId){
+  var scope = courseId ? "course" : "global";
+  var openAttr = configPanelOpen[configPanelKey(scope, courseId)] ? " open" : "";
+  var checks = allChecks();
+  var enabledCount = checks.filter(function(ch){ return isCheckEnabled(ch.id, courseId); }).length;
+  var groups = CATEGORIES.map(function(cat){
+    var rows = checks.filter(function(ch){ return ch.category === cat.id; }).map(function(ch){
+      var globallyOff = !!checkConfig.globalDisabled[ch.id];
+      var on = isCheckEnabled(ch.id, courseId);
+      /* per-course panel can't re-enable a check hidden portfolio-wide — show it disabled */
+      var lock = (scope === "course" && globallyOff);
+      return '<label class="chk-item' + (lock ? " chk-locked" : "") + '">' +
+        '<input type="checkbox" data-check-id="' + escapeHtml(ch.id) + '" data-scope="' + scope + '"' +
+          (on ? " checked" : "") + (lock ? " disabled" : "") + '>' +
+        '<span>' + escapeHtml(ch.label) + (lock ? ' <span class="chk-note">מוסתר גלובלית</span>' : "") + '</span>' +
+      '</label>';
+    }).join("");
+    if (!rows) return "";
+    return '<div class="chk-group"><div class="chk-group-title">' + escapeHtml(cat.title) + '</div>' + rows + '</div>';
+  }).join("");
+  var summary = scope === "global"
+    ? (icon("target") + " בחירת בדיקות מוצגות — " + enabledCount + " מתוך " + checks.length + " פעילות")
+    : (icon("target") + " התאמת בדיקות לקורס זה");
+  var hint = scope === "global"
+    ? "בדיקות שיבוטלו כאן לא יוצגו ולא ייספרו באף קורס. ניתן להתאים גם לקורס בודד מתוך מסך הקורס."
+    : "כאן ניתן להסתיר בדיקות עבור הקורס הזה בלבד, מעבר להגדרה הכללית.";
+  return '<details class="config-panel" data-config-scope="' + scope + '"' +
+      (courseId ? ' data-course-id="' + escapeHtml(courseId) + '"' : "") + openAttr + '>' +
+    '<summary class="config-summary">' + summary + '</summary>' +
+    '<p class="config-hint">' + hint + '</p>' +
+    '<div class="chk-groups">' + groups + '</div>' +
+  '</details>';
+}
+/* wire the checkboxes inside a config panel (delegated) */
+function bindCheckPanel(root){
+  if (!root) return;
+  root.querySelectorAll(".config-panel").forEach(function(panel){
+    var key = configPanelKey(panel.getAttribute("data-config-scope"), panel.getAttribute("data-course-id"));
+    panel.addEventListener("toggle", function(){ configPanelOpen[key] = panel.open; });
+    panel.addEventListener("change", function(e){
+      var cb = e.target.closest("input[data-check-id]");
+      if (!cb) return;
+      var id = cb.getAttribute("data-check-id");
+      if (cb.getAttribute("data-scope") === "global"){
+        if (cb.checked) delete checkConfig.globalDisabled[id];
+        else checkConfig.globalDisabled[id] = true;
+      } else {
+        var courseId = panel.getAttribute("data-course-id");
+        var pc = checkConfig.perCourseDisabled[courseId] || (checkConfig.perCourseDisabled[courseId] = {});
+        if (cb.checked) delete pc[id];
+        else pc[id] = true;
+      }
+      invalidateReportCache();
+      renderSidebar();
+      renderMain();
+    });
+  });
 }
 
 /* =====================================================================
@@ -2791,6 +3028,8 @@ function renderMain(){
 
   var actionItems = collectActionItems(report);
   html += heroHTML(report, course, actionItems);
+  /* per-course check selection (hidden in a read-only snapshot) */
+  if (!SNAPSHOT_MODE) html += checkPanelHTML(course.id);
   html += gradeSpotlightHTML(report);
   html += actionListHTML(report);
   html += passedPanelHTML(report);
@@ -2947,6 +3186,12 @@ function bindMainEvents(){
       downloadHtmlFile("דוח-מצב-QA.html", buildStatusReportDoc());
     });
   }
+  var saveDash = document.getElementById("saveDashboardBtn");
+  if (saveDash){
+    saveDash.addEventListener("click", function(){ exportDashboardSnapshot(); });
+  }
+  /* check-selection panels (global on the dashboard, per-course in a course view) */
+  bindCheckPanel($main);
   var printBtn = document.getElementById("printBtn");
   if (printBtn){
     printBtn.addEventListener("click", function(){
@@ -3116,6 +3361,8 @@ document.getElementById("loadErrorsBar").addEventListener("click", function(e){
 });
 
 $courseList.addEventListener("click", function(e){
+  var rm = e.target.closest("[data-remove-id]");
+  if (rm){ e.stopPropagation(); removeCourse(rm.getAttribute("data-remove-id")); return; }
   if (e.target.closest("[data-overview]")){ showOverview(); return; }
   var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
@@ -3143,7 +3390,25 @@ document.getElementById("sidebarSearch").addEventListener("input", function(e){
   $courseList.addEventListener("click", function(){ if (mq.matches) nav.open = false; });
 })();
 
-/* init */
+/* init — if this file was exported as a departmental dashboard, hydrate from the
+   embedded snapshot and enter read-only mode; otherwise start on the upload screen. */
+(function hydrateSnapshot(){
+  var snap = document.getElementById("__QA_SNAPSHOT__");
+  if (!snap) return;
+  try {
+    var data = JSON.parse(snap.textContent);
+    if (data && data.courses){
+      courses = data.courses;
+      if (data.checkConfig) checkConfig = data.checkConfig;
+      if (!checkConfig.globalDisabled) checkConfig.globalDisabled = {};
+      if (!checkConfig.perCourseDisabled) checkConfig.perCourseDisabled = {};
+      SNAPSHOT_MODE = true;
+      SNAPSHOT_DATE = data.generatedAt || null;
+      document.body.classList.add("snapshot-mode");
+      invalidateReportCache();
+    }
+  } catch(e){ /* malformed payload — fall back to the normal upload flow */ }
+})();
 renderSidebar();
 renderMain();
 
