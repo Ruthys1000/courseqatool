@@ -1372,6 +1372,13 @@ RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"
   emptyNote:"לא מולא ערך בעמודת “תקציב רוחב 35%”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
+RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב – תוכנית הלמידה", label:"קורסי רוחב – תוכנית הלמידה",
+  emptyStatus:"warn",
+  why:"יש לוודא שסומן ערך בעמודת “קורסי רוחב – תוכנית הלמידה” ושהשדה לא נותר ריק בטעות.",
+  check:"ודאו שמולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
+  emptyNote:"לא מולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
+  where:"שדות מותאמים אישית (אזור התקציב)"}));
+
 /* ---- passing grade (ציון עובר) ---- */
 RULES.push({
   id:"passing-grade", category:"completions", label:"ציון עובר",
