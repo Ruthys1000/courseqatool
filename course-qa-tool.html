@@ -472,6 +472,13 @@
   .gs-where{font-size:var(--fs-sm); margin-top:var(--sp-2); color:var(--info);}
 
   /* ===== Opening screen polish ===== */
+  .empty-back-note{
+    display:flex; align-items:center; gap:var(--sp-2); font-size:var(--fs-sm);
+    background:var(--info-bg, var(--paper)); color:var(--info, var(--text));
+    border:1px solid var(--paper-line); border-radius:var(--r-md);
+    padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-4);
+  }
+  .empty-back-note .ic{flex:none; width:16px; height:16px;}
   .empty-eyebrow{
     font-size:var(--fs-sm); letter-spacing:.08em; text-transform:uppercase; color:var(--brand-blue);
     font-weight:700; margin-bottom:var(--sp-2);
@@ -624,6 +631,15 @@
   .dash-title{font-weight:600;}
   .dash-courses td:last-child{white-space:nowrap;}
   .dash-empty td{text-align:center; color:var(--text-muted); padding:var(--sp-4);}
+  .dash-hide-th, .dash-hide-td{width:3rem; text-align:center;}
+  .dash-hide{display:inline-flex; cursor:pointer;}
+  .dash-hide input{cursor:pointer; margin:0;}
+  .hidden-course-list{display:flex; flex-direction:column; gap:var(--sp-2);}
+  .hidden-course-row{
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3);
+    padding:var(--sp-2) var(--sp-3); background:var(--paper); border:1px solid var(--paper-line); border-radius:var(--r-sm);
+  }
+  .hidden-course-title{font-size:var(--fs-sm); color:var(--text);}
 
   .dash-dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-inline-end:7px; vertical-align:middle;}
   .dash-dot[class*="tone-"]{background:var(--tone);}
@@ -795,6 +811,13 @@
   .course-item:hover .course-remove, .course-remove:focus-visible{opacity:1;}
   .course-remove:hover{background:var(--err-bg); color:var(--err);}
   .course-remove .ic{width:14px; height:14px;}
+  .course-hide-toggle{
+    position:absolute; inset-inline-end:6px; bottom:6px;
+    display:flex; align-items:center; gap:3px; font-size:10px; color:var(--text-muted);
+    cursor:pointer; opacity:0; transition:opacity .12s ease;
+  }
+  .course-item:hover .course-hide-toggle, .course-hide-toggle:focus-within{opacity:1;}
+  .course-hide-toggle input{cursor:pointer; margin:0;}
 
   footer.trust-footer{
     text-align:center; padding:var(--sp-5); font-size:var(--fs-xs); color:var(--text-muted);
@@ -1018,6 +1041,20 @@ function coordinatorOf(course){
   var v = c.exists ? normName(c.value) : "";
   return isEmptyVal(v) ? NO_COORDINATOR : v;
 }
+/* "מנהל קבוצה" — display-only fallback owner for courses without a coordinator, so
+   it's clear whose error this is. Never used for the רכזת filter/grouping itself. */
+var GROUP_MANAGER_COL = "מנהל קבוצה";
+function groupManagerOf(course){
+  var c = colOf(course, GROUP_MANAGER_COL);
+  var v = c.exists ? normName(c.value) : "";
+  return isEmptyVal(v) ? "" : v;
+}
+function coordinatorDisplayLabel(course){
+  var coord = coordinatorOf(course);
+  if (coord !== NO_COORDINATOR) return coord;
+  var mgr = groupManagerOf(course);
+  return mgr ? (NO_COORDINATOR + " (מנהל קבוצה: " + mgr + ")") : NO_COORDINATOR;
+}
 function invalidDistinctValues(c, checkFn){
   var invalids = [];
   c.distinct.forEach(function(v){
@@ -1040,6 +1077,15 @@ function costLooksPaid(course){
   if (/תשלום|בתשלום|paid/i.test(v)) return true;
   return null;
 }
+/* קורסים בהחזר הוצאות למידה או בסיווג כנסים וימי עיון פטורים מדרישת חשבונית/קהל יעד */
+var EXEMPT_BUDGET_TYPE = "החזר הוצאות למידה";
+var EXEMPT_CLASSIFICATION = "כנסים וימי עיון";
+function isLearningExpenseExempt(course){
+  var budgetType = normName(colOf(course, "סוג התקציב").value);
+  if (budgetType === EXEMPT_BUDGET_TYPE) return true;
+  var classification = normName(colOf(course, "סיווג").value);
+  return classification === EXEMPT_CLASSIFICATION;
+}
 
 /* =====================================================================
    3. RULE FACTORIES
@@ -1055,7 +1101,7 @@ function requiredField(cfg){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
       if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
-      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "השדה ריק או נותר בברירת המחדל."};
+      if (isEmptyVal(c.value)) return {status:cfg.emptyStatus || "error", detected:c.value, note:cfg.emptyNote || "השדה ריק או נותר בברירת המחדל."};
       if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
       return {status:"ok", detected:c.value, note:"נמצא ערך תקין."};
     }
@@ -1085,7 +1131,10 @@ function listMembershipField(cfg){
     compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
-      if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "לא הוגדרה רכזת אחראית."};
+      if (isEmptyVal(c.value)){
+        var emptyNote = typeof cfg.emptyNote === "function" ? cfg.emptyNote(ctx.course) : cfg.emptyNote;
+        return {status:"error", detected:c.value, note:emptyNote || "לא הוגדרה רכזת אחראית."};
+      }
       var unknown = [];
       c.distinct.forEach(function(v){
         if (normalizedList.indexOf(normName(v)) === -1) unknown.push(v);
@@ -1125,9 +1174,12 @@ RULES.push(requiredField({id:"lbp", category:"course-info", col:"LBP", label:"LB
   check:"ודאו שהקורס משויך ל-LBP המתאים.",
   where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
-RULES.push(requiredField({id:"target-audience", category:"course-info", col:"קהל יעד", label:"קהל יעד",
+RULES.push(conditionalRequiredField({id:"target-audience", category:"course-info", col:"קהל יעד", label:"קהל יעד",
+  condition:function(course){ return !isLearningExpenseExempt(course); },
   why:"קהל היעד מבהיר עבור מי הקורס מיועד ומשמש לסינון בקטלוג ובדוחות ניהוליים.",
   check:"ודאו שהוגדר קהל יעד לקורס.",
+  naNote:"פטור מדרישת קהל יעד — סוג תקציב “החזר הוצאות למידה” או סיווג “כנסים וימי עיון”.",
+  emptyNote:"לא הוגדר קהל יעד.",
   where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 RULES.push(requiredField({id:"budget-reservation", category:"course-info", col:"קורס/שריון תקציב", label:"קורס / שריון תקציב",
@@ -1140,7 +1192,10 @@ RULES.push(listMembershipField({id:"coordinator", category:"course-info", col:"�
   list:APPROVED_COORDINATORS,
   why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. יש לוודא שהוגדרה רכזת, ושהיא מופיעה ברשימת הרכזות המאושרות.",
   check:"ודאו שהוגדרה רכזת אחראית, ושהיא אחת מהרכזות המאושרות.",
-  emptyNote:"לא הוגדרה רכזת אחראית.",
+  emptyNote:function(course){
+    var mgr = groupManagerOf(course);
+    return "לא הוגדרה רכזת אחראית." + (mgr ? " אחראי/ת קבוצה לבירור: " + mgr + "." : "");
+  },
   unknownNote:"הרכזת אינה מופיעה ברשימת הרכזות המאושרות",
   where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
@@ -1288,6 +1343,8 @@ RULES.push({
     var paid = costLooksPaid(ctx.course);
     var c = colOf(ctx.course, "מספר חשבונית");
     if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — מספר חשבונית אינו נדרש."};
+    if (isLearningExpenseExempt(ctx.course)) return {status:"na", detected:c.value||null,
+      note:"פטור מדרישת חשבונית — סוג תקציב “החזר הוצאות למידה” או סיווג “כנסים וימי עיון”."};
     if (isEmptyVal(c.value)){
       var end = parseDateLoose(colOf(ctx.course,"תאריך סיום קורס").value);
       if (end){
@@ -1300,6 +1357,27 @@ RULES.push({
     return {status:"ok", detected:c.value, note:"נמצא מספר חשבונית."};
   }
 });
+
+RULES.push(requiredField({id:"cost-value-present", category:"budget", col:"עלות", label:"עלות",
+  emptyStatus:"warn",
+  why:"עמודת “עלות” קובעת אם הקורס מזוהה כבתשלום או ללא עלות, ומשפיעה על שאר בדיקות התקציב. שדה ריק עלול לגרום לסיווג שגוי.",
+  check:"ודאו שמולא ערך בעמודת “עלות”.",
+  emptyNote:"לא מולא ערך בעמודת “עלות”.",
+  where:"שדות מותאמים אישית (אזור התקציב)"}));
+
+RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"תקציב רוחב 35%", label:"תקציב רוחב 35%",
+  emptyStatus:"warn",
+  why:"יש לוודא שסומן ערך בעמודת “תקציב רוחב 35%” ושהשדה לא נותר ריק בטעות.",
+  check:"ודאו שמולא ערך בעמודת “תקציב רוחב 35%”.",
+  emptyNote:"לא מולא ערך בעמודת “תקציב רוחב 35%”.",
+  where:"שדות מותאמים אישית (אזור התקציב)"}));
+
+RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב – תוכנית הלמידה", label:"קורסי רוחב – תוכנית הלמידה",
+  emptyStatus:"warn",
+  why:"יש לוודא שסומן ערך בעמודת “קורסי רוחב – תוכנית הלמידה” ושהשדה לא נותר ריק בטעות.",
+  check:"ודאו שמולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
+  emptyNote:"לא מולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
+  where:"שדות מותאמים אישית (אזור התקציב)"}));
 
 /* ---- passing grade (ציון עובר) ---- */
 RULES.push({
@@ -1416,7 +1494,6 @@ var INFO_FIELDS = [
   {id:"info-location",    label:"מיקום הקורס", col:"מיקום הקורס"},
   {id:"info-ext-id",      label:"מזהה חיצוני", col:"מזהה חיצוני"},
   {id:"info-ws-status",   label:"סטטוס סביבת עבודה", col:"סטטוס סביבת עבודה"},
-  {id:"info-budget35",    label:"תקציב רוחב 35%", col:"תקציב רוחב 35%", existsMode:true},
   {id:"info-reg-open",    label:"פתיחת הרשמה", col:"פתיחת הרשמה"},
   {id:"info-reg-close",   label:"סגירת הרשמה", col:"סגירת הרשמה"},
   {id:"info-min-users",   label:"מינימום משתמשים", col:"מינימום משתמשים"},
@@ -1801,6 +1878,10 @@ var courses = [];
 var activeId = null;
 var loadErrors = [];
 var fileCounter = 0;
+/* forces the upload/dropzone screen after the browser's physical Back button, without
+   ever touching `courses` — the sidebar keeps showing everything already loaded. */
+var showUploadViaBack = false;
+var historyArmed = false;
 
 /* per-course report cache — computeReport is otherwise re-run 4–5× per interaction
    (sidebar, dashboard aggregations, drill-down, exports). Courses are immutable after
@@ -1829,6 +1910,21 @@ function isCheckEnabled(id, courseId){
   var pc = checkConfig.perCourseDisabled[courseId];
   return !(pc && pc[id]);
 }
+
+/* Reversible per-course "hide from dashboard" toggle — courseId -> true. Unlike
+   removeCourse (destructive, only recoverable via re-upload), this only affects what's
+   shown/exported; toggling again brings the course right back. In-memory only, like
+   checkConfig, unless the current state is exported via exportDashboardSnapshot. */
+var hiddenCourses = {};
+function isCourseHidden(id){ return !!hiddenCourses[id]; }
+function toggleCourseHidden(id){
+  if (SNAPSHOT_MODE) return;
+  if (hiddenCourses[id]) delete hiddenCourses[id]; else hiddenCourses[id] = true;
+  invalidateReportCache();
+  renderSidebar(); renderMain();
+}
+/* single choke point for "which courses does the UI show" */
+function visibleCourses(){ return courses.filter(function(c){ return !hiddenCourses[c.id]; }); }
 /* SNAPSHOT_MODE: true when this file was opened as an exported departmental dashboard
    (data + config are baked in). The upload/edit affordances are then hidden — the
    dashboard is a dated, read-only snapshot, but filtering/sorting/drilling stay live. */
@@ -1907,7 +2003,7 @@ function renderSidebar(){
       '</div>';
     return;
   }
-  var cards = courses.map(function(course){
+  var cards = visibleCourses().map(function(course){
     return {course:course, report:computeReport(course)};
   });
 
@@ -1940,9 +2036,14 @@ function renderSidebar(){
     var removeBtn = SNAPSHOT_MODE ? "" :
       '<button class="course-remove" type="button" data-remove-id="' + escapeHtml(c.course.id) + '" ' +
         'title="הסר קורס מהרשימה" aria-label="הסר את הקורס ' + escapeHtml(c.course.title) + '">' + icon('x') + '</button>';
+    var hideToggle = SNAPSHOT_MODE ? "" :
+      '<label class="course-hide-toggle" title="הסתר מהדאשבורד">' +
+        '<input type="checkbox" data-toggle-hide-id="' + escapeHtml(c.course.id) + '"> הסתר' +
+      '</label>';
     return (
       '<div class="course-item ' + toneClass + active + '" data-id="' + escapeHtml(c.course.id) + '">' +
         removeBtn +
+        hideToggle +
         '<div class="course-name">' + escapeHtml(c.course.title) + '</div>' +
         '<div class="course-meta"><span class="issue-tag">' + issuesLabel + '</span> · ' +
           c.course.rows.length + ' משתתפים</div>' +
@@ -2120,7 +2221,7 @@ function collectActionItems(report){
 /* per-coordinator roll-up: course count, how many have issues, total errors/warnings */
 function buildCoordinatorSummary(){
   var map = Object.create(null), order = [];
-  courses.forEach(function(course){
+  visibleCourses().forEach(function(course){
     var name = coordinatorOf(course), r = computeReport(course);
     var e = map[name];
     if (!e){ e = map[name] = {name:name, count:0, withIssues:0, err:0, warn:0}; order.push(name); }
@@ -2142,7 +2243,7 @@ function normalizeMistakeLabel(item){
    courses each check fails in (primary) and total occurrences (tiebreak). */
 function buildTopMistakeTypes(){
   var map = Object.create(null), order = [];
-  courses.forEach(function(course){
+  visibleCourses().forEach(function(course){
     var coord = coordinatorOf(course);
     var seen = Object.create(null);
     collectActionItems(computeReport(course)).forEach(function(it){
@@ -2168,7 +2269,7 @@ function buildTopMistakeTypes(){
    unreliable, aggregated across all courses (mirrors the single-course gradeSpotlightHTML). */
 function buildGradeIntegrity(){
   var passing = [], gradeMismatch = [], attendanceMismatch = [];
-  courses.forEach(function(course){
+  visibleCourses().forEach(function(course){
     var r = computeReport(course);
     var coord = coordinatorOf(course);
     var pg = null;
@@ -2412,11 +2513,11 @@ function gradeIntegrityPanelHTML(){
 /* ---- portfolio overview: status of every course at a glance ---- */
 /* ---- management dashboard (portfolio home when no single course is selected) ---- */
 function overviewHTML(){
-  var reports = courses.map(function(course){ return computeReport(course); });
+  var reports = visibleCourses().map(function(course){ return computeReport(course); });
   var tCount = {clean:0, low:0, mid:0, high:0};
   var totalErr = 0;
   reports.forEach(function(r){ tCount[toneForCount(r.totalAlerts)]++; totalErr += r.totalErr; });
-  var total = courses.length;
+  var total = reports.length;
   var withIssues = total - tCount.clean;
 
   /* --- snapshot banner (only in an exported departmental dashboard) --- */
@@ -2482,11 +2583,12 @@ function overviewHTML(){
   function th(key, label, num){
     return '<th class="dash-sort' + (num?' dash-num':'') + '" data-sort="' + key + '">' + label + '</th>';
   }
+  var hideTh = SNAPSHOT_MODE ? "" : '<th class="dash-hide-th">הסתר</th>';
   var courseTable = '<section class="dash-panel"><h2 class="dash-h2">' + icon('grid') + ' קורסים</h2>' +
     toolbar +
     '<div class="dash-scroll"><table class="dash-table dash-courses" id="dashCourseTable"><thead><tr>' +
       th("title","שם הקורס",false) + th("coordinator","רכזת",false) +
-      th("err","שגיאות",true) + th("warn","התראות",true) + th("alerts","סטטוס",false) +
+      th("err","שגיאות",true) + th("warn","התראות",true) + th("alerts","סטטוס",false) + hideTh +
     '</tr></thead><tbody id="dashCourseBody"></tbody></table></div></section>';
 
   /* --- export actions (bindMainEvents wires these) --- */
@@ -2507,8 +2609,29 @@ function overviewHTML(){
     mistakePanel +
     gradePanel +
     coordTable +
-    courseTable + actions +
+    courseTable +
+    hiddenCoursesPanelHTML() +
+    actions +
   '</div>';
+}
+
+/* list of courses currently hidden from the dashboard, with a control to bring each
+   back — without this, a hidden course's own toggle disappears along with its row,
+   leaving no way to un-hide it. */
+function hiddenCoursesPanelHTML(){
+  if (SNAPSHOT_MODE) return "";
+  var hidden = courses.filter(function(c){ return isCourseHidden(c.id); });
+  if (!hidden.length) return "";
+  return '<section class="dash-panel hidden-courses-panel"><h2 class="dash-h2">קורסים מוסתרים (' + hidden.length + ')</h2>' +
+    '<p class="dash-panel-hint">קורסים אלו הוסתרו מהדשבורד; ההסתרה הפיכה.</p>' +
+    '<div class="hidden-course-list">' +
+    hidden.map(function(c){
+      return '<div class="hidden-course-row">' +
+        '<span class="hidden-course-title">' + escapeHtml(c.title) + '</span>' +
+        '<button type="button" class="btn btn-outline" data-unhide-id="' + escapeHtml(c.id) + '">הצג שוב</button>' +
+      '</div>';
+    }).join("") +
+    '</div></section>';
 }
 
 /* dated read-only banner shown at the top of an exported departmental dashboard */
@@ -2522,9 +2645,9 @@ function snapshotBannerHTML(){
 
 /* rows for the management course table, after applying dashFilter (search/coordinator/bucket) + sort */
 function dashCourseRowsData(){
-  var rows = courses.map(function(course){
+  var rows = visibleCourses().map(function(course){
     var r = computeReport(course);
-    return {id:course.id, title:course.title, coord:coordinatorOf(course),
+    return {id:course.id, title:course.title, coord:coordinatorOf(course), coordDisplay:coordinatorDisplayLabel(course),
             err:r.totalErr, warn:r.totalWarn, alerts:r.totalAlerts, tone:toneForCount(r.totalAlerts),
             mistakes:collectActionItems(r).map(normalizeMistakeLabel)};
   });
@@ -2557,17 +2680,20 @@ function renderDashCourseBody(){
   var clear = document.getElementById("dashClear");
   if (clear) clear.hidden = !dashFilterSummary();
   if (!rows.length){
-    body.innerHTML = '<tr class="dash-empty"><td colspan="5">לא נמצאו קורסים שתואמים לסינון.</td></tr>';
+    body.innerHTML = '<tr class="dash-empty"><td colspan="' + (SNAPSHOT_MODE?5:6) + '">לא נמצאו קורסים שתואמים לסינון.</td></tr>';
     return;
   }
   body.innerHTML = rows.map(function(x){
     var issues = x.alerts === 0 ? "תקין" : (x.alerts === 1 ? "בעיה אחת" : x.alerts + " בעיות");
+    var hideTd = SNAPSHOT_MODE ? "" :
+      '<td class="dash-hide-td"><label class="dash-hide"><input type="checkbox" data-hide-id="' + escapeHtml(x.id) + '"' +
+        (isCourseHidden(x.id)?' checked':'') + '></label></td>';
     return '<tr data-id="' + escapeHtml(x.id) + '">' +
       '<td class="dash-title">' + escapeHtml(x.title) + '</td>' +
-      '<td>' + escapeHtml(x.coord) + '</td>' +
+      '<td>' + escapeHtml(x.coordDisplay) + '</td>' +
       '<td class="dash-num' + (x.err?' dash-err':'') + '">' + x.err + '</td>' +
       '<td class="dash-num' + (x.warn?' dash-warn':'') + '">' + x.warn + '</td>' +
-      '<td><span class="dash-dot tone-' + x.tone + '"></span>' + issues + '</td></tr>';
+      '<td><span class="dash-dot tone-' + x.tone + '"></span>' + issues + '</td>' + hideTd + '</tr>';
   }).join("");
   makeActivatable(body);
 }
@@ -2714,6 +2840,7 @@ function removeCourse(id){
   if (!window.confirm('להסיר את הקורס “' + course.title + '” מהרשימה?\nההסרה משפיעה על התצוגה ועל דאשבורד שיוצא — העלאת הקובץ מחדש תשחזר אותו.')) return;
   courses = courses.filter(function(c){ return c.id !== id; });
   delete checkConfig.perCourseDisabled[id];
+  delete hiddenCourses[id];
   invalidateReportCache();
   if (activeId === id) { showOverview(); }
   else { renderSidebar(); renderMain(); }
@@ -2735,6 +2862,7 @@ function exportDashboardSnapshot(){
     generatedAt: new Date().toISOString(),
     courses: courses,
     checkConfig: checkConfig,
+    hiddenCourses: hiddenCourses,
     meta: { fileName: courses[0] && courses[0].fileName }
   };
   var htmlEl = document.documentElement.cloneNode(true);
@@ -2963,9 +3091,16 @@ function buildStatusReportDoc(){
 }
 
 function renderMain(){
-  if (!courses.length){
+  if (!courses.length || showUploadViaBack){
+    /* returning here via the browser's physical Back button (courses still loaded,
+       visible in the sidebar) gets a short note instead of the full first-time
+       onboarding copy below */
+    var backNote = (courses.length && showUploadViaBack)
+      ? '<div class="empty-back-note">' + icon('arrowRight') + ' חזרת למסך ההעלאה — הקורסים שכבר העלית עדיין ברשימה בצד. אפשר ללחוץ על קורס בצד כדי להמשיך, או להעלות קובץ נוסף.</div>'
+      : "";
     $main.innerHTML =
       '<div class="empty-state">' +
+        backNote +
         '<div class="empty-eyebrow">בקרת איכות לקורסים</div>' +
         '<h2>גלי בדיוק מה חסר בכל קורס — ואיך להשלים אותו</h2>' +
         '<p>העלי את קובץ “דוח סטטוס סביבת עבודה” שהורדת מהמערכת, והכלי יבדוק כל קורס, ' +
@@ -3086,8 +3221,27 @@ document.addEventListener("keydown", function(e){
 /* scroll back to the top on every navigation — otherwise, after scrolling down
    one course's report, switching courses leaves the new content scrolled off-screen */
 function scrollToTop(){ window.scrollTo(0, 0); if ($main) $main.scrollTop = 0; }
-function selectCourse(id){ activeId = id; renderSidebar(); renderMain(); scrollToTop(); }
-function showOverview(){ activeId = null; renderSidebar(); renderMain(); scrollToTop(); }
+/* physical browser Back always lands on the upload screen (non-destructively — see
+   showUploadViaBack). Navigating anywhere from there re-arms the checkpoint so the
+   next Back press has somewhere to go back to. */
+function armHistoryCheckpoint(){
+  if (SNAPSHOT_MODE || historyArmed) return;
+  historyArmed = true;
+  try { history.pushState({qaLoaded:true}, ""); } catch(e){ /* e.g. file:// edge cases — ignore */ }
+}
+function leaveBackUploadView(){
+  if (!showUploadViaBack) return;
+  showUploadViaBack = false;
+  armHistoryCheckpoint();
+}
+function handlePopState(){
+  if (SNAPSHOT_MODE || !courses.length) return;
+  historyArmed = false;
+  showUploadViaBack = true;
+  renderSidebar(); renderMain();
+}
+function selectCourse(id){ leaveBackUploadView(); activeId = id; renderSidebar(); renderMain(); scrollToTop(); }
+function showOverview(){ leaveBackUploadView(); activeId = null; renderSidebar(); renderMain(); scrollToTop(); }
 
 function humanizeLoadError(err){
   var msg = (err && err.message) || String(err);
@@ -3127,7 +3281,7 @@ function addFiles(fileList){
     var isExcel = /\.(xlsx|xlsm)$/i.test(file.name);
     var reader = new FileReader();
     reader.onload = function(e){
-      function done(){ pending--; if (pending === 0){ setBusy(false); invalidateReportCache(); renderSidebar(); renderMain(); } }
+      function done(){ pending--; if (pending === 0){ setBusy(false); showUploadViaBack = false; invalidateReportCache(); renderSidebar(); renderMain(); armHistoryCheckpoint(); } }
       if (isExcel){
         buildCoursesFromXLSX(file.name, fileId, e.target.result).then(function(newCourses){
           newCourses.forEach(function(co){ courses.push(co); });
@@ -3150,7 +3304,7 @@ function addFiles(fileList){
     };
     reader.onerror = function(){
       loadErrors.push({fileName:file.name, message:"לא ניתן היה לקרוא את הקובץ."});
-      pending--; if (pending === 0){ setBusy(false); invalidateReportCache(); renderSidebar(); renderMain(); }
+      pending--; if (pending === 0){ setBusy(false); showUploadViaBack = false; invalidateReportCache(); renderSidebar(); renderMain(); armHistoryCheckpoint(); }
     };
     if (isExcel) reader.readAsArrayBuffer(file);
     else reader.readAsText(file, "UTF-8");
@@ -3173,6 +3327,9 @@ function bindMainEvents(){
   /* overview: back-to-overview link */
   $main.querySelectorAll("[data-overview]").forEach(function(el){
     el.addEventListener("click", function(){ showOverview(); });
+  });
+  $main.querySelectorAll("[data-unhide-id]").forEach(function(btn){
+    btn.addEventListener("click", function(){ toggleCourseHidden(btn.getAttribute("data-unhide-id")); });
   });
   var dlWork = document.getElementById("downloadWorkBtn");
   if (dlWork){
@@ -3279,6 +3436,9 @@ function bindDashboardEvents(){
   var body = document.getElementById("dashCourseBody");
   if (body){
     body.addEventListener("click", function(e){
+      var hide = e.target.closest("[data-hide-id]");
+      if (hide){ e.stopPropagation(); toggleCourseHidden(hide.getAttribute("data-hide-id")); return; }
+      if (e.target.closest(".dash-hide")) return;
       var tr = e.target.closest("tr[data-id]");
       if (tr) selectCourse(tr.getAttribute("data-id"));
     });
@@ -3363,6 +3523,9 @@ document.getElementById("loadErrorsBar").addEventListener("click", function(e){
 $courseList.addEventListener("click", function(e){
   var rm = e.target.closest("[data-remove-id]");
   if (rm){ e.stopPropagation(); removeCourse(rm.getAttribute("data-remove-id")); return; }
+  var hideToggle = e.target.closest("[data-toggle-hide-id]");
+  if (hideToggle){ e.stopPropagation(); toggleCourseHidden(hideToggle.getAttribute("data-toggle-hide-id")); return; }
+  if (e.target.closest(".course-hide-toggle")){ e.stopPropagation(); return; }
   if (e.target.closest("[data-overview]")){ showOverview(); return; }
   var item = e.target.closest(".course-item");
   if (item) selectCourse(item.getAttribute("data-id"));
@@ -3402,6 +3565,7 @@ document.getElementById("sidebarSearch").addEventListener("input", function(e){
       if (data.checkConfig) checkConfig = data.checkConfig;
       if (!checkConfig.globalDisabled) checkConfig.globalDisabled = {};
       if (!checkConfig.perCourseDisabled) checkConfig.perCourseDisabled = {};
+      if (data.hiddenCourses) hiddenCourses = data.hiddenCourses;
       SNAPSHOT_MODE = true;
       SNAPSHOT_DATE = data.generatedAt || null;
       document.body.classList.add("snapshot-mode");
@@ -3409,6 +3573,7 @@ document.getElementById("sidebarSearch").addEventListener("input", function(e){
     }
   } catch(e){ /* malformed payload — fall back to the normal upload flow */ }
 })();
+if (!SNAPSHOT_MODE) window.addEventListener("popstate", handlePopState);
 renderSidebar();
 renderMain();
 
