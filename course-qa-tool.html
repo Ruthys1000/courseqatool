@@ -47,14 +47,14 @@
     /* Graduated tone scale by issue count (0 / 1-2 / 3-4 / 5+).
        Each tone carries a full triplet — fill, tint background, border and text —
        so components set the tone once and inherit the rest (see .tone-* below). */
-    --tone-clean:#1F9D57;  --tone-clean-bg:#E4F4EA;  --tone-clean-bd:var(--tone-clean-bd);  --tone-clean-tx:var(--tone-clean-tx);
-    --tone-low:#C08A12;    --tone-low-bg:#FBF3DD;    --tone-low-bd:var(--tone-low-bd);    --tone-low-tx:#7A5709;
+    --tone-clean:#1F9D57;  --tone-clean-bg:#E4F4EA;  --tone-clean-bd:#A8D5B8;  --tone-clean-tx:#0E5C32;
+    --tone-low:#C08A12;    --tone-low-bg:#FBF3DD;    --tone-low-bd:#E8D39A;    --tone-low-tx:#7A5709;
     --tone-mid:#D2732A;    --tone-mid-bg:#FCEEE1;    --tone-mid-bd:#EFC49B;    --tone-mid-tx:#8A4A16;
-    --tone-high:#C43D3D;   --tone-high-bg:#FBE6E6;   --tone-high-bd:var(--tone-high-bd);   --tone-high-tx:var(--tone-high-tx);
+    --tone-high:#C43D3D;   --tone-high-bg:#FBE6E6;   --tone-high-bd:#E8A0A0;   --tone-high-tx:#7A1F1F;
     --info:#2C5FA0;
     --info-bg:#E7EFF9;
-    --info-bd:var(--info-bd);
-    --info-tx:var(--info-tx);
+    --info-bd:#B7C9E0;
+    --info-tx:#1E3A5F;
 
     /* ===== Type scale ===== */
     --fs-xs:11px;   --fs-sm:12px;   --fs-base:13px;  --fs-md:15px;
@@ -383,7 +383,7 @@
   /* Two columns on wide screens: the cards are short, so a single column left
      roughly half the viewport empty and doubled the scroll length. */
   .action-list{
-    display:grid; grid-template-columns:repeat(auto-fill,minmax(400px,1fr));
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%, 320px),1fr));
     gap:var(--sp-3); margin-bottom:var(--sp-5); align-items:start;
   }
   .action-item{
@@ -1093,14 +1093,14 @@ function isLearningExpenseExempt(course){
    status: ok | warn | error | na | info
    ===================================================================== */
 
-/* required text field — error if empty or column missing */
+/* required text field — error if empty or column missing (unless missingStatus/emptyStatus soften it) */
 function requiredField(cfg){
   return {
     id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
     compute:function(ctx){
       var c = colOf(ctx.course, cfg.col);
-      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
-      if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
+      if (!c.exists) return {status:cfg.missingStatus || cfg.emptyStatus || "error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
+      if (ctx.course.rows.length === 0) return {status:cfg.emptyStatus || "error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
       if (isEmptyVal(c.value)) return {status:cfg.emptyStatus || "error", detected:c.value, note:cfg.emptyNote || "השדה ריק או נותר בברירת המחדל."};
       if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
       return {status:"ok", detected:c.value, note:"נמצא ערך תקין."};
@@ -1359,22 +1359,22 @@ RULES.push({
 });
 
 RULES.push(requiredField({id:"cost-value-present", category:"budget", col:"עלות", label:"עלות",
-  emptyStatus:"warn",
+  emptyStatus:"warn", missingStatus:"warn",
   why:"עמודת “עלות” קובעת אם הקורס מזוהה כבתשלום או ללא עלות, ומשפיעה על שאר בדיקות התקציב. שדה ריק עלול לגרום לסיווג שגוי.",
   check:"ודאו שמולא ערך בעמודת “עלות”.",
   emptyNote:"לא מולא ערך בעמודת “עלות”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
 RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"תקציב רוחב 35%", label:"תקציב רוחב 35%",
-  emptyStatus:"warn",
+  emptyStatus:"warn", missingStatus:"warn",
   why:"יש לוודא שסומן ערך בעמודת “תקציב רוחב 35%” ושהשדה לא נותר ריק בטעות.",
   check:"ודאו שמולא ערך בעמודת “תקציב רוחב 35%”.",
   emptyNote:"לא מולא ערך בעמודת “תקציב רוחב 35%”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
 RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב – תוכנית הלמידה", label:"קורסי רוחב – תוכנית הלמידה",
-  emptyStatus:"warn",
-  why:"יש לוודא שסומן ערך בעמודת “קורסי רוחב – תוכנית הלמידה” ושהשדה לא נותר ריק בטעות.",
+  emptyStatus:"warn", missingStatus:"na",
+  why:"יש לוודא שסומן ערך בעמודת “קורסי רוחב – תוכנית הלמידה” ושהשדה לא נותר ריק בטעות. בגרסאות דוח שבהן העמודה עדיין לא מופיעה — הבדיקה אינה רלוונטית.",
   check:"ודאו שמולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
   emptyNote:"לא מולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
@@ -1389,6 +1389,8 @@ RULES.push({
     var course = ctx.course;
     var c = colOf(course, "ציון עובר");
     if (!c.exists) return {status:"na", detected:null, note:"העמודה “ציון עובר” לא נמצאה בקובץ."};
+    /* inconsistency first — otherwise a leading 0 short-circuits and hides mixed values */
+    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
     var passNum = toNumber(c.value);
     if (isEmptyVal(c.value) || passNum === 0){
       /* ציון עובר 0 / לא-מוגדר הוא ההגדרה התקינה ברוב הקורסים (אין מבחן/משימה נדרשת),
@@ -1398,7 +1400,6 @@ RULES.push({
     }
     var bad = invalidDistinctValues(c, function(v){ var n=toNumber(v); return (!isNaN(n) && n>=0 && n<=100) ? null : "אינו ציון תקין בטווח 0–100"; });
     if (bad.length) return {status:"error", detected:c.value, note:"נמצאו ערכים לא תקינים: " + bad.join("; ")};
-    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
     return {status:"ok", detected:c.value, note:"ציון עובר מוגדר (" + c.value + ")."};
   }
 });
@@ -1464,12 +1465,19 @@ function evalGradeVsCompletion(course){
   var statusIdx = course.columnIndex["סטטוס השלמה"];
   var nameIdx = course.columnIndex[course.participantNameCol];
   if (gradeIdx === undefined || statusIdx === undefined){
-    return {available:false, count:0, names:[], threshold:80,
+    return {available:false, count:0, names:[], threshold:0,
       note:"העמודות “ציון” ו/או “סטטוס השלמה” לא נמצאו בקובץ — לא ניתן לבצע בדיקה זו."};
   }
-  /* threshold: the course's passing grade when it's a real value (>0), otherwise the conventional 80 */
-  var passNum = toNumber(colOf(course, "ציון עובר").value);
-  var threshold = (!isNaN(passNum) && passNum > 0) ? passNum : 80;
+  /* Only meaningful when the course has a real passing grade (>0). ציון עובר 0/ריק
+     means there is usually no exam — scores in the file are typically the
+     effectiveness survey and must not be compared against a conventional 80. */
+  var passCol = colOf(course, "ציון עובר");
+  var passNum = toNumber(passCol.value);
+  if (!passCol.exists || isEmptyVal(passCol.value) || isNaN(passNum) || passNum <= 0){
+    return {available:false, count:0, names:[], threshold:0,
+      note:"לא מוגדר ציון עובר אמיתי בקורס (0 או ריק) — בדיקת ציון מול השלמה אינה רלוונטית. ציונים שמופיעים הם לרוב משאלון אפקטיביות."};
+  }
+  var threshold = passNum;
   var names = [];
   for (var i=0;i<course.rows.length;i++){
     var row = course.rows[i];
@@ -2164,10 +2172,15 @@ function gradeSpotlightHTML(report){
     '</div>';
   }).join("");
 
+  var hasGradeSignal = rows.some(function(r){ return /ציון/.test(r.title); });
+  var title = hasGradeSignal ? "בדיקת תקינות הציונים" : "בדיקת תקינות ההשלמות";
+  var sub = hasGradeSignal
+    ? "שדות הציון הם קריטיים לחישוב ההשלמה — כדאי לטפל בהם קודם."
+    : "פערים בין נוכחות לסטטוס השלמה — כדאי לעבור על השמות ולוודא.";
   return '<section class="grade-spotlight">' +
     '<div class="gs-head"><span class="gs-icon">' + icon('target') + '</span>' +
-      '<div><div class="gs-title">בדיקת תקינות הציונים</div>' +
-      '<div class="gs-sub">שדות הציון הם קריטיים לחישוב ההשלמה — כדאי לטפל בהם קודם.</div></div></div>' +
+      '<div><div class="gs-title">' + title + '</div>' +
+      '<div class="gs-sub">' + sub + '</div></div></div>' +
     '<div class="gs-list">' + body + '</div>' +
   '</section>';
 }
@@ -2573,10 +2586,10 @@ function overviewHTML(){
     return '<button type="button" class="dash-chip tone-' + b[0] + '" data-bucket="' + b[0] + '">' + b[1] + '</button>';
   }).join("");
   var toolbar = '<div class="dash-toolbar">' +
-      '<input type="text" id="dashSearch" placeholder="חיפוש קורס…" autocomplete="off">' +
-      '<select id="dashCoordFilter">' + coordOptions + '</select>' +
-      '<select id="dashErrorFilter">' + errorOptions + '</select>' +
-      '<div class="dash-chips">' + chips + '</div>' +
+      '<input type="text" id="dashSearch" placeholder="חיפוש קורס…" autocomplete="off" aria-label="חיפוש קורס">' +
+      '<select id="dashCoordFilter" aria-label="סינון לפי רכזת">' + coordOptions + '</select>' +
+      '<select id="dashErrorFilter" aria-label="סינון לפי סוג טעות">' + errorOptions + '</select>' +
+      '<div class="dash-chips" role="group" aria-label="סינון לפי חומרה">' + chips + '</div>' +
       '<button type="button" class="dash-clear" id="dashClear" hidden>' + icon('x') + ' נקה סינון</button>' +
       '<span class="dash-count" id="dashCount"></span>' +
     '</div>';
@@ -3131,11 +3144,13 @@ function renderMain(){
         '<div class="empty-privacy">' + icon('lock') + ' הכול נשאר במחשב שלך — הקובץ נבדק בדפדפן בלבד ולא נשלח לשום מקום.</div>' +
       '</div>';
     bindDropzone();
+    makeActivatable($main);
     return;
   }
 
   if (activeId === null){
     $main.innerHTML = overviewHTML();
+    makeActivatable($main);
     bindMainEvents();
     return;
   }
@@ -3576,6 +3591,14 @@ document.getElementById("sidebarSearch").addEventListener("input", function(e){
 if (!SNAPSHOT_MODE) window.addEventListener("popstate", handlePopState);
 renderSidebar();
 renderMain();
+
+/* test/debug hook — lets automated checks call the engine without opening the closure */
+window.__QA_TEST__ = {
+  getCourses: function(){ return courses; },
+  computeReport: computeReport,
+  allChecks: allChecks,
+  isCheckEnabled: isCheckEnabled
+};
 
 })();
 </script>
