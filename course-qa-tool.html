@@ -1033,6 +1033,16 @@ function colOf(course, name){
   for (var j=0;j<vals.length;j++){ if(!seen[vals[j]]){ seen[vals[j]]=true; distinct.push(vals[j]); } }
   return {exists:true, value:distinct[0] || "", distinct:distinct, inconsistent:distinct.length>1};
 }
+/* find the actual header (as it appears in the uploaded file) that contains a given
+   substring — for columns whose exact name drifts (e.g. a budget owner's name in
+   parentheses) but always contains a stable core phrase. Returns null if none found. */
+function findColumnContaining(course, substr){
+  var needle = normalizeHeader(substr);
+  for (var key in course.columnIndex){
+    if (key.indexOf(needle) !== -1) return key;
+  }
+  return null;
+}
 /* course coordinator (רכזת) for management grouping */
 var COORDINATOR_COL = "רכזת אחראית על הקורס";
 var NO_COORDINATOR  = "ללא רכזת";
@@ -1346,11 +1356,24 @@ RULES.push(requiredField({id:"cost-value-present", category:"budget", col:"על�
   emptyNote:"לא מולא ערך בעמודת “עלות”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
-RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"תקציב רוחבי 35% (יואב)", label:"תקציב רוחבי 35% (יואב)",
-  why:"יש לוודא שסומן ערך בעמודת “תקציב רוחבי 35% (יואב)” ושהשדה לא נותר ריק בטעות.",
-  check:"ודאו שמולא ערך בעמודת “תקציב רוחבי 35% (יואב)”.",
-  emptyNote:"לא מולא ערך בעמודת “תקציב רוחבי 35% (יואב)”.",
-  where:"שדות מותאמים אישית (אזור התקציב)"}));
+/* budget-width column: the header drifts (owner name / percentage vary between report
+   exports), so match any column whose name contains "תקציב רוחב" instead of a fixed
+   exact string. */
+RULES.push({
+  id:"budget-width-35-present", category:"budget", label:"תקציב רוחב",
+  why:"יש לוודא שסומן ערך בעמודת התקציב הרוחבי ושהשדה לא נותר ריק בטעות.",
+  check:"ודאו שמולא ערך בעמודת התקציב הרוחבי.",
+  where:"שדות מותאמים אישית (אזור התקציב)",
+  compute:function(ctx){
+    var colName = findColumnContaining(ctx.course, "תקציב רוחב");
+    if (!colName) return {status:"error", detected:null, note:"לא נמצאה בקובץ עמודה שמכילה “תקציב רוחב”."};
+    var c = colOf(ctx.course, colName);
+    if (ctx.course.rows.length === 0) return {status:"error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
+    if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:"לא מולא ערך בעמודת “" + colName + "”."};
+    if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
+    return {status:"ok", detected:c.value, note:"נמצא ערך תקין בעמודת “" + colName + "”."};
+  }
+});
 
 RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב - תוכנית הלמידה", label:"קורסי רוחב - תוכנית הלמידה",
   why:"יש לוודא שסומן ערך בעמודת “קורסי רוחב - תוכנית הלמידה” ושהשדה לא נותר ריק בטעות.",
