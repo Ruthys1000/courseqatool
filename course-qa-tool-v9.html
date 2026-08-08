@@ -899,14 +899,8 @@
 
 
 /* =====================================================================
-   1. CONFIG — approved coordinators, categories, column groups
+   1. CONFIG — categories, column groups
    ===================================================================== */
-
-var APPROVED_COORDINATORS = [
-  "גילי אסא כהן","חן סבן","חן רוקח","לי שטרן","ליטל רוחקינד","מינה סיטון",
-  "נופר שרן רייכר","עינב לואיס","קריין גוטסדינר","רוני סומך",
-  "שיר גלס טננבאום","שירה ארמה","שני קורש"
-];
 
 var CATEGORIES = [
   {id:"course-info", num:"1", title:"פרטי קורס"},
@@ -1017,10 +1011,18 @@ function parseAttendancePct(raw){
 /* normalize a name for exact-match comparison: trim + collapse internal whitespace */
 function normName(s){ return String(s==null?"":s).trim().replace(/\s+/g," "); }
 
+/* normalize a column header for matching: trim + collapse whitespace + unify dash
+   variants (–, —, ‑, …) to a plain hyphen, so exported reports that use a different
+   dash character than the one hard-coded in a rule's `col` still match. */
+function normalizeHeader(h){
+  return String(h==null?"":h).trim().replace(/\s+/g," ").replace(/[‐-―−]/g,"-");
+}
+
 /* column accessor: returns {exists, value, distinct, inconsistent} */
 function colOf(course, name){
-  if (!(name in course.columnIndex)) return {exists:false, value:"", distinct:[], inconsistent:false};
-  var idx = course.columnIndex[name];
+  var key = normalizeHeader(name);
+  if (!(key in course.columnIndex)) return {exists:false, value:"", distinct:[], inconsistent:false};
+  var idx = course.columnIndex[key];
   var vals = [];
   for (var i=0;i<course.rows.length;i++){
     var raw = course.rows[i][idx];
@@ -1031,9 +1033,7 @@ function colOf(course, name){
   for (var j=0;j<vals.length;j++){ if(!seen[vals[j]]){ seen[vals[j]]=true; distinct.push(vals[j]); } }
   return {exists:true, value:distinct[0] || "", distinct:distinct, inconsistent:distinct.length>1};
 }
-/* course coordinator (רכזת) for management grouping — uses the actual value on the
-   course regardless of the APPROVED_COORDINATORS allow-list (approval only affects a
-   course's QA status, not who it's grouped under). */
+/* course coordinator (רכזת) for management grouping */
 var COORDINATOR_COL = "רכזת אחראית על הקורס";
 var NO_COORDINATOR  = "ללא רכזת";
 function coordinatorOf(course){
@@ -1101,7 +1101,10 @@ function requiredField(cfg){
       var c = colOf(ctx.course, cfg.col);
       if (!c.exists) return {status:cfg.missingStatus || cfg.emptyStatus || "error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ (ייתכן שמדובר בגרסת דוח שונה)."};
       if (ctx.course.rows.length === 0) return {status:cfg.emptyStatus || "error", detected:null, note:"אין נתוני משתתפים בקורס — לא ניתן לאמת ערך זה."};
-      if (isEmptyVal(c.value)) return {status:cfg.emptyStatus || "error", detected:c.value, note:cfg.emptyNote || "השדה ריק או נותר בברירת המחדל."};
+      if (isEmptyVal(c.value)){
+        var emptyNote = typeof cfg.emptyNote === "function" ? cfg.emptyNote(ctx.course) : cfg.emptyNote;
+        return {status:cfg.emptyStatus || "error", detected:c.value, note:emptyNote || "השדה ריק או נותר בברירת המחדל."};
+      }
       if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
       return {status:"ok", detected:c.value, note:"נמצא ערך תקין."};
     }
@@ -1119,29 +1122,6 @@ function conditionalRequiredField(cfg){
       if (isEmptyVal(c.value)) return {status:"error", detected:c.value, note:cfg.emptyNote || "השדה ריק, אך הוא נדרש במקרה זה."};
       if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
       return {status:"ok", detected:c.value, note:cfg.okNote || "נמצא ערך תקין."};
-    }
-  };
-}
-
-/* list-membership field — required + must match an approved list exactly */
-function listMembershipField(cfg){
-  var normalizedList = cfg.list.map(normName);
-  return {
-    id:cfg.id, category:cfg.category, label:cfg.label, why:cfg.why, check:cfg.check, where:cfg.where,
-    compute:function(ctx){
-      var c = colOf(ctx.course, cfg.col);
-      if (!c.exists) return {status:"error", detected:null, note:"העמודה “" + cfg.col + "” לא נמצאה בקובץ."};
-      if (isEmptyVal(c.value)){
-        var emptyNote = typeof cfg.emptyNote === "function" ? cfg.emptyNote(ctx.course) : cfg.emptyNote;
-        return {status:"error", detected:c.value, note:emptyNote || "לא הוגדרה רכזת אחראית."};
-      }
-      var unknown = [];
-      c.distinct.forEach(function(v){
-        if (normalizedList.indexOf(normName(v)) === -1) unknown.push(v);
-      });
-      if (unknown.length) return {status:"error", detected:c.value, note:cfg.unknownNote + " (" + unknown.join(", ") + ")."};
-      if (c.inconsistent) return {status:"warn", detected:c.value, note:inconsistencyNote(c)};
-      return {status:"ok", detected:c.value, note:"הרכזת מופיעה ברשימת הרכזות המאושרות."};
     }
   };
 }
@@ -1187,16 +1167,14 @@ RULES.push(requiredField({id:"budget-reservation", category:"course-info", col:"
   check:"ודאו שהוגדר סוג הרישום התקציבי (קורס / שריון תקציב).",
   where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
-/* coordinator — required + approved list */
-RULES.push(listMembershipField({id:"coordinator", category:"course-info", col:"רכזת אחראית על הקורס", label:"רכזת אחראית על הקורס",
-  list:APPROVED_COORDINATORS,
-  why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. יש לוודא שהוגדרה רכזת, ושהיא מופיעה ברשימת הרכזות המאושרות.",
-  check:"ודאו שהוגדרה רכזת אחראית, ושהיא אחת מהרכזות המאושרות.",
+/* coordinator — required field only (no approved-list check) */
+RULES.push(requiredField({id:"coordinator", category:"course-info", col:"רכזת אחראית על הקורס", label:"רכזת אחראית על הקורס",
+  why:"הרכזת האחראית היא איש הקשר התפעולי של הקורס. יש לוודא שהוגדרה רכזת אחראית לקורס.",
+  check:"ודאו שהוגדרה רכזת אחראית לקורס.",
   emptyNote:function(course){
     var mgr = groupManagerOf(course);
     return "לא הוגדרה רכזת אחראית." + (mgr ? " אחראי/ת קבוצה לבירור: " + mgr + "." : "");
   },
-  unknownNote:"הרכזת אינה מופיעה ברשימת הרכזות המאושרות",
   where:"הגדרות תבנית הקורס ← שדות מותאמים אישית"}));
 
 /* dates */
@@ -1345,6 +1323,9 @@ RULES.push({
     if (paid === false) return {status:"na", detected:c.value||null, note:"הקורס מסווג כ“ללא עלות” — מספר חשבונית אינו נדרש."};
     if (isLearningExpenseExempt(ctx.course)) return {status:"na", detected:c.value||null,
       note:"פטור מדרישת חשבונית — סוג תקציב “החזר הוצאות למידה” או סיווג “כנסים וימי עיון”."};
+    var internalLecturer = isCheckedFlag(colOf(ctx.course, "מרצה פנימי ?").value) && !isCheckedFlag(colOf(ctx.course, "מרצה חיצוני ?").value);
+    if (internalLecturer && paid !== true) return {status:"na", detected:c.value||null,
+      note:"מרצה פנימי — קורסים כאלה הם לרוב ללא עלות, ולכן מספר חשבונית אינו נדרש (גם אם השדה “עלות” לא סומן במפורש)."};
     if (isEmptyVal(c.value)){
       var end = parseDateLoose(colOf(ctx.course,"תאריך סיום קורס").value);
       if (end){
@@ -1365,18 +1346,18 @@ RULES.push(requiredField({id:"cost-value-present", category:"budget", col:"על�
   emptyNote:"לא מולא ערך בעמודת “עלות”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
-RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"תקציב רוחב 35%", label:"תקציב רוחב 35%",
-  emptyStatus:"warn", missingStatus:"warn",
-  why:"יש לוודא שסומן ערך בעמודת “תקציב רוחב 35%” ושהשדה לא נותר ריק בטעות.",
-  check:"ודאו שמולא ערך בעמודת “תקציב רוחב 35%”.",
-  emptyNote:"לא מולא ערך בעמודת “תקציב רוחב 35%”.",
+RULES.push(requiredField({id:"budget-width-35-present", category:"budget", col:"תקציב רוחבי 35% (יואב)", label:"תקציב רוחבי 35% (יואב)",
+  missingStatus:"warn",
+  why:"יש לוודא שסומן ערך בעמודת “תקציב רוחבי 35% (יואב)” ושהשדה לא נותר ריק בטעות.",
+  check:"ודאו שמולא ערך בעמודת “תקציב רוחבי 35% (יואב)”.",
+  emptyNote:"לא מולא ערך בעמודת “תקציב רוחבי 35% (יואב)”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
-RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב – תוכנית הלמידה", label:"קורסי רוחב – תוכנית הלמידה",
-  emptyStatus:"warn", missingStatus:"warn",
-  why:"שדה חדש שחובה למלא מעכשיו. יש לוודא שסומן ערך בעמודת “קורסי רוחב – תוכנית הלמידה” ושהשדה לא נותר ריק. אם העמודה לא מופיעה בדוח — יש להפיק מחדש דוח סטטוס מעודכן מהמערכת.",
-  check:"ודאו שמולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”. אם העמודה חסרה בדוח — הפיקו דוח מעודכן.",
-  emptyNote:"לא מולא ערך בעמודת “קורסי רוחב – תוכנית הלמידה”.",
+RULES.push(requiredField({id:"width-courses-learning-plan-present", category:"budget", col:"קורסי רוחב - תוכנית הלמידה", label:"קורסי רוחב - תוכנית הלמידה",
+  missingStatus:"warn",
+  why:"שדה חדש שחובה למלא מעכשיו. יש לוודא שסומן ערך בעמודת “קורסי רוחב - תוכנית הלמידה” ושהשדה לא נותר ריק. אם העמודה לא מופיעה בדוח — יש להפיק מחדש דוח סטטוס מעודכן מהמערכת.",
+  check:"ודאו שמולא ערך בעמודת “קורסי רוחב - תוכנית הלמידה”. אם העמודה חסרה בדוח — הפיקו דוח מעודכן.",
+  emptyNote:"לא מולא ערך בעמודת “קורסי רוחב - תוכנית הלמידה”.",
   where:"שדות מותאמים אישית (אזור התקציב)"}));
 
 /* ---- passing grade (ציון עובר) ---- */
@@ -1799,7 +1780,7 @@ function buildCoursesFromRows(fileName, fileId, rows){
 
   var headers = (rows[headerRowIndex]||[]).map(function(h){return String(h).trim();});
   var columnIndex = {};
-  headers.forEach(function(h,i){ if (h && !(h in columnIndex)) columnIndex[h] = i; });
+  headers.forEach(function(h,i){ var key = normalizeHeader(h); if (key && !(key in columnIndex)) columnIndex[key] = i; });
 
   var dataRows = rows.slice(headerRowIndex+1).filter(function(r){
     return r.some(function(cell){ return String(cell).trim() !== ""; });
